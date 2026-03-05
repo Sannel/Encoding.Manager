@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Sannel.Encoding.Manager.Web/Sannel.Encoding.Manager.Web.csproj" />
+  </Folder>
+  <Project Path="docs/docs.csproj" />
+</Solution>
