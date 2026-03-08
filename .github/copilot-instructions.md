@@ -114,6 +114,11 @@ Features/Encoding/
 
 These rules are enforced via `.editorconfig` and must be followed in all generated C# code.
 
+### File Organization
+- **One public class/struct/record per file** — each file should contain only a single public type.
+- Private types and utilities within a file are acceptable.
+- Use clear, descriptive filenames matching the public type name (e.g., `MyClass.cs` for `public class MyClass`).
+
 ### Formatting
 - **Indentation**: Tabs (not spaces) for all files except `.yml` (2 spaces).
 - **Line endings**: CRLF.

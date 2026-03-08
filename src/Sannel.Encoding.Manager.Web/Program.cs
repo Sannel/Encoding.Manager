@@ -4,6 +4,7 @@ using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using MudBlazor.Services;
 using Sannel.Encoding.Manager.Web.Components;
+using Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,11 @@ builder.Services.AddMudServices();
 
 // Expose authentication state to Blazor components
 builder.Services.AddCascadingAuthenticationState();
+
+// HandBrake CLI integration
+builder.Services.Configure<HandBrakeOptions>(builder.Configuration.GetSection("HandBrake"));
+builder.Services.AddSingleton<IProcessRunner, ProcessRunner>();
+builder.Services.AddSingleton<IHandBrakeService, HandBrakeService>();
 
 var app = builder.Build();
 
