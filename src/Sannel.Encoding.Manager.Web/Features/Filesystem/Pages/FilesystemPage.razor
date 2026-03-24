@@ -1,0 +1,126 @@
+@page "/filesystem"
+@rendermode InteractiveServer
+
+<PageTitle>Filesystem Browser</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Filesystem Browser</MudText>
+<MudText Class="mb-4">Select a media file or disc folder for encoding.</MudText>
+
+@if (_isLoading)
+{
+	<MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+}
+else
+{
+	<MudCard Class="mb-4 pa-4">
+		<MudGrid>
+			<MudItem xs="12" sm="6">
+				<MudSelect Value="_selectedRootLabel" ValueChanged="@((string? v) => OnRootSelected(v))" Label="Root Directory" Variant="Variant.Outlined"
+					AnchorOrigin="Origin.BottomCenter">
+					@foreach (var root in _configuredRoots)
+					{
+						<MudSelectItem Value="@root.Label">
+							@root.Label @(root.Exists ? "" : " (Not Found)")
+						</MudSelectItem>
+					}
+				</MudSelect>
+			</MudItem>
+			<MudItem xs="12" sm="6" Class="d-flex align-center">
+				<MudButton Variant="Variant.Outlined" Color="Color.Primary"
+					OnClick="UpFolder" 
+					Disabled="@(string.IsNullOrEmpty(_currentRelativePath))">
+					⬆️ Up
+				</MudButton>
+			</MudItem>
+		</MudGrid>
+
+		@if (!string.IsNullOrEmpty(_currentDisplayPath))
+		{
+			<MudText Typo="Typo.body2" Class="mt-2">
+				<strong>Current Path:</strong> @_currentDisplayPath
+			</MudText>
+		}
+	</MudCard>
+
+	@if (!string.IsNullOrEmpty(_errorMessage))
+	{
+		<MudAlert Severity="Severity.Error" Class="mb-4">@_errorMessage</MudAlert>
+	}
+
+	@if (!string.IsNullOrEmpty(_selectedItem))
+	{
+		<MudCard Class="mb-4 pa-4" Style="background-color: var(--mud-palette-success-lighten);">
+			<MudText Typo="Typo.h6">Selected Item</MudText>
+			<MudText Typo="Typo.body1" Class="mt-2">
+				<strong>@_selectedItemType:</strong> <code>@_selectedItem</code>
+			</MudText>
+			<MudButton Variant="Variant.Text" Color="Color.Default" Size="Size.Small" 
+				OnClick="ClearSelection" Class="mt-2">
+				Clear Selection
+			</MudButton>
+		</MudCard>
+	}
+
+	@if (_currentBrowse != null)
+	{
+		@if (_currentBrowse.Directories.Count > 0 || _currentBrowse.Files.Count > 0)
+		{
+			<MudTable Items="@GetTableItems()" Hover="true" Striped="true" Dense="true" Elevation="2">
+				<HeaderContent>
+					<MudTh>Type</MudTh>
+					<MudTh>Name</MudTh>
+					<MudTh>Size</MudTh>
+					<MudTh>Actions</MudTh>
+				</HeaderContent>
+				<RowTemplate>
+					@if (context is DirectoryEntryResponse dir)
+					{
+						<MudTd DataLabel="Type">
+							<MudIcon Icon="@Icons.Material.Filled.Folder" Color="Color.Warning" />
+							@if (dir.DiscType != DiscType.None)
+							{
+								<MudText Typo="Typo.caption" Color="Color.Info" Class="ml-2" Style="display: inline;">[@dir.DiscType]</MudText>
+							}
+						</MudTd>
+						<MudTd DataLabel="Name">@dir.Name</MudTd>
+						<MudTd DataLabel="Size">-</MudTd>
+						<MudTd DataLabel="Actions">
+							@if (dir.DiscType == DiscType.None)
+							{
+								<MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
+									OnClick="@(() => OpenFolder(dir.Name))">
+									Open
+								</MudButton>
+							}
+							else
+							{
+								<MudButton Variant="Variant.Text" Color="Color.Success" Size="Size.Small"
+									OnClick="@(() => SelectDiscFolder(dir))">
+									Select Disc
+								</MudButton>
+							}
+						</MudTd>
+					}
+					else if (context is FileEntryResponse file)
+					{
+						<MudTd DataLabel="Type">
+							<MudIcon Icon="@Icons.Material.Filled.VideoFile" Color="Color.Info" />
+						</MudTd>
+						<MudTd DataLabel="Name">@file.Name</MudTd>
+						<MudTd DataLabel="Size">@FormatBytes(file.SizeBytes)</MudTd>
+						<MudTd DataLabel="Actions">
+							<MudButton Variant="Variant.Text" Color="Color.Success" Size="Size.Small"
+								OnClick="@(() => SelectFile(file))">
+								Select File
+							</MudButton>
+						</MudTd>
+					}
+				</RowTemplate>
+			</MudTable>
+		}
+		else
+		{
+			<MudAlert Severity="Severity.Info">No subdirectories or media files found in this location.</MudAlert>
+		}
+	}
+}

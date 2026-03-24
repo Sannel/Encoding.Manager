@@ -6,7 +6,9 @@ namespace Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
 public interface IHandBrakeService
 {
 	/// <summary>Scans the input file and returns track/title/stream metadata.</summary>
-	Task<HandBrakeScanResult> ScanAsync(string inputPath, CancellationToken ct = default);
+	/// <param name="inputPath">Path to the disc image or directory to scan.</param>
+	/// <param name="forceRescan">When true, skip the 24-hour disc scan cache and always call HandBrakeCLI.</param>
+	Task<HandBrakeScanResult> ScanAsync(string inputPath, bool forceRescan = false, CancellationToken ct = default);
 
 	/// <summary>Encodes the input according to the job spec, reporting progress via <paramref name="progress"/>.</summary>
 	Task<HandBrakeEncodeResult> EncodeAsync(

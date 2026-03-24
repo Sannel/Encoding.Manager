@@ -40,13 +40,37 @@ public static partial class HandBrakeParser
 			return [];
 		}
 
-		// Try JSON parse first
-		var jsonStart = output.IndexOf('{');
-		if (jsonStart >= 0)
+		// HandBrakeCLI --json emits multiple labeled blocks on stdout:
+		//   "Version: {...}"
+		//   "Progress: {...}"   (repeated)
+		//   "JSON Title Set: { "MainFeature": ..., "TitleList": [...] }"
+		// We must locate the "JSON Title Set:" block specifically; using the first '{' would
+		// pick up the Version block instead.
+		const string titleSetMarker = "JSON Title Set:";
+		var markerIndex = output.IndexOf(titleSetMarker, StringComparison.OrdinalIgnoreCase);
+		if (markerIndex >= 0)
+		{
+			var jsonStart = output.IndexOf('{', markerIndex);
+			if (jsonStart >= 0)
+			{
+				try
+				{
+					return ParseScanJson(output[jsonStart..]);
+				}
+				catch (JsonException)
+				{
+					// Fall through to text parsing
+				}
+			}
+		}
+
+		// Fallback: try the first JSON block (older HandBrake versions that emit a single object)
+		var fallbackStart = output.IndexOf('{');
+		if (fallbackStart >= 0)
 		{
 			try
 			{
-				return ParseScanJson(output[jsonStart..]);
+				return ParseScanJson(output[fallbackStart..]);
 			}
 			catch (JsonException)
 			{
@@ -208,9 +232,11 @@ public static partial class HandBrakeParser
 					: audio.TryGetProperty("Language", out var l) ? l.GetString() ?? "" : "",
 				SampleRate = audio.TryGetProperty("SampleRate", out var sr) ? sr.GetInt32() : 0,
 				Bitrate = audio.TryGetProperty("BitRate", out var br) ? br.GetInt32() : 0,
-				ChannelLayout = audio.TryGetProperty("ChannelLayout", out var cl)
-					? cl.GetString() ?? ""
-					: audio.TryGetProperty("ChannelLayoutName", out var cln) ? cln.GetString() ?? "" : ""
+				ChannelLayout = audio.TryGetProperty("ChannelLayoutName", out var cln)
+					? cln.GetString() ?? ""
+					: audio.TryGetProperty("ChannelLayout", out var cl) && cl.ValueKind == JsonValueKind.String
+						? cl.GetString() ?? ""
+						: ""
 			});
 		}
 

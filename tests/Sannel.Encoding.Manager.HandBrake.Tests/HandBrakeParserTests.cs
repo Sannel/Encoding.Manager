@@ -85,6 +85,43 @@ public class HandBrakeParserTests
 	}
 
 	[Fact]
+	public void ParseScan_RealHandBrakeJsonFormat_ParsesTitleSet()
+	{
+		// HandBrakeCLI --json emits labeled blocks; TitleList is inside "JSON Title Set: {...}"
+		var output = """
+		Version: {
+		    "VersionString": "1.10.2"
+		}
+		Progress: {
+		    "State": "SCANNING"
+		}
+		JSON Title Set: {
+		    "MainFeature": 1,
+		    "TitleList": [
+		        {
+		            "Index": 1,
+		            "Duration": { "Hours": 0, "Minutes": 45, "Seconds": 0 },
+		            "Geometry": { "Width": 1920, "Height": 1080 }
+		        },
+		        {
+		            "Index": 2,
+		            "Duration": { "Hours": 0, "Minutes": 22, "Seconds": 30 },
+		            "Geometry": { "Width": 1920, "Height": 1080 }
+		        }
+		    ]
+		}
+		""";
+
+		var titles = HandBrakeParser.ParseScan(output);
+
+		Assert.Equal(2, titles.Count);
+		Assert.Equal(1, titles[0].TitleNumber);
+		Assert.Equal(new TimeSpan(0, 45, 0), titles[0].Duration);
+		Assert.Equal(2, titles[1].TitleNumber);
+		Assert.Equal(new TimeSpan(0, 22, 30), titles[1].Duration);
+	}
+
+	[Fact]
 	public void ParseScan_ValidJson_ParsesTitles()
 	{
 		var json = """

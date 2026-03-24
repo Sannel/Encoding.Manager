@@ -1,0 +1,73 @@
+@using Sannel.Encoding.Manager.Web.Features.Scan.Dto
+@using Sannel.Encoding.Manager.Web.Features.Tvdb.Dto
+
+<MudExpansionPanels Class="mt-4">
+	<MudExpansionPanel Text="Episode Naming">
+		<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap" Spacing="2">
+			<MudTextField @bind-Value="_showId" Label="Show ID" Variant="Variant.Outlined"
+				Placeholder="e.g. 73739" Style="max-width: 220px;" />
+			<MudButton Variant="Variant.Filled" Color="Color.Primary"
+				OnClick="OnLoadFromTvdbClicked" Disabled="_isLoading">
+				@if (_isLoading)
+				{
+					<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+				}
+				Load from TVDB
+			</MudButton>
+			<MudButton Variant="Variant.Filled" Color="Color.Secondary"
+				OnClick="OnCascadeClicked" Disabled="@(!CanCascade)">
+				Cascade
+			</MudButton>
+		</MudStack>
+		@if (!string.IsNullOrEmpty(_errorMessage))
+		{
+			<MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">@_errorMessage</MudAlert>
+		}
+
+		@if (_rows.Count > 0)
+		{
+			<MudTable Items="_rows" Dense="true" Hover="true" Elevation="2">
+				<HeaderContent>
+					<MudTh>Item</MudTh>
+					<MudTh Style="min-width: 200px;">Name</MudTh>
+					<MudTh Style="min-width: 130px;">Season</MudTh>
+					<MudTh Style="min-width: 220px;">Episode</MudTh>
+				</HeaderContent>
+				<RowTemplate>
+					<MudTd DataLabel="Item">@context.Label</MudTd>
+					<MudTd DataLabel="Name">
+						<MudTextField @bind-Value="context.Name" Variant="Variant.Outlined"
+							Margin="Margin.Dense" />
+					</MudTd>
+					<MudTd DataLabel="Season">
+						<MudSelect T="int?" Value="context.Season"
+							ValueChanged="@(v => OnSeasonChanged(context, v))"
+							Variant="Variant.Outlined" Margin="Margin.Dense"
+							Placeholder="—" AnchorOrigin="Origin.BottomCenter"
+							Disabled="@(_allEpisodes.Count == 0)">
+							@foreach (var season in _seasons)
+							{
+								<MudSelectItem T="int?" Value="@((int?)season)">Season @season</MudSelectItem>
+							}
+						</MudSelect>
+					</MudTd>
+					<MudTd DataLabel="Episode">
+						<MudSelect T="TvdbEpisode?" Value="context.Episode"
+							ValueChanged="@(ep => OnEpisodeSelected(context, ep))"
+							Variant="Variant.Outlined" Margin="Margin.Dense"
+							Placeholder="—" AnchorOrigin="Origin.BottomCenter"
+							ToStringFunc="@(ep => ep is null ? string.Empty : $"E{ep.EpisodeNumber:D2} — {ep.Name}")"
+							Disabled="@(context.Season is null || _allEpisodes.Count == 0)">
+							@foreach (var ep in EpisodesForSeason(context.Season))
+							{
+								<MudSelectItem T="TvdbEpisode?" Value="@((TvdbEpisode?)ep)">
+									E@(ep.EpisodeNumber.ToString("D2")) — @ep.Name
+								</MudSelectItem>
+							}
+						</MudSelect>
+					</MudTd>
+				</RowTemplate>
+			</MudTable>
+		}
+	</MudExpansionPanel>
+</MudExpansionPanels>

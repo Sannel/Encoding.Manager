@@ -1,5 +1,8 @@
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Sannel.Encoding.Manager.Web.Features.Data;
+using Sannel.Encoding.Manager.Web.Features.Scan.Entities;
 
 namespace Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
 
@@ -12,6 +15,7 @@ public class HandBrakeService : IHandBrakeService
 	private readonly IProcessRunner _processRunner;
 	private readonly HandBrakeOptions _options;
 	private readonly ILogger<HandBrakeService> _logger;
+	private readonly IDbContextFactory<AppDbContext> _dbFactory;
 	private readonly string _resolvedScanOutputPath;
 	private readonly HandBrakeExecutable _executable;
 
@@ -21,11 +25,13 @@ public class HandBrakeService : IHandBrakeService
 		IProcessRunner processRunner,
 		IOptions<HandBrakeOptions> options,
 		ILogger<HandBrakeService> logger,
-		IWebHostEnvironment env)
+		IWebHostEnvironment env,
+		IDbContextFactory<AppDbContext> dbFactory)
 	{
 		_processRunner = processRunner;
 		_options = options.Value;
 		_logger = logger;
+		_dbFactory = dbFactory;
 
 		// Resolve scan output path relative to content root
 		_resolvedScanOutputPath = Path.IsPathRooted(_options.ScanOutputPath)
@@ -83,19 +89,40 @@ public class HandBrakeService : IHandBrakeService
 			_options.MinimumVersion);
 	}
 
-	public async Task<HandBrakeScanResult> ScanAsync(string inputPath, CancellationToken ct = default)
+	public async Task<HandBrakeScanResult> ScanAsync(string inputPath, bool forceRescan = false, CancellationToken ct = default)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(inputPath);
 
-		if (!File.Exists(inputPath))
+		if (!File.Exists(inputPath) && !Directory.Exists(inputPath))
 		{
 			throw new FileNotFoundException("Input file not found.", inputPath);
+		}
+
+		// Check DB cache unless a force rescan was requested (24-hour TTL)
+		if (!forceRescan)
+		{
+			await using var cacheCtx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
+			var cached = await cacheCtx.DiscScanCache
+				.FirstOrDefaultAsync(c => c.InputPath == inputPath, ct)
+				.ConfigureAwait(false);
+
+			if (cached is not null && cached.CachedAt > DateTimeOffset.UtcNow.AddHours(-24))
+			{
+				_logger.LogInformation("Returning cached scan result for {InputPath} (cached at {CachedAt})", inputPath, cached.CachedAt);
+				var cachedTitles = HandBrakeParser.ParseScan(cached.ScanJson);
+				return new HandBrakeScanResult
+				{
+					IsSuccess = true,
+					InputPath = inputPath,
+					Titles = cachedTitles,
+				};
+			}
 		}
 
 		_logger.LogInformation("Starting scan of {InputPath}", inputPath);
 
 		var result = await RunHandBrakeAsync(
-			["--input", inputPath, "--scan", "--json"],
+			["--input", inputPath, "--title", "0", "--scan", "--json"],
 			ct).ConfigureAwait(false);
 
 		if (result.ExitCode != 0)
@@ -135,6 +162,27 @@ public class HandBrakeService : IHandBrakeService
 			_logger.LogError(ex, "Failed to write scan result to {ScanOutputPath}", _resolvedScanOutputPath);
 		}
 
+		// Persist to DB cache (replace any existing entry for this path)
+		try
+		{
+			await using var cacheCtx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
+			await cacheCtx.DiscScanCache
+				.Where(c => c.InputPath == inputPath)
+				.ExecuteDeleteAsync(ct)
+				.ConfigureAwait(false);
+			cacheCtx.DiscScanCache.Add(new DiscScanCache
+			{
+				InputPath = inputPath,
+				ScanJson = result.StandardOutput,
+				CachedAt = DateTimeOffset.UtcNow,
+			});
+			await cacheCtx.SaveChangesAsync(ct).ConfigureAwait(false);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Failed to cache disc scan result for {InputPath}", inputPath);
+		}
+
 		_logger.LogInformation("Scan of {InputPath} completed — {TitleCount} title(s) found", inputPath, titles.Count);
 
 		return new HandBrakeScanResult
@@ -161,7 +209,7 @@ public class HandBrakeService : IHandBrakeService
 				"Either PresetName or PresetFilePath must be set on HandBrakeJob.");
 		}
 
-		if (!File.Exists(job.InputPath))
+		if (!File.Exists(job.InputPath) && !Directory.Exists(job.InputPath))
 		{
 			throw new FileNotFoundException("Input file not found.", job.InputPath);
 		}

@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using Sannel.Encoding.Manager.Web.Features.Data;
 using Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
 
 namespace Sannel.Encoding.Manager.HandBrake.Tests;
@@ -65,7 +67,9 @@ public class HandBrakeServiceTests
 		var env = Substitute.For<IWebHostEnvironment>();
 		env.ContentRootPath.Returns(Path.GetTempPath());
 
-		return new HandBrakeService(runner, optionsMock, logger, env);
+		var dbFactory = Substitute.For<IDbContextFactory<AppDbContext>>();
+
+		return new HandBrakeService(runner, optionsMock, logger, env, dbFactory);
 	}
 
 	[Fact]
@@ -157,14 +161,18 @@ public class HandBrakeServiceTests
 				{
 					ExitCode = 0,
 					StandardOutput = """
-					{
-						"TitleList": [
-							{
-								"Index": 1,
-								"Duration": { "Hours": 0, "Minutes": 5, "Seconds": 30 },
-								"Geometry": { "Width": 1280, "Height": 720 }
-							}
-						]
+					Version: {
+					    "VersionString": "1.10.2"
+					}
+					JSON Title Set: {
+					    "MainFeature": 1,
+					    "TitleList": [
+					        {
+					            "Index": 1,
+					            "Duration": { "Hours": 0, "Minutes": 5, "Seconds": 30 },
+					            "Geometry": { "Width": 1280, "Height": 720 }
+					        }
+					    ]
 					}
 					""",
 					StandardError = ""

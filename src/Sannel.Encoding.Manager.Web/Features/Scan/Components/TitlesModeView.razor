@@ -1,0 +1,111 @@
+@using Sannel.Encoding.Manager.Web.Features.Utility.HandBrake
+@using Sannel.Encoding.Manager.Web.Features.Tvdb.Dto
+@inherits NamingComponentBase
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2" Style="width: fit-content;">
+	<MudText Typo="Typo.body1">Minimum Duration</MudText>
+	<MudNumericField T="int" Value="_minimumMinutes" ValueChanged="OnMinimumMinutesChanged"
+		Label="Minutes" Variant="Variant.Outlined" Min="0" Style="max-width: 120px;" />
+	<MudNumericField T="int" Value="_minimumSeconds" ValueChanged="OnMinimumSecondsChanged"
+		Label="Seconds" Variant="Variant.Outlined" Min="0" Max="59" Style="max-width: 120px;" />
+</MudStack>
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap" Spacing="2">
+	<MudTextField @bind-Value="_showId" Label="Show ID" Variant="Variant.Outlined"
+		Placeholder="e.g. 73739" Style="max-width: 220px;" />
+	@if (!string.IsNullOrEmpty(_seriesName))
+	{
+		<MudText Typo="Typo.subtitle1"><strong>@_seriesName</strong></MudText>
+	}
+	<MudSelect T="TvdbEpisodeOrderType" Value="_episodeOrderType" ValueChanged="OnEpisodeOrderTypeChanged"
+		Label="Episode Order" Variant="Variant.Outlined" Margin="Margin.Dense"
+		AnchorOrigin="Origin.BottomCenter" Style="max-width: 160px;">
+		<MudSelectItem Value="TvdbEpisodeOrderType.Default">Default</MudSelectItem>
+		<MudSelectItem Value="TvdbEpisodeOrderType.Dvd">DVD</MudSelectItem>
+		<MudSelectItem Value="TvdbEpisodeOrderType.Bluray">Blu-ray</MudSelectItem>
+		<MudSelectItem Value="TvdbEpisodeOrderType.Streaming">Streaming</MudSelectItem>
+	</MudSelect>
+	<MudButton Variant="Variant.Filled" Color="Color.Primary"
+		OnClick="OnLoadFromTvdbClicked" Disabled="_isTvdbLoading">
+		@if (_isTvdbLoading)
+		{
+			<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+		}
+		Load from TVDB
+	</MudButton>
+	<MudButton Variant="Variant.Filled" Color="Color.Secondary"
+		OnClick="OnCascadeClicked" Disabled="@(!CanCascade)">
+		Cascade
+	</MudButton>
+</MudStack>
+
+@if (!string.IsNullOrEmpty(_tvdbErrorMessage))
+{
+	<MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">@_tvdbErrorMessage</MudAlert>
+}
+
+@if (FilteredTitles.Count > 0)
+{
+	foreach (var title in FilteredTitles)
+	{
+		var nr = GetNamingRow(title.TitleNumber);
+		<MudPaper Class="mb-2 pa-3" Elevation="2">
+			<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Wrap="Wrap.Wrap">
+				<MudText><strong>Title @title.TitleNumber</strong></MudText>
+				<MudText>@FormatDuration(title.Duration)</MudText>
+				<MudText>@(title.Width)×@(title.Height)</MudText>
+				<MudText>@title.FrameRate fps</MudText>
+				<MudText>@title.AudioTracks.Count audio track(s)</MudText>
+				<MudText>@title.Subtitles.Count subtitle(s)</MudText>
+				<MudText>@title.Chapters.Count chapter(s)</MudText>
+				<MudSpacer />
+				<MudIconButton Icon="@Icons.Material.Filled.ClearAll" Size="Size.Small"
+					OnClick="@(() => ClearNamingRow(title.TitleNumber))" Title="Clear row" />
+			</MudStack>
+			<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mt-2" Wrap="Wrap.Wrap">
+				<MudTextField @bind-Value="nr.Name" Label="Name" Variant="Variant.Outlined"
+					Margin="Margin.Dense" Style="min-width: 200px;" />
+				<MudSelect T="int?" Value="nr.Season"
+					ValueChanged="@(v => OnSeasonChanged(title.TitleNumber, v))"
+					Label="Season" Variant="Variant.Outlined" Margin="Margin.Dense"
+					Placeholder="—" AnchorOrigin="Origin.BottomCenter" Style="min-width: 130px;"
+					Disabled="@(_allEpisodes.Count == 0)">
+					@foreach (var season in _seasons)
+					{
+						<MudSelectItem T="int?" Value="@((int?)season)">Season @season</MudSelectItem>
+					}
+				</MudSelect>
+				<MudSelect T="TvdbEpisode?" Value="nr.Episode"
+					ValueChanged="@(ep => OnEpisodeSelected(title.TitleNumber, ep))"
+					Label="Episode" Variant="Variant.Outlined" Margin="Margin.Dense"
+					Placeholder="—" AnchorOrigin="Origin.BottomCenter" Style="min-width: 220px;"
+					ToStringFunc="@(ep => ep is null ? string.Empty : $"E{ep.EpisodeNumber:D2} — {ep.Name}")"
+					Disabled="@(nr.Season is null || _allEpisodes.Count == 0)">
+					@foreach (var ep in EpisodesForSeason(nr.Season))
+					{
+						<MudSelectItem T="TvdbEpisode?" Value="@((TvdbEpisode?)ep)">
+							E@(ep.EpisodeNumber.ToString("D2")) — @ep.Name
+						</MudSelectItem>
+					}
+				</MudSelect>
+			</MudStack>
+		</MudPaper>
+	}
+}
+else
+{
+	<MudAlert Severity="Severity.Info">No titles found matching the minimum duration.</MudAlert>
+}
+
+@if (FilteredTitles.Count > 0)
+{
+	<MudButton Variant="Variant.Filled" Color="Color.Success"
+		StartIcon="@Icons.Material.Filled.AddToQueue"
+		OnClick="OnAddToQueueClicked" Disabled="_isAddingToQueue"
+		Class="mt-3">
+		@if (_isAddingToQueue)
+		{
+			<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+		}
+		Add to Queue
+	</MudButton>
+}

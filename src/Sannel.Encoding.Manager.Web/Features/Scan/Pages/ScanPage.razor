@@ -1,0 +1,78 @@
+@page "/scan"
+@rendermode InteractiveServer
+@using Sannel.Encoding.Manager.Web.Features.Scan.Dto
+@using Sannel.Encoding.Manager.Web.Features.Scan.Components
+
+<PageTitle>Scan Disc</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Scan Disc</MudText>
+
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+	<MudAlert Severity="Severity.Error" Class="mb-4">
+		@_errorMessage
+		<MudButton Variant="Variant.Text" Color="Color.Primary" Href="/filesystem" Class="ml-4">
+			Go back to Filesystem
+		</MudButton>
+	</MudAlert>
+}
+else
+{
+	<MudCard Class="mb-4 pa-4">
+		<MudText Typo="Typo.body1">
+			<strong>Root:</strong> @Root
+		</MudText>
+		<MudText Typo="Typo.body1">
+			<strong>Path:</strong> @Path
+		</MudText>
+		@if (!string.IsNullOrEmpty(DiscType))
+		{
+			<MudText Typo="Typo.body1">
+				<strong>Disc Type:</strong> @DiscType
+			</MudText>
+		}
+	</MudCard>
+
+	@if (_isScanning)
+	{
+		<MudStack AlignItems="AlignItems.Center" Class="mt-8">
+			<MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+			<MudText Typo="Typo.body1" Class="mt-2">Scanning disc…</MudText>
+		</MudStack>
+	}
+	else if (_scanResult is { IsSuccess: true })
+	{
+		<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2">
+			<MudCard Class="pa-4 flex-grow-1">
+				<MudSelect T="ScanMode" Value="_selectedMode" ValueChanged="OnModeChanged"
+					Label="Mode" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+					<MudSelectItem Value="ScanMode.Titles">Titles</MudSelectItem>
+					<MudSelectItem Value="ScanMode.Chapters">Chapters</MudSelectItem>
+				</MudSelect>
+			</MudCard>
+			<MudTooltip Text="Bypass the 24-hour cache and re-scan the disc now">
+				<MudButton Variant="Variant.Outlined" Color="Color.Warning"
+					StartIcon="@Icons.Material.Filled.Refresh"
+					OnClick="ForceRescan">Rescan Disc</MudButton>
+			</MudTooltip>
+		</MudStack>
+
+		@if (_selectedMode == ScanMode.Titles)
+		{
+			<TitlesModeView ScanResult="_scanResult" />
+		}
+		else
+		{
+			<ChaptersModeView ScanResult="_scanResult" />
+		}
+	}
+	else if (_scanResult is { IsSuccess: false })
+	{
+		<MudAlert Severity="Severity.Error" Class="mb-4">
+			Scan failed: @(_scanResult.Error?.Message ?? "Unknown error")
+		</MudAlert>
+		<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => RunScan())">
+			Retry
+		</MudButton>
+	}
+}

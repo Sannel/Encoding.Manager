@@ -1,0 +1,90 @@
+@page "/settings"
+@rendermode InteractiveServer
+@using Sannel.Encoding.Manager.Web.Features.Settings.Dto
+
+<PageTitle>Settings</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Settings</MudText>
+
+@if (_isLoading)
+{
+	<MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+	<MudStack Spacing="4" Style="max-width: 700px;">
+
+		<MudCard>
+			<MudCardContent>
+				<MudText Typo="Typo.h6" Class="mb-2">Track Destination</MudText>
+
+				<MudSelect T="string?" @bind-Value="_trackDestinationRoot"
+					Label="Output Root"
+					Variant="Variant.Outlined"
+					AnchorOrigin="Origin.BottomCenter"
+					Class="mb-4"
+					HelperText="Base directory for all encoded output files">
+					<MudSelectItem T="string?" Value="@((string?)null)"><em>None</em></MudSelectItem>
+					@foreach (var root in _roots)
+					{
+						<MudSelectItem T="string?" Value="@root.Label">@root.Label</MudSelectItem>
+					}
+				</MudSelect>
+
+				<MudText Typo="Typo.body2" Class="mb-3">
+					Sub-path template appended to the root. Supported variables:
+				</MudText>
+				<MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mb-3">
+					<MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
+						OnClick="@(() => AppendVariable("{SourceDisk}"))">{SourceDisk}</MudChip>
+					<MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
+						OnClick="@(() => AppendVariable("{TVDBShow}"))">{TVDBShow}</MudChip>
+					<MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
+						OnClick="@(() => AppendVariable("{TVDBID}"))">{TVDBID}</MudChip>
+					<MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
+						OnClick="@(() => AppendVariable("{SeasonNumber}"))">{SeasonNumber}</MudChip>
+					<MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
+						OnClick="@(() => AppendVariable("{EpisodeName}"))">{EpisodeName}</MudChip>
+				</MudStack>
+				<MudAlert Severity="Severity.Info" Dense="true" Class="mb-3" NoIcon="false">
+					<MudText Typo="Typo.caption">
+						<strong>{SeasonNumber}</strong> &rarr; <em>Season 01</em> or <em>Season 12</em> &nbsp;|&nbsp;
+						<strong>{EpisodeName}</strong> &rarr; <em>s01e05 - Title.mkv</em>; season/episode omitted when unknown; falls back to <em>Title 5 Chapters.mkv</em> when no TVDB title is set.
+					</MudText>
+				</MudAlert>
+				<MudTextField @bind-Value="_trackDestinationTemplate"
+					Label="Template"
+					Variant="Variant.Outlined"
+					FullWidth="true"
+					Placeholder=@("{TVDBShow}\\Season {SeasonNumber}\\{EpisodeName}") />
+			</MudCardContent>
+		</MudCard>
+
+		<MudCard>
+			<MudCardContent>
+				<MudText Typo="Typo.h6" Class="mb-3">Audio</MudText>
+				<MudSelect T="AudioDefault" @bind-Value="_audioDefault"
+					Label="Default Audio Codec"
+					Variant="Variant.Outlined"
+					AnchorOrigin="Origin.BottomCenter"
+					Style="max-width: 220px;">
+					<MudSelectItem Value="AudioDefault.Opus">Opus</MudSelectItem>
+					<MudSelectItem Value="AudioDefault.Aac">AAC</MudSelectItem>
+				</MudSelect>
+			</MudCardContent>
+		</MudCard>
+
+		<div>
+			<MudButton Variant="Variant.Filled" Color="Color.Primary"
+				OnClick="SaveAsync" Disabled="_isSaving"
+				StartIcon="@Icons.Material.Filled.Save">
+				@if (_isSaving)
+				{
+					<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+				}
+				Save Settings
+			</MudButton>
+		</div>
+
+	</MudStack>
+}

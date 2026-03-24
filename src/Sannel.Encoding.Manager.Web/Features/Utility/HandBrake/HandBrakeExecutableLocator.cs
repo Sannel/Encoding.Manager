@@ -8,7 +8,7 @@ namespace Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
 /// </summary>
 public static class HandBrakeExecutableLocator
 {
-	private const string FlatpakAppId = "fr.handbrake.HandBrake";
+	private const string FlatpakAppId = "fr.handbrake.ghb";
 
 	/// <summary>
 	/// Resolves the HandBrakeCLI executable. Uses <paramref name="configuredPath"/> if non-empty,

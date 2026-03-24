@@ -1,0 +1,61 @@
+@page "/queue"
+@rendermode InteractiveServer
+
+<PageTitle>Encoding Queue</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Encoding Queue</MudText>
+
+@if (_isLoading)
+{
+	<MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+}
+else if (_items.Count == 0)
+{
+	<MudAlert Severity="Severity.Info">The encoding queue is empty.</MudAlert>
+}
+else
+{
+	<MudTable Items="_items" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm" Class="mt-2">
+		<HeaderContent>
+			<MudTh>Disc</MudTh>
+			<MudTh>Mode</MudTh>
+			<MudTh>Tracks</MudTh>
+			<MudTh>Show</MudTh>
+			<MudTh>Audio</MudTh>
+			<MudTh>Status</MudTh>
+			<MudTh>Queued</MudTh>
+			<MudTh></MudTh>
+		</HeaderContent>
+		<RowTemplate>
+			<MudTd DataLabel="Disc">
+				<MudText Typo="Typo.body2">@DiscLabel(context.DiscPath)</MudText>
+			</MudTd>
+			<MudTd DataLabel="Mode">@context.Mode</MudTd>
+			<MudTd DataLabel="Tracks">@GetTrackCount(context.TracksJson)</MudTd>
+			<MudTd DataLabel="Show">
+				@if (!string.IsNullOrEmpty(context.TvdbShowName))
+				{
+					@context.TvdbShowName
+				}
+				else
+				{
+					<MudText Typo="Typo.caption" Style="opacity:.6">—</MudText>
+				}
+			</MudTd>
+			<MudTd DataLabel="Audio">@context.AudioDefault</MudTd>
+			<MudTd DataLabel="Status">
+				<MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)" Variant="Variant.Outlined">
+					@context.Status
+				</MudChip>
+			</MudTd>
+			<MudTd DataLabel="Queued">
+				<MudText Typo="Typo.caption">@context.CreatedAt.ToLocalTime().ToString("g")</MudText>
+			</MudTd>
+			<MudTd>
+				<MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+					Size="Size.Small" Title="Remove from queue"
+					OnClick="@(() => DeleteItemAsync(context.Id))" />
+			</MudTd>
+		</RowTemplate>
+	</MudTable>
+}

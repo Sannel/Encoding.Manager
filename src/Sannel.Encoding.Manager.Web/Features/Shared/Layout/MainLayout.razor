@@ -1,6 +1,7 @@
 @inherits LayoutComponentBase
+@inject IJSRuntime JS
 
-<MudThemeProvider Theme="_theme" IsDarkMode="_isDarkMode" />
+<MudThemeProvider @ref="_mudThemeProvider" Theme="_theme" @bind-IsDarkMode="_isDarkMode" ObserveSystemDarkModeChange="true" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -45,6 +46,23 @@
 @code {
     private bool _drawerOpen = true;
     private bool _isDarkMode = false;
+    private MudThemeProvider _mudThemeProvider = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                _isDarkMode = await JS.InvokeAsync<bool>("prefersDarkMode");
+                StateHasChanged();
+            }
+            catch
+            {
+                // JS not yet available (prerender); ObserveSystemDarkModeChange will handle live changes
+            }
+        }
+    }
 
     private readonly MudTheme _theme = new()
     {
