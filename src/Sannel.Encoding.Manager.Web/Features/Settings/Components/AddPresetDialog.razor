@@ -1,0 +1,88 @@
+@using Sannel.Encoding.Manager.Web.Features.Filesystem.Dto
+
+<MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h6">Add HandBrake Preset</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudStack Spacing="3">
+			<MudTextField @bind-Value="_label" Label="Preset Label" Variant="Variant.Outlined"
+				Placeholder="e.g. 1080p H.265" FullWidth="true" />
+
+			<div>
+				<MudText Typo="Typo.subtitle2" Class="mb-1">Select preset .json file</MudText>
+				@if (_roots.Count > 0)
+				{
+				<MudSelect T="string?" Value="_selectedRoot" ValueChanged="OnSelectedRootChangedAsync"
+					Label="Root" Variant="Variant.Outlined"
+						Margin="Margin.Dense" AnchorOrigin="Origin.BottomCenter" Class="mb-2"
+						Style="max-width: 260px;">
+						@foreach (var root in _roots)
+						{
+							<MudSelectItem T="string?" Value="@root.Label">@root.Label</MudSelectItem>
+						}
+					</MudSelect>
+				}
+
+				@if (_selectedRoot is not null)
+				{
+					@* breadcrumb path *@
+					<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="mb-1" Wrap="Wrap.Wrap">
+						<MudLink OnClick="() => NavToAsync(null)" Typo="Typo.caption">@_selectedRoot</MudLink>
+						@for (var i = 0; i < _pathParts.Count; i++)
+						{
+							var idx = i;
+							<MudText Typo="Typo.caption">/</MudText>
+							<MudLink OnClick="() => NavToPartAsync(idx)" Typo="Typo.caption">@_pathParts[idx]</MudLink>
+						}
+					</MudStack>
+
+					@if (_browseError is not null)
+					{
+						<MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2">@_browseError</MudAlert>
+					}
+
+					@if (_isBrowseLoading)
+					{
+						<MudProgressCircular Indeterminate="true" Size="Size.Small" />
+					}
+					else
+					{
+						<MudList T="string" Dense="true" Class="browse-list" Style="max-height:240px; overflow-y:auto; border:1px solid var(--mud-palette-lines-default); border-radius:4px;">
+							@foreach (var dir in _directories)
+							{
+								<MudListItem T="string" Icon="@Icons.Material.Filled.Folder"
+									OnClick="@(() => NavIntoAsync(dir.Name))">@dir.Name</MudListItem>
+							}
+							@foreach (var file in _files)
+							{
+								var isSelected = file.Name == _selectedFileName;
+								<MudListItem T="string"
+									Icon="@Icons.Material.Filled.InsertDriveFile"
+									IconColor="@(isSelected ? Color.Primary : Color.Default)"
+									Class="@(isSelected ? "mud-selected-item" : string.Empty)"
+									OnClick="@(() => SelectFile(file.Name))">@file.Name</MudListItem>
+							}
+							@if (_directories.Count == 0 && _files.Count == 0)
+							{
+								<MudListItem T="string" Disabled="true">No .json files here</MudListItem>
+							}
+						</MudList>
+					}
+
+					@if (_selectedFileName is not null)
+					{
+						<MudText Typo="Typo.caption" Class="mt-1" Color="Color.Primary">
+							Selected: @_selectedFileName
+						</MudText>
+					}
+				}
+			</div>
+		</MudStack>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancel</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Primary"
+			OnClick="ConfirmAsync" Disabled="@(!CanConfirm)">Add</MudButton>
+	</DialogActions>
+</MudDialog>

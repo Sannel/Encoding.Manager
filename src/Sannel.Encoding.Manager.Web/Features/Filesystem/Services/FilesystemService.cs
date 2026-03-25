@@ -111,6 +111,65 @@ public class FilesystemService : IFilesystemService
 	}
 
 	/// <inheritdoc />
+	public Task<BrowseResponse> BrowseWithExtensionFilterAsync(
+		string label,
+		string? relativePath,
+		string[] fileExtensions,
+		CancellationToken cancellationToken = default)
+	{
+		var rootConfig = _options.Roots.FirstOrDefault(r => r.Label.Equals(label, StringComparison.OrdinalIgnoreCase));
+		if (rootConfig == null)
+		{
+			throw new ArgumentException($"Invalid label: '{label}'", nameof(label));
+		}
+
+		var canonicalRootPath = Path.GetFullPath(rootConfig.Path);
+		var targetPath = string.IsNullOrWhiteSpace(relativePath)
+			? canonicalRootPath
+			: Path.Combine(canonicalRootPath, relativePath);
+		var canonicalTargetPath = Path.GetFullPath(targetPath);
+
+		if (!IsPathWithinRoot(canonicalTargetPath, canonicalRootPath))
+		{
+			throw new ArgumentException($"Path escapes root boundary: '{relativePath}'", nameof(relativePath));
+		}
+
+		if (!Directory.Exists(canonicalTargetPath))
+		{
+			throw new DirectoryNotFoundException($"Directory not found: '{relativePath ?? "/"}'" );
+		}
+
+		var extSet = new HashSet<string>(fileExtensions, StringComparer.OrdinalIgnoreCase);
+
+		var directories = Directory.GetDirectories(canonicalTargetPath)
+			.Select(dir => new DirectoryInfo(dir))
+			.Select(dirInfo => new DirectoryEntryResponse
+			{
+				Name = dirInfo.Name,
+				DiscType = DiscType.None,
+			})
+			.OrderBy(d => d.Name)
+			.ToList();
+
+		var files = Directory.GetFiles(canonicalTargetPath)
+			.Select(file => new FileInfo(file))
+			.Where(fileInfo => extSet.Contains(fileInfo.Extension))
+			.Select(fileInfo => new FileEntryResponse
+			{
+				Name = fileInfo.Name,
+				SizeBytes = fileInfo.Length,
+			})
+			.OrderBy(f => f.Name)
+			.ToList();
+
+		return Task.FromResult(new BrowseResponse
+		{
+			Directories = directories,
+			Files = files,
+		});
+	}
+
+	/// <inheritdoc />
 	public string ResolvePhysicalPath(string label, string relativePath)
 	{
 		if (string.IsNullOrWhiteSpace(label))

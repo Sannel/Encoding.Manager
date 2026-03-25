@@ -64,4 +64,10 @@ public partial class TitlesModeView : NamingComponentBase
 
 	private static string FormatDuration(TimeSpan duration) =>
 		$"{(int)duration.TotalHours}:{duration.Minutes:D2}:{duration.Seconds:D2}";
+
+	protected override string GetFallbackAutoName(int key)
+	{
+		var discName = Path.GetFileName(this.ScanResult.InputPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+		return $"{discName} Title {key}";
+	}
 }

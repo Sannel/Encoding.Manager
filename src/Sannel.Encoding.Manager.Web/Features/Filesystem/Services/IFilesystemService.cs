@@ -26,6 +26,12 @@ public interface IFilesystemService
 	Task<BrowseResponse> BrowseAsync(string label, string? relativePath = null, CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Browses a directory and returns its immediate children filtered by the given file extensions.
+	/// Useful for browsing for non-media files such as HandBrake preset .json files.
+	/// </summary>
+	Task<BrowseResponse> BrowseWithExtensionFilterAsync(string label, string? relativePath, string[] fileExtensions, CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Resolves a root label and relative path to an absolute physical path,
 	/// with path-traversal validation.
 	/// </summary>

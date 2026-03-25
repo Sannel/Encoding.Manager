@@ -1,0 +1,101 @@
+<MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h6">
+			<MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" Style="vertical-align:middle;" />
+			Queue Item
+		</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="mb-4">
+			<MudIcon Icon="@Icons.Material.Filled.Album" Size="Size.Small" Class="mr-1" />
+			@if (!string.IsNullOrEmpty(_discRootLabel))
+			{
+				<MudText Typo="Typo.subtitle1" Style="font-weight:700; letter-spacing:.02em;">@_discRootLabel</MudText>
+				<MudText Typo="Typo.body2" Style="opacity:.45; margin:0 2px;">/</MudText>
+				<MudText Typo="Typo.body2" Style="opacity:.65;">@_discRelativePath</MudText>
+			}
+			else
+			{
+				<MudText Typo="Typo.body2">@_discRelativePath</MudText>
+			}
+		</MudStack>
+
+		@if (_tracks.Count == 0)
+		{
+			<MudAlert Severity="Severity.Info" Dense="true">No tracks found for this item.</MudAlert>
+		}
+		else
+		{
+			@if (_presets.Count > 0)
+			{
+				<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-3">
+					<MudText Typo="Typo.body2" Style="opacity:.7; white-space:nowrap;">Apply to all:</MudText>
+					<MudSelect T="string?" Value="_globalPresetLabel" ValueChanged="ApplyGlobalPreset"
+						Clearable="true" Variant="Variant.Outlined" Margin="Margin.Dense"
+						AnchorOrigin="Origin.BottomCenter" Placeholder="— no preset —"
+						Style="max-width:260px;">
+						@foreach (var preset in _presets)
+						{
+							<MudSelectItem T="string?" Value="@preset.Label">@preset.Label</MudSelectItem>
+						}
+					</MudSelect>
+				</MudStack>
+			}
+			<MudTable Items="_tracks" Dense="true" Hover="true" Breakpoint="Breakpoint.Xs" FixedHeader="true"
+				Style="max-height:420px; overflow-y:auto;">
+				<HeaderContent>
+					<MudTh>Title #</MudTh>
+					@if (Item.Mode == "Chapters")
+					{
+						<MudTh>Chapters</MudTh>
+					}
+					<MudTh>Output Name</MudTh>
+					<MudTh>S / E</MudTh>
+					<MudTh Style="min-width:180px;">Preset</MudTh>
+				</HeaderContent>
+				<RowTemplate>
+					<MudTd DataLabel="Title #">@context.TitleNumber</MudTd>
+					@if (Item.Mode == "Chapters")
+					{
+						<MudTd DataLabel="Chapters">@context.StartChapter&ndash;@context.EndChapter</MudTd>
+					}
+					<MudTd DataLabel="Output Name">
+						<MudText Typo="Typo.body2">@context.OutputName</MudText>
+					</MudTd>
+					<MudTd DataLabel="S / E">
+						@if (context.SeasonNumber.HasValue && context.EpisodeNumber.HasValue)
+						{
+							@($"S{context.SeasonNumber:D2}E{context.EpisodeNumber:D2}")
+						}
+						else
+						{
+							<MudText Typo="Typo.caption" Style="opacity:.5">—</MudText>
+						}
+					</MudTd>
+					<MudTd DataLabel="Preset">
+						<MudSelect T="string?" Value="@context.PresetLabel"
+							ValueChanged="@((v) => context.PresetLabel = v)"
+							Clearable="true" Variant="Variant.Outlined" Margin="Margin.Dense"
+							AnchorOrigin="Origin.BottomCenter"
+							Style="min-width:160px;">
+							@foreach (var preset in _presets)
+							{
+								<MudSelectItem T="string?" Value="@preset.Label">@preset.Label</MudSelectItem>
+							}
+						</MudSelect>
+					</MudTd>
+				</RowTemplate>
+			</MudTable>
+		}
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel" Variant="Variant.Text">Close</MudButton>
+		<MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_isSaving">
+			@if (_isSaving)
+			{
+				<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+			}
+			Save
+		</MudButton>
+	</DialogActions>
+</MudDialog>

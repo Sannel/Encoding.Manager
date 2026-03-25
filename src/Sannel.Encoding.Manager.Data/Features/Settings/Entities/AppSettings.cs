@@ -13,7 +13,7 @@ public class AppSettings
 	///
 	/// {SeasonNumber} expands to "Season 01" / "Season 12".
 	/// {EpisodeName}  expands to "s01e05 - Title.mkv"; omits season/episode when
-	/// unknown; falls back to "disk Title {N} Chapters.mkv" when no episode title.
+	/// unknown; falls back to "Title {N} Ch {start}-{end}" when no episode title.
 	/// </summary>
 	public string TrackDestinationTemplate { get; set; } =
 		@"{TVDBShow}\Season {SeasonNumber}\{EpisodeName}";

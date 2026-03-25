@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using Sannel.Encoding.Manager.Web.Features.Queue.Components;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
 using Sannel.Encoding.Manager.Web.Features.Queue.Services;
@@ -14,6 +15,9 @@ public partial class QueuePage : ComponentBase
 
 	[Inject]
 	private ISnackbar Snackbar { get; set; } = default!;
+
+	[Inject]
+	private IDialogService DialogService { get; set; } = default!;
 
 	private IReadOnlyList<EncodeQueueItem> _items = [];
 	private bool _isLoading = true;
@@ -32,6 +36,21 @@ public partial class QueuePage : ComponentBase
 		await this.EncodeQueueService.DeleteItemAsync(id);
 		this.Snackbar.Add("Item removed from queue.", Severity.Success);
 		await this.LoadAsync();
+	}
+
+	private async Task OpenDetailDialogAsync(EncodeQueueItem item)
+	{
+		var parameters = new DialogParameters<QueueDetailDialog>
+		{
+			{ x => x.Item, item },
+		};
+		var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true };
+		var dialog = await this.DialogService.ShowAsync<QueueDetailDialog>("Queue Item Details", parameters, options);
+		var result = await dialog.Result;
+		if (result is { Canceled: false })
+		{
+			await this.LoadAsync();
+		}
 	}
 
 	private static int GetTrackCount(string tracksJson)

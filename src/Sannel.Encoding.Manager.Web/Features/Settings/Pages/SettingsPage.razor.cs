@@ -3,6 +3,9 @@ using Microsoft.Extensions.Options;
 using MudBlazor;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Dto;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Options;
+using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
+using Sannel.Encoding.Manager.Web.Features.Queue.Services;
+using Sannel.Encoding.Manager.Web.Features.Settings.Components;
 using Sannel.Encoding.Manager.Web.Features.Settings.Dto;
 using Sannel.Encoding.Manager.Web.Features.Settings.Entities;
 using Sannel.Encoding.Manager.Web.Features.Settings.Services;
@@ -18,9 +21,16 @@ public partial class SettingsPage : ComponentBase
 	private ISnackbar Snackbar { get; set; } = default!;
 
 	[Inject]
+	private IDialogService DialogService { get; set; } = default!;
+
+	[Inject]
+	private IPresetService PresetService { get; set; } = default!;
+
+	[Inject]
 	private IOptions<FilesystemOptions> FilesystemOptions { get; set; } = default!;
 
 	private IReadOnlyList<RootDirectory> _roots = [];
+	private IReadOnlyList<EncodingPreset> _presets = [];
 	private string? _trackDestinationRoot;
 	private string _trackDestinationTemplate = string.Empty;
 	private AudioDefault _audioDefault = AudioDefault.Opus;
@@ -36,6 +46,7 @@ public partial class SettingsPage : ComponentBase
 		this._audioDefault = Enum.TryParse<AudioDefault>(settings.AudioDefault, ignoreCase: true, out var parsed)
 			? parsed
 			: AudioDefault.Opus;
+		this._presets = await this.PresetService.GetPresetsAsync();
 		this._isLoading = false;
 	}
 
@@ -51,6 +62,7 @@ public partial class SettingsPage : ComponentBase
 		{
 			await this.SettingsService.SaveSettingsAsync(new AppSettings
 			{
+				TrackDestinationRoot = this._trackDestinationRoot,
 				TrackDestinationTemplate = this._trackDestinationTemplate,
 				AudioDefault = this._audioDefault.ToString(),
 			});
@@ -64,5 +76,24 @@ public partial class SettingsPage : ComponentBase
 		{
 			this._isSaving = false;
 		}
+	}
+
+	private async Task AddPresetAsync()
+	{
+		var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+		var dialog = await this.DialogService.ShowAsync<AddPresetDialog>("Add Preset", options);
+		var result = await dialog.Result;
+		if (result is { Canceled: false, Data: EncodingPreset preset })
+		{
+			await this.PresetService.AddPresetAsync(preset);
+			this._presets = await this.PresetService.GetPresetsAsync();
+		}
+	}
+
+	private async Task DeletePresetAsync(Guid id)
+	{
+		await this.PresetService.DeletePresetAsync(id);
+		this._presets = await this.PresetService.GetPresetsAsync();
+		this.Snackbar.Add("Preset deleted.", Severity.Success);
 	}
 }

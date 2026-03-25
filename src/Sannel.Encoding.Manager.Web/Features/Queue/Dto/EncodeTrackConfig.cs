@@ -10,4 +10,7 @@ public class EncodeTrackConfig
 	public string OutputName { get; set; } = string.Empty;
 	public int? SeasonNumber { get; set; }
 	public int? EpisodeNumber { get; set; }
+
+	/// <summary>Label of the HandBrake preset to use. Null means no preset selected.</summary>
+	public string? PresetLabel { get; set; }
 }

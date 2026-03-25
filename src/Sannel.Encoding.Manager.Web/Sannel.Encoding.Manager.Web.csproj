@@ -10,10 +10,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
     <PackageReference Include="Microsoft.Identity.Web" Version="4.4.0" />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="4.4.0" />
@@ -22,7 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="data/" />
+    <ProjectReference Include="..\Sannel.Encoding.Manager.Data\Sannel.Encoding.Manager.Data.csproj" />
+    <ProjectReference Include="..\Sannel.Encoding.Manager.Migrations.Sqlite\Sannel.Encoding.Manager.Migrations.Sqlite.csproj" />
+    <ProjectReference Include="..\Sannel.Encoding.Manager.Migrations.Postgres\Sannel.Encoding.Manager.Migrations.Postgres.csproj" />
   </ItemGroup>
 
 </Project>

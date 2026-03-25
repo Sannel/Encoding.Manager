@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Sannel.Encoding.Manager.Web.Features.Data.Migrations.Postgres
+namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -59,6 +59,20 @@ namespace Sannel.Encoding.Manager.Web.Features.Data.Migrations.Postgres
                 });
 
             migrationBuilder.CreateTable(
+                name: "EncodingPresets",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Label = table.Column<string>(type: "text", nullable: false),
+                    RootLabel = table.Column<string>(type: "text", nullable: false),
+                    RelativePath = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EncodingPresets", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TvdbEpisodeCache",
                 columns: table => new
                 {
@@ -100,6 +114,9 @@ namespace Sannel.Encoding.Manager.Web.Features.Data.Migrations.Postgres
 
             migrationBuilder.DropTable(
                 name: "EncodeQueueItems");
+
+            migrationBuilder.DropTable(
+                name: "EncodingPresets");
 
             migrationBuilder.DropTable(
                 name: "TvdbEpisodeCache");

@@ -26,6 +26,7 @@ public class AppDbContext : DbContext
 	}
 
 	public DbSet<EncodeQueueItem> EncodeQueueItems => this.Set<EncodeQueueItem>();
+	public DbSet<EncodingPreset> EncodingPresets => this.Set<EncodingPreset>();
 	public DbSet<AppSettings> AppSettings => this.Set<AppSettings>();
 	public DbSet<DiscScanCache> DiscScanCache => this.Set<DiscScanCache>();
 	public DbSet<TvdbSeriesCache> TvdbSeriesCache => this.Set<TvdbSeriesCache>();
@@ -40,7 +41,7 @@ public class AppDbContext : DbContext
 			entity.HasKey(e => e.Id);
 		});
 
-		modelBuilder.Entity<AppSettings>(entity =>
+		modelBuilder.Entity<EncodingPreset>(entity =>
 		{
 			entity.HasKey(e => e.Id);
 		});

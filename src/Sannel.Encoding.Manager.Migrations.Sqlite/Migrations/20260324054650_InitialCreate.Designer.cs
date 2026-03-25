@@ -8,10 +8,10 @@ using Sannel.Encoding.Manager.Web.Features.Data;
 
 #nullable disable
 
-namespace Sannel.Encoding.Manager.Web.Features.Data.Migrations.Sqlite
+namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260324031937_InitialCreate")]
+    [Migration("20260324054650_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -56,6 +56,29 @@ namespace Sannel.Encoding.Manager.Web.Features.Data.Migrations.Sqlite
                     b.HasKey("Id");
 
                     b.ToTable("EncodeQueueItems");
+                });
+
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RelativePath")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RootLabel")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EncodingPresets");
                 });
 
             modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Scan.Entities.DiscScanCache", b =>

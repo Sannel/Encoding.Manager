@@ -74,6 +74,44 @@ else
 			</MudCardContent>
 		</MudCard>
 
+		<MudCard>
+			<MudCardContent>
+				<MudText Typo="Typo.h6" Class="mb-3">HandBrake Presets</MudText>
+				@if (_presets.Count == 0)
+				{
+					<MudText Typo="Typo.body2" Style="opacity:.7" Class="mb-2">No presets configured.</MudText>
+				}
+				else
+				{
+					<MudTable Items="_presets" Dense="true" Hover="true" Breakpoint="Breakpoint.Xs" Class="mb-3">
+						<HeaderContent>
+							<MudTh>Label</MudTh>
+							<MudTh>Root</MudTh>
+							<MudTh>Path</MudTh>
+							<MudTh></MudTh>
+						</HeaderContent>
+						<RowTemplate>
+							<MudTd DataLabel="Label">@context.Label</MudTd>
+							<MudTd DataLabel="Root">@context.RootLabel</MudTd>
+							<MudTd DataLabel="Path">
+								<MudText Typo="Typo.caption">@context.RelativePath</MudText>
+							</MudTd>
+							<MudTd>
+								<MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+									Size="Size.Small" Title="Delete preset"
+									OnClick="@(() => DeletePresetAsync(context.Id))" />
+							</MudTd>
+						</RowTemplate>
+					</MudTable>
+				}
+				<MudButton Variant="Variant.Outlined" Color="Color.Primary"
+					StartIcon="@Icons.Material.Filled.Add"
+					OnClick="AddPresetAsync">
+					Add Preset
+				</MudButton>
+			</MudCardContent>
+		</MudCard>
+
 		<div>
 			<MudButton Variant="Variant.Filled" Color="Color.Primary"
 				OnClick="SaveAsync" Disabled="_isSaving"

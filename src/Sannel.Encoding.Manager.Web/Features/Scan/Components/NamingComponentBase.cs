@@ -26,6 +26,9 @@ public abstract class NamingComponentBase : ComponentBase
 	private IEncodeQueueService EncodeQueueService { get; set; } = default!;
 
 	[Inject]
+	private IPresetService PresetService { get; set; } = default!;
+
+	[Inject]
 	private ISettingsService SettingsService { get; set; } = default!;
 
 	protected sealed class NamingRowData
@@ -43,6 +46,17 @@ public abstract class NamingComponentBase : ComponentBase
 	protected IReadOnlyList<TvdbEpisode> _allEpisodes = [];
 	protected IReadOnlyList<int> _seasons = [];
 	protected readonly Dictionary<int, NamingRowData> _namingRows = [];
+
+	/// <summary>Available HandBrake presets loaded from the database.</summary>
+	protected IReadOnlyList<EncodingPreset> _presets = [];
+
+	/// <summary>The preset label selected on the scan page (applied to all tracks when queuing).</summary>
+	protected string? _selectedPresetLabel;
+
+	protected override async Task OnInitializedAsync()
+	{
+		this._presets = await this.PresetService.GetPresetsAsync();
+	}
 
 	protected bool CanCascade =>
 		this._namingRows.Values.Any(r => r.Season is not null && r.Episode is not null);
@@ -69,6 +83,12 @@ public abstract class NamingComponentBase : ComponentBase
 		{
 			this.Snackbar.Add("No tracks to queue — all track names are empty.", Severity.Warning);
 			return;
+		}
+
+		// Stamp the globally selected preset on every track
+		foreach (var track in toAdd)
+		{
+			track.PresetLabel = this._selectedPresetLabel;
 		}
 
 		var settings = await this.SettingsService.GetSettingsAsync();
@@ -146,9 +166,32 @@ public abstract class NamingComponentBase : ComponentBase
 	{
 		var row = this.GetNamingRow(key);
 		row.Episode = ep;
-		if (ep is not null)
+	}
+
+	protected virtual string GetFallbackAutoName(int key) => string.Empty;
+
+	protected void ApplyEpisodeName(int key)
+	{
+		var row = this.GetNamingRow(key);
+		if (row.Episode is not null)
 		{
-			row.Name = ep.Name;
+			row.Name = row.Episode.Name;
+		}
+		else
+		{
+			var fallback = this.GetFallbackAutoName(key);
+			if (!string.IsNullOrEmpty(fallback))
+			{
+				row.Name = fallback;
+			}
+		}
+	}
+
+	protected void ApplyAllEpisodeNames()
+	{
+		foreach (var key in this._namingRows.Keys)
+		{
+			this.ApplyEpisodeName(key);
 		}
 	}
 

@@ -81,16 +81,20 @@ public partial class ChaptersModeView : NamingComponentBase
 		try
 		{
 			var titleNumber = this._selectedTitle.TitleNumber;
+			var discName = Path.GetFileName(this.ScanResult.InputPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
 			var tracks = this.Segments
 				.Select(seg =>
 				{
 					var nr = this.GetNamingRow(seg.SegmentNumber);
+					var fallback = seg.StartChapter == seg.EndChapter
+						? $"{discName} Title {titleNumber} Ch {seg.StartChapter}"
+						: $"{discName} Title {titleNumber} Ch {seg.StartChapter}-{seg.EndChapter}";
 					return new EncodeTrackConfig
 					{
 						TitleNumber = titleNumber,
 						StartChapter = seg.StartChapter,
 						EndChapter = seg.EndChapter,
-						OutputName = nr.Name,
+						OutputName = string.IsNullOrWhiteSpace(nr.Name) ? fallback : nr.Name,
 						SeasonNumber = nr.Season,
 						EpisodeNumber = nr.Episode?.EpisodeNumber,
 					};
@@ -106,4 +110,18 @@ public partial class ChaptersModeView : NamingComponentBase
 
 	private static string FormatDuration(TimeSpan duration) =>
 		$"{(int)duration.TotalHours}:{duration.Minutes:D2}:{duration.Seconds:D2}";
+
+	protected override string GetFallbackAutoName(int key)
+	{
+		var seg = this.Segments.FirstOrDefault(s => s.SegmentNumber == key);
+		if (seg is null || this._selectedTitle is null)
+		{
+			return string.Empty;
+		}
+
+		var discName = Path.GetFileName(this.ScanResult.InputPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+		return seg.StartChapter == seg.EndChapter
+			? $"{discName} Title {this._selectedTitle.TitleNumber} Ch {seg.StartChapter}"
+			: $"{discName} Title {this._selectedTitle.TitleNumber} Ch {seg.StartChapter}-{seg.EndChapter}";
+	}
 }

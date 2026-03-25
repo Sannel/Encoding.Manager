@@ -51,6 +51,11 @@
 			OnClick="OnCascadeClicked" Disabled="@(!CanCascade)">
 			Cascade
 		</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Info"
+			StartIcon="@Icons.Material.Filled.AutoFixHigh"
+			OnClick="ApplyAllEpisodeNames">
+			Auto Names
+		</MudButton>
 	</MudStack>
 
 	@if (!string.IsNullOrEmpty(_tvdbErrorMessage))
@@ -79,9 +84,11 @@
 						<MudText>Ch @seg.StartChapter – @seg.EndChapter</MudText>
 					}
 					<MudText>@FormatDuration(seg.Duration)</MudText>
-					<MudSpacer />
-					<MudIconButton Icon="@Icons.Material.Filled.ClearAll" Size="Size.Small"
-						OnClick="@(() => ClearNamingRow(seg.SegmentNumber))" Title="Clear row" />
+				<MudSpacer />
+				<MudIconButton Icon="@Icons.Material.Filled.AutoFixHigh" Size="Size.Small"
+					OnClick="@(() => ApplyEpisodeName(seg.SegmentNumber))" Title="Auto name" />
+				<MudIconButton Icon="@Icons.Material.Filled.ClearAll" Size="Size.Small"
+					OnClick="@(() => ClearNamingRow(seg.SegmentNumber))" Title="Clear row" />
 				</MudStack>
 				<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mt-2" Wrap="Wrap.Wrap">
 					<MudTextField @bind-Value="nr.Name" Label="Name" Variant="Variant.Outlined"
@@ -112,16 +119,29 @@
 				</MudStack>
 			</MudPaper>
 		}
-		<MudButton Variant="Variant.Filled" Color="Color.Success"
-			StartIcon="@Icons.Material.Filled.AddToQueue"
-			OnClick="OnAddToQueueClicked" Disabled="_isAddingToQueue"
-			Class="mt-3">
-			@if (_isAddingToQueue)
+		<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mt-3">
+			@if (_presets.Count > 0)
 			{
-				<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+				<MudSelect T="string?" @bind-Value="_selectedPresetLabel"
+					Label="Preset" Variant="Variant.Outlined" Margin="Margin.Dense"
+					Placeholder="None" AnchorOrigin="Origin.BottomCenter" Style="min-width: 200px;"
+					Clearable="true">
+					@foreach (var preset in _presets)
+					{
+						<MudSelectItem T="string?" Value="@preset.Label">@preset.Label</MudSelectItem>
+					}
+				</MudSelect>
 			}
-			Add to Queue
-		</MudButton>
+			<MudButton Variant="Variant.Filled" Color="Color.Success"
+				StartIcon="@Icons.Material.Filled.AddToQueue"
+				OnClick="OnAddToQueueClicked" Disabled="_isAddingToQueue">
+				@if (_isAddingToQueue)
+				{
+					<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+				}
+				Add to Queue
+			</MudButton>
+		</MudStack>
 	}
 	else
 	{

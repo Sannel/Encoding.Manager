@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Sannel.Encoding.Manager.Web.Features.Data.Migrations.Sqlite
+namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -58,6 +58,20 @@ namespace Sannel.Encoding.Manager.Web.Features.Data.Migrations.Sqlite
                 });
 
             migrationBuilder.CreateTable(
+                name: "EncodingPresets",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Label = table.Column<string>(type: "TEXT", nullable: false),
+                    RootLabel = table.Column<string>(type: "TEXT", nullable: false),
+                    RelativePath = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EncodingPresets", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TvdbEpisodeCache",
                 columns: table => new
                 {
@@ -99,6 +113,9 @@ namespace Sannel.Encoding.Manager.Web.Features.Data.Migrations.Sqlite
 
             migrationBuilder.DropTable(
                 name: "EncodeQueueItems");
+
+            migrationBuilder.DropTable(
+                name: "EncodingPresets");
 
             migrationBuilder.DropTable(
                 name: "TvdbEpisodeCache");

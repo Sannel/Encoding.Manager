@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
@@ -11,6 +10,7 @@ using Sannel.Encoding.Manager.Web.Features.Data;
 using Sannel.Encoding.Manager.Web.Features.Data.Options;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Services;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Options;
+using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
 using Sannel.Encoding.Manager.Web.Features.Queue.Services;
 using Sannel.Encoding.Manager.Web.Features.Settings.Services;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Options;
@@ -63,7 +63,8 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
     {
         case "postgres":
         case "postgresql":
-            options.UseNpgsql(dbOptions.ConnectionString);
+            options.UseNpgsql(dbOptions.ConnectionString,
+                b => b.MigrationsAssembly("Sannel.Encoding.Manager.Migrations.Postgres"));
             break;
         default:
             // Ensure the directory exists for the SQLite database file
@@ -78,12 +79,10 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
             {
                 Directory.CreateDirectory(dir);
             }
-            options.UseSqlite(dbOptions.ConnectionString);
+            options.UseSqlite(dbOptions.ConnectionString,
+                b => b.MigrationsAssembly("Sannel.Encoding.Manager.Migrations.Sqlite"));
             break;
     }
-
-    // Only apply migrations scoped to the active provider's namespace folder
-    options.ReplaceService<IMigrationsAssembly, ProviderAwareMigrationsAssembly>();
 });
 
 // Application settings
@@ -91,6 +90,7 @@ builder.Services.AddScoped<ISettingsService, SettingsService>();
 
 // Encoding queue
 builder.Services.AddScoped<IEncodeQueueService, EncodeQueueService>();
+builder.Services.AddScoped<IPresetService, PresetService>();
 
 // TheTVDB integration
 builder.Services.Configure<TvdbOptions>(builder.Configuration.GetSection("Tvdb"));
