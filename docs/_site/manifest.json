@@ -1,0 +1,689 @@
+{
+  "source_base_path": "/home/runner/work/Encoding.Manager/Encoding.Manager/docs",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "Resource",
+      "output": {
+        "resource": {
+          "relative_path": "index.json"
+        }
+      }
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.AudioTrackInfo",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.yml\" sourcestartlinenumber=\"1\">Audio track metadata.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.ChapterInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.ChapterInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.ChapterInfo",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.ChapterInfo.yml\" sourcestartlinenumber=\"1\">Chapter marker metadata.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult.yml\" sourcestartlinenumber=\"1\">Result of a HandBrakeCLI encode operation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeError.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeError.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.HandBrakeError",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.HandBrakeError.yml\" sourcestartlinenumber=\"1\">Structured failure details from HandBrakeCLI.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.yml\" sourcestartlinenumber=\"1\">Resolved HandBrake executable information.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeExecutableLocator.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeExecutableLocator.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.HandBrakeExecutableLocator",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.HandBrakeExecutableLocator.yml\" sourcestartlinenumber=\"1\">Locates the HandBrakeCLI executable on the current platform.\nSupports direct native installs and Flatpak (Linux).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeJob.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeJob.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.HandBrakeJob",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.HandBrakeJob.yml\" sourcestartlinenumber=\"1\">Describes an encoding request to HandBrakeCLI.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.HandBrakeOptions",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.HandBrakeOptions.yml\" sourcestartlinenumber=\"1\">Configuration options for HandBrake CLI integration.\nBound from the &quot;HandBrake&quot; section in appsettings.json.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeParser.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeParser.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.HandBrakeParser",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.HandBrakeParser.yml\" sourcestartlinenumber=\"1\">Stateless parser for HandBrakeCLI output.\nPrefers JSON scan output; falls back to text parsing.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.yml\" sourcestartlinenumber=\"1\">Result of a HandBrakeCLI scan operation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.HandBrakeService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.HandBrakeService",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.HandBrakeService.yml\" sourcestartlinenumber=\"1\">Default implementation of <xref href=\"Sannel.Encoding.Manager.HandBrake.IHandBrakeService\" data-throw-if-not-resolved=\"false\"></xref>.\nWraps HandBrakeCLI for scanning and encoding media files.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.IHandBrakeService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.IHandBrakeService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.IHandBrakeService",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.IHandBrakeService.yml\" sourcestartlinenumber=\"1\">Service for interacting with HandBrakeCLI to scan and encode media files.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.IProcessRunner.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.IProcessRunner.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.IProcessRunner",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.IProcessRunner.yml\" sourcestartlinenumber=\"1\">Abstraction over System.Diagnostics.Process to allow unit testing without spawning real processes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.IScanCacheProvider",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.yml\" sourcestartlinenumber=\"1\">Abstraction over disc scan result caching, allowing different\nimplementations (EF Core, in-memory, no-op, etc.).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.ProcessResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.ProcessResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.ProcessResult",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.ProcessResult.yml\" sourcestartlinenumber=\"1\">Result of running a process to completion.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.ProcessRunner.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.ProcessRunner.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.ProcessRunner",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.ProcessRunner.yml\" sourcestartlinenumber=\"1\">Default implementation of <xref href=\"Sannel.Encoding.Manager.HandBrake.IProcessRunner\" data-throw-if-not-resolved=\"false\"></xref> using System.Diagnostics.Process.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.ProgressInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.ProgressInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.ProgressInfo",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.ProgressInfo.yml\" sourcestartlinenumber=\"1\">Incremental progress updates during encoding.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.SubtitleInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.SubtitleInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.SubtitleInfo",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.SubtitleInfo.yml\" sourcestartlinenumber=\"1\">Subtitle track metadata.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.TitleInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.TitleInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.TitleInfo",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.TitleInfo.yml\" sourcestartlinenumber=\"1\">Per-title metadata from a scan.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.VideoStreamInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.VideoStreamInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake.VideoStreamInfo",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.HandBrake.VideoStreamInfo.yml\" sourcestartlinenumber=\"1\">Video stream metadata.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.HandBrake.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.HandBrake.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.HandBrake",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Data.AppDbContext.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Data.AppDbContext.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Data.AppDbContext",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Data.Options.DatabaseOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Data.Options.DatabaseOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Data.Options.DatabaseOptions",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Data.Options.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Data.Options.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Data.Options",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Data.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Data.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Data",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem.yml\" sourcestartlinenumber=\"1\">A disk-level encode job. Individual track configs are stored in <xref href=\"Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem.TracksJson\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.yml\" sourcestartlinenumber=\"1\">A named HandBrake preset JSON file stored on the server.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Queue.Entities.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Queue.Entities.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Queue.Entities",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner.yml\" sourcestartlinenumber=\"1\">Represents a registered encoding runner instance.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Runner.Entities.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Runner.Entities.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Runner.Entities",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Scan.Entities.DiscScanCache.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Scan.Entities.DiscScanCache.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Scan.Entities.DiscScanCache",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Scan.Entities.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Scan.Entities.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Scan.Entities",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings",
+      "Summary": "<p sourcefile=\"api/Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.yml\" sourcestartlinenumber=\"1\">Singleton application settings row — always stored with Id = 1.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Settings.Entities.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Settings.Entities.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Settings.Entities",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbEpisodeCache.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbEpisodeCache.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbEpisodeCache",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbSeriesCache.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbSeriesCache.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbSeriesCache",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Sannel.Encoding.Manager.Web.Features.Tvdb.Entities",
+      "Summary": null
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/getting-started.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/getting-started.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/installation/docker-compose.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/installation/docker-compose.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/installation/runner.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/installation/runner.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/installation/server.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/installation/server.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "docs/installation/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "docs/installation/toc.html"
+        },
+        ".json": {
+          "relative_path": "docs/installation/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/introduction.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/introduction.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/plans/buildAndRelease.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/plans/buildAndRelease.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/plans/handbreakintegration.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/plans/handbreakintegration.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/plans/scanning.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/plans/scanning.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/plans/thetvdbintegration.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/plans/thetvdbintegration.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "docs/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "docs/toc.html"
+        },
+        ".json": {
+          "relative_path": "docs/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "index.md",
+      "output": {
+        ".html": {
+          "relative_path": "index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "toc.html"
+        },
+        ".json": {
+          "relative_path": "toc.json"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}

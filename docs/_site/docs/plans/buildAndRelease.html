@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Build and Release Plan | Sannel.Encoding.Manager </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Build and Release Plan | Sannel.Encoding.Manager ">
+      
+      
+      <link rel="icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/Sannel/Encoding.Manager/blob/copilot/fix-build-issue-docs-action/docs/docs/plans/buildAndRelease.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../logo.svg" alt="Sannel.Encoding.Manager">
+            Sannel.Encoding.Manager
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="build-and-release-plan">Build and Release Plan</h1>
+
+<h2 id="problem-statement">Problem Statement</h2>
+<p>The project currently has no CI/CD pipeline beyond the documentation workflow. We need GitHub Actions workflows that:</p>
+<ol>
+<li>Run builds and tests on every PR and push to <code>main</code>.</li>
+<li>On a version tag push (<code>v*.*.*</code>), publish release artifacts for the <strong>Server</strong> (<code>Sannel.Encoding.Manager.Web</code>) and <strong>Runner</strong> (<code>Sannel.Encoding.Runner</code>) in both install and Docker formats, then create a GitHub Release.</li>
+</ol>
+<hr>
+<h2 id="deployable-projects">Deployable Projects</h2>
+<table>
+<thead>
+<tr>
+<th>Project</th>
+<th>SDK</th>
+<th>Docker base image</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Sannel.Encoding.Manager.Web</code></td>
+<td><code>Microsoft.NET.Sdk.Web</code> (Blazor/ASP.NET)</td>
+<td><code>mcr.microsoft.com/dotnet/aspnet:10.0</code></td>
+</tr>
+<tr>
+<td><code>Sannel.Encoding.Runner</code></td>
+<td><code>Microsoft.NET.Sdk.Worker</code></td>
+<td><code>mcr.microsoft.com/dotnet/runtime:10.0</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="target-matrix">Target Matrix</h2>
+<h3 id="install-bundles-self-contained-single-file">Install bundles (self-contained, single-file)</h3>
+<table>
+<thead>
+<tr>
+<th>RID</th>
+<th>Platform</th>
+<th>Archive format</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>win-x64</code></td>
+<td>Windows x64</td>
+<td><code>.zip</code></td>
+</tr>
+<tr>
+<td><code>win-arm64</code></td>
+<td>Windows ARM64</td>
+<td><code>.zip</code></td>
+</tr>
+<tr>
+<td><code>linux-x64</code></td>
+<td>Linux x64</td>
+<td><code>.tar.gz</code></td>
+</tr>
+<tr>
+<td><code>linux-arm64</code></td>
+<td>Linux ARM64</td>
+<td><code>.tar.gz</code></td>
+</tr>
+</tbody>
+</table>
+<p>Both the Server and the Runner are published for all four RIDs.</p>
+<h3 id="docker-images">Docker images</h3>
+<p>Docker targets Linux only (Windows containers are not in scope).</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Docker arch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linux x64</td>
+<td><code>linux/amd64</code></td>
+</tr>
+<tr>
+<td>Linux ARM64</td>
+<td><code>linux/arm64</code></td>
+</tr>
+</tbody>
+</table>
+<p>Images are pushed to <strong>GitHub Container Registry (ghcr.io)</strong> as multi-arch manifests:</p>
+<ul>
+<li><code>ghcr.io/&lt;owner&gt;/encoding-manager-server:&lt;tag&gt;</code></li>
+<li><code>ghcr.io/&lt;owner&gt;/encoding-manager-runner:&lt;tag&gt;</code></li>
+</ul>
+<hr>
+<h2 id="branching--release-strategy">Branching &amp; Release Strategy</h2>
+<p>This project follows a GitFlow-inspired model with three promotion stages:</p>
+<table>
+<thead>
+<tr>
+<th>Branch / Ref</th>
+<th>Stage</th>
+<th>GitHub Release type</th>
+<th>Docker tags</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>develop</code></td>
+<td>Preview</td>
+<td>Pre-release</td>
+<td><code>develop</code>, <code>develop-&lt;short-sha&gt;</code></td>
+</tr>
+<tr>
+<td><code>release/*</code></td>
+<td>Release Candidate (RC)</td>
+<td>Pre-release</td>
+<td><code>rc</code>, <code>rc-&lt;short-sha&gt;</code></td>
+</tr>
+<tr>
+<td><code>v*.*.*</code> tag</td>
+<td>Official Release</td>
+<td>Full release</td>
+<td><code>&lt;version&gt;</code>, <code>latest</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Promotion flow:</strong></p>
+<pre><code>develop  →  release/1.2.3  →  tag v1.2.3  →  merge to main
+</code></pre>
+<ul>
+<li>Work happens on feature branches, merged into <code>develop</code>.</li>
+<li>When ready to cut a release, a <code>release/x.y.z</code> branch is created from <code>develop</code>.</li>
+<li>The tag <code>v*.*.*</code> is pushed from the release branch — this triggers the full release workflow.</li>
+<li>After the tag, the release workflow opens a PR (or direct merge) from the release branch into <code>main</code>.</li>
+</ul>
+<hr>
+<h2 id="workflow-overview">Workflow Overview</h2>
+<h3 id="ciyml--continuous-integration"><code>ci.yml</code> — Continuous Integration</h3>
+<p><strong>Triggers:</strong> push to <code>main</code>, <code>develop</code>, <code>release/**</code>, and any pull request.</p>
+<p><strong>Jobs:</strong></p>
+<ol>
+<li><code>build-and-test</code> — restore, build, and run tests (<code>dotnet test</code>).</li>
+</ol>
+<hr>
+<h3 id="previewyml--preview-release-develop"><code>preview.yml</code> — Preview Release (develop)</h3>
+<p><strong>Triggers:</strong> push to <code>develop</code>.</p>
+<p><strong>Jobs (run in parallel where possible):</strong></p>
+<pre><code>build-and-test
+    ├── publish-server   (matrix: win-x64, win-arm64, linux-x64, linux-arm64)
+    ├── publish-runner   (matrix: win-x64, win-arm64, linux-x64, linux-arm64)
+    ├── docker-server    (multi-arch: linux/amd64, linux/arm64)
+    └── docker-runner    (multi-arch: linux/amd64, linux/arm64)
+            └── create-prerelease  (GitHub pre-release, tag: develop-&lt;short-sha&gt;)
+</code></pre>
+<ul>
+<li>Docker images tagged <code>develop</code> and <code>develop-&lt;short-sha&gt;</code>.</li>
+<li>A single rolling GitHub pre-release at a fixed tag <code>develop</code> is created or updated on every push (overwrites previous assets).</li>
+</ul>
+<hr>
+<h3 id="rcyml--release-candidate-release"><code>rc.yml</code> — Release Candidate (release/*)</h3>
+<p><strong>Triggers:</strong> push to <code>release/**</code>.</p>
+<p><strong>Jobs (run in parallel where possible):</strong></p>
+<pre><code>build-and-test
+    ├── publish-server   (matrix: win-x64, win-arm64, linux-x64, linux-arm64)
+    ├── publish-runner   (matrix: win-x64, win-arm64, linux-x64, linux-arm64)
+    ├── docker-server    (multi-arch: linux/amd64, linux/arm64)
+    └── docker-runner    (multi-arch: linux/amd64, linux/arm64)
+            └── create-prerelease  (GitHub pre-release, tag: rc-&lt;short-sha&gt;)
+</code></pre>
+<ul>
+<li>Docker images tagged <code>rc</code> and <code>rc-&lt;short-sha&gt;</code>.</li>
+<li>A single rolling GitHub pre-release at a fixed tag <code>rc</code> is created or updated on every push (overwrites previous assets).</li>
+</ul>
+<hr>
+<h3 id="releaseyml--official-release"><code>release.yml</code> — Official Release</h3>
+<p><strong>Triggers:</strong> push of a tag matching <code>v*.*.*</code>.</p>
+<p><strong>Jobs (run in parallel where possible):</strong></p>
+<pre><code>build-and-test
+    ├── publish-server   (matrix: win-x64, win-arm64, linux-x64, linux-arm64)
+    ├── publish-runner   (matrix: win-x64, win-arm64, linux-x64, linux-arm64)
+    ├── docker-server    (multi-arch: linux/amd64, linux/arm64)
+    └── docker-runner    (multi-arch: linux/amd64, linux/arm64)
+            └── create-release   (needs all publish-* and docker-* jobs)
+                    └── merge-to-main
+</code></pre>
+<h4 id="publish-server--publish-runner"><code>publish-server</code> / <code>publish-runner</code></h4>
+<ul>
+<li>Runs on <code>ubuntu-latest</code> (cross-compilation works for all RIDs).</li>
+<li><code>dotnet publish --configuration Release --runtime &lt;rid&gt; --self-contained true -p:PublishSingleFile=true</code></li>
+<li>Windows RIDs → zipped with <code>Compress-Archive</code> (pwsh); Linux RIDs → <code>tar -czf</code>.</li>
+<li>Uploads the archive as a workflow artifact.</li>
+</ul>
+<h4 id="docker-server--docker-runner"><code>docker-server</code> / <code>docker-runner</code></h4>
+<ul>
+<li>Uses <strong>Docker Buildx</strong> with QEMU for cross-platform emulation.</li>
+<li>Multi-stage Dockerfiles (<code>sdk:10.0</code> build stage → slim runtime stage).</li>
+<li>Image tagged with the version from the git tag (e.g., <code>1.2.3</code>) and <code>latest</code>.</li>
+<li>Pushed to <code>ghcr.io</code>.</li>
+</ul>
+<h4 id="create-release"><code>create-release</code></h4>
+<ul>
+<li>Downloads all install artifacts from previous jobs.</li>
+<li>Creates a GitHub Release (with <code>--generate-notes</code> for auto changelog).</li>
+<li>Uploads all archives as release assets.</li>
+<li>Marked as a full (non-pre) release.</li>
+</ul>
+<h4 id="merge-to-main"><code>merge-to-main</code></h4>
+<ul>
+<li>Runs after <code>create-release</code> succeeds.</li>
+<li>Opens a pull request from the release branch into <code>main</code> using the GitHub API (or <code>gh pr create</code>).</li>
+<li>This keeps <code>main</code> as the stable, always-releasable branch.</li>
+</ul>
+<hr>
+<h2 id="install--uninstall-scripts">Install / Uninstall Scripts</h2>
+<p>Each install bundle includes platform-appropriate install and uninstall scripts that are bundled <strong>inside</strong> the archive alongside the binary.</p>
+<h3 id="windows-installps1--uninstallps1">Windows (<code>install.ps1</code> / <code>uninstall.ps1</code>)</h3>
+<ul>
+<li>Must be run as Administrator.</li>
+<li>Prompts the user for an install directory; default: <code>C:\Program Files\Encoding Manager\&lt;Server|Runner&gt;</code>.</li>
+<li><strong>If the service already exists:</strong> stops the service, copies updated files over the existing install, then restarts the service (update mode).</li>
+<li><strong>If the service does not exist:</strong> copies files to the chosen directory, registers a Windows Service using <code>New-Service</code> (or <code>sc.exe</code>), and starts it (fresh install mode).</li>
+<li><code>uninstall.ps1</code> stops the service, removes it, and deletes the install directory (with confirmation prompt).</li>
+</ul>
+<h3 id="linux-installsh--uninstallsh">Linux (<code>install.sh</code> / <code>uninstall.sh</code>)</h3>
+<ul>
+<li>Must be run as root (<code>sudo</code>).</li>
+<li>Prompts the user for an install directory; default: <code>/opt/sannel/encoding-manager/&lt;server|runner&gt;</code>.</li>
+<li><strong>If the systemd unit already exists:</strong> stops the service, copies updated files over the existing install, then restarts the service (update mode).</li>
+<li><strong>If the unit does not exist:</strong> copies files to the chosen directory, creates a <code>systemd</code> unit file at <code>/etc/systemd/system/sannel-encoding-&lt;server|runner&gt;.service</code>, runs <code>systemctl daemon-reload</code>, <code>systemctl enable</code>, and <code>systemctl start</code> (fresh install mode).</li>
+<li><code>uninstall.sh</code> stops and disables the service, removes the unit file, reloads systemd, and deletes the install directory (with confirmation prompt).</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> The Windows ARM64 bundles use the same <code>install.ps1</code>/<code>uninstall.ps1</code> scripts as Windows x64. The Linux ARM64 bundles use the same <code>install.sh</code>/<code>uninstall.sh</code> as Linux x64.</p>
+</blockquote>
+<hr>
+<h2 id="files-to-create--modify">Files to Create / Modify</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Action</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.github/workflows/ci.yml</code></td>
+<td>Create</td>
+<td>Build + test on all branches and PRs</td>
+</tr>
+<tr>
+<td><code>.github/workflows/preview.yml</code></td>
+<td>Create</td>
+<td>Preview pre-release on push to <code>develop</code></td>
+</tr>
+<tr>
+<td><code>.github/workflows/rc.yml</code></td>
+<td>Create</td>
+<td>RC pre-release on push to <code>release/**</code></td>
+</tr>
+<tr>
+<td><code>.github/workflows/release.yml</code></td>
+<td>Create</td>
+<td>Official release on <code>v*.*.*</code> tag + merge to main</td>
+</tr>
+<tr>
+<td><code>src/Sannel.Encoding.Manager.Web/Dockerfile</code></td>
+<td>Create</td>
+<td>Multi-stage server image</td>
+</tr>
+<tr>
+<td><code>src/Sannel.Encoding.Runner/Dockerfile</code></td>
+<td>Create</td>
+<td>Multi-stage runner image</td>
+</tr>
+<tr>
+<td><code>scripts/server/install.ps1</code></td>
+<td>Create</td>
+<td>Windows install script for Server</td>
+</tr>
+<tr>
+<td><code>scripts/server/uninstall.ps1</code></td>
+<td>Create</td>
+<td>Windows uninstall script for Server</td>
+</tr>
+<tr>
+<td><code>scripts/server/install.sh</code></td>
+<td>Create</td>
+<td>Linux install script for Server</td>
+</tr>
+<tr>
+<td><code>scripts/server/uninstall.sh</code></td>
+<td>Create</td>
+<td>Linux uninstall script for Server</td>
+</tr>
+<tr>
+<td><code>scripts/runner/install.ps1</code></td>
+<td>Create</td>
+<td>Windows install script for Runner</td>
+</tr>
+<tr>
+<td><code>scripts/runner/uninstall.ps1</code></td>
+<td>Create</td>
+<td>Windows uninstall script for Runner</td>
+</tr>
+<tr>
+<td><code>scripts/runner/install.sh</code></td>
+<td>Create</td>
+<td>Linux install script for Runner</td>
+</tr>
+<tr>
+<td><code>scripts/runner/uninstall.sh</code></td>
+<td>Create</td>
+<td>Linux uninstall script for Runner</td>
+</tr>
+<tr>
+<td><code>docs/docs/installation/server.md</code></td>
+<td>Create</td>
+<td>Server installation documentation</td>
+</tr>
+<tr>
+<td><code>docs/docs/installation/runner.md</code></td>
+<td>Create</td>
+<td>Runner installation documentation</td>
+</tr>
+<tr>
+<td><code>docs/docs/installation/docker-compose.md</code></td>
+<td>Create</td>
+<td>Full-stack Docker Compose documentation</td>
+</tr>
+<tr>
+<td><code>docs/docs/installation/toc.yml</code></td>
+<td>Create</td>
+<td>TOC for installation section</td>
+</tr>
+<tr>
+<td><code>docs/toc.yml</code></td>
+<td>Modify</td>
+<td>Add Installation section link</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>publish-server</code> and <code>publish-runner</code> workflow jobs copy the relevant scripts from <code>scripts/&lt;component&gt;/</code> into the publish output directory before archiving.</p>
+<hr>
+<h2 id="release-asset-naming">Release Asset Naming</h2>
+<p>Each archive contains: the binary, <code>install.ps1</code>/<code>install.sh</code>, and <code>uninstall.ps1</code>/<code>uninstall.sh</code> for the respective platform.</p>
+<pre><code>server-win-x64.zip          (binary + install.ps1 + uninstall.ps1)
+server-win-arm64.zip        (binary + install.ps1 + uninstall.ps1)
+server-linux-x64.tar.gz     (binary + install.sh + uninstall.sh)
+server-linux-arm64.tar.gz   (binary + install.sh + uninstall.sh)
+runner-win-x64.zip          (binary + install.ps1 + uninstall.ps1)
+runner-win-arm64.zip        (binary + install.ps1 + uninstall.ps1)
+runner-linux-x64.tar.gz     (binary + install.sh + uninstall.sh)
+runner-linux-arm64.tar.gz   (binary + install.sh + uninstall.sh)
+</code></pre>
+<hr>
+<h2 id="documentation">Documentation</h2>
+<p>Two new documentation pages are added under <code>docs/docs/installation/</code>, linked from the top-level <code>docs/toc.yml</code>.</p>
+<h3 id="docsdocsinstallationservermd--server-installation"><code>docs/docs/installation/server.md</code> — Server Installation</h3>
+<p>Covers:</p>
+<ul>
+<li>Prerequisites (OS support matrix)</li>
+<li><strong>Windows install</strong> — running <code>install.ps1</code>, default path (<code>C:\Program Files\Encoding Manager\Server</code>), service name, how to customize the install directory</li>
+<li><strong>Linux install</strong> — running <code>install.sh</code>, default path (<code>/opt/sannel/encoding-manager/server</code>), systemd service name (<code>sannel-encoding-server</code>), how to customize the install directory</li>
+<li><strong>Uninstalling</strong> — running the appropriate uninstall script on each platform</li>
+<li><strong>Docker</strong> — <code>docker run</code> example using the <code>ghcr.io</code> image, environment variables, volume mounts, port mappings</li>
+<li><strong>Docker Compose</strong> — full <code>docker-compose.yml</code> example for the server (with optional database sidecar), explanation of each service/volume/environment variable</li>
+</ul>
+<h3 id="docsdocsinstallationrunnermd--runner-installation"><code>docs/docs/installation/runner.md</code> — Runner Installation</h3>
+<p>Covers the same structure as the server doc but for the Runner:</p>
+<ul>
+<li>Windows default path: <code>C:\Program Files\Encoding Manager\Runner</code></li>
+<li>Linux default path: <code>/opt/sannel/encoding-manager/runner</code></li>
+<li>systemd service name: <code>sannel-encoding-runner</code></li>
+<li>Windows service name: <code>sannel-encoding-runner</code></li>
+<li><strong>Docker</strong> — <code>docker run</code> example using the <code>ghcr.io</code> runner image, environment variables (server URL, runner token), volume mounts for media/scratch directories</li>
+<li><strong>Docker Compose</strong> — full <code>docker-compose.yml</code> example for the runner alongside the server, showing how the two services connect</li>
+</ul>
+<h3 id="docsdocsinstallationdocker-composemd--full-stack-docker-compose"><code>docs/docs/installation/docker-compose.md</code> — Full Stack Docker Compose</h3>
+<p>A dedicated page with a complete, production-ready <code>docker-compose.yml</code> example combining <strong>both</strong> the server and runner with a <strong>PostgreSQL</strong> database sidecar. Covers:</p>
+<ul>
+<li>Full service definitions (server + runner + postgres)</li>
+<li>All relevant environment variables with descriptions</li>
+<li>Volume definitions for persistent data and media</li>
+<li>Network configuration</li>
+<li>How to bring the stack up/down (<code>docker compose up -d</code>, <code>docker compose down</code>)</li>
+</ul>
+<hr>
+<h2 id="notes--considerations">Notes &amp; Considerations</h2>
+<ul>
+<li><strong>.NET 10</strong>: Docker base images use <code>mcr.microsoft.com/dotnet/aspnet:10.0</code> and <code>mcr.microsoft.com/dotnet/runtime:10.0</code> — .NET 10 is fully released, no preview suffix needed.</li>
+<li><strong>GITHUB_TOKEN permissions</strong>: The release workflow needs <code>contents: write</code> (for creating releases) and <code>packages: write</code> (for pushing to ghcr.io).</li>
+<li><strong>ARM64 cross-compilation</strong>: <code>dotnet publish</code> supports cross-targeting via <code>--runtime</code> without needing a native ARM64 runner.</li>
+<li><strong>Docker Buildx + QEMU</strong>: Required for building <code>linux/arm64</code> images on <code>ubuntu-latest</code> (x86). The <code>docker/setup-qemu-action</code> and <code>docker/setup-buildx-action</code> community actions handle this.</li>
+<li><strong>Solution filter</strong>: All publish commands target individual <code>.csproj</code> files, not the solution, to avoid building migration/test projects unnecessarily.</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/Sannel/Encoding.Manager/blob/copilot/fix-build-issue-docs-action/docs/docs/plans/buildAndRelease.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

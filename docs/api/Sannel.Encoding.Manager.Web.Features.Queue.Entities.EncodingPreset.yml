@@ -1,0 +1,515 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset
+  commentId: T:Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset
+  id: EncodingPreset
+  parent: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  children:
+  - Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Id
+  - Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Label
+  - Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RelativePath
+  - Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RootLabel
+  langs:
+  - csharp
+  - vb
+  name: EncodingPreset
+  nameWithType: EncodingPreset
+  fullName: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset
+  type: Class
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.Data/Features/Queue/Entities/EncodingPreset.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: EncodingPreset
+    path: ../src/Sannel.Encoding.Manager.Data/Features/Queue/Entities/EncodingPreset.cs
+    startLine: 3
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+  namespace: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  summary: A named HandBrake preset JSON file stored on the server.
+  example: []
+  syntax:
+    content: public class EncodingPreset
+    content.vb: Public Class EncodingPreset
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Id
+  commentId: P:Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Id
+  id: Id
+  parent: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: EncodingPreset.Id
+  fullName: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Id
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.Data/Features/Queue/Entities/EncodingPreset.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: Id
+    path: ../src/Sannel.Encoding.Manager.Data/Features/Queue/Entities/EncodingPreset.cs
+    startLine: 5
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+  namespace: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  syntax:
+    content: public Guid Id { get; set; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property Id As Guid
+  overload: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Id*
+- uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Label
+  commentId: P:Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Label
+  id: Label
+  parent: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset
+  langs:
+  - csharp
+  - vb
+  name: Label
+  nameWithType: EncodingPreset.Label
+  fullName: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Label
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.Data/Features/Queue/Entities/EncodingPreset.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: Label
+    path: ../src/Sannel.Encoding.Manager.Data/Features/Queue/Entities/EncodingPreset.cs
+    startLine: 8
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+  namespace: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  summary: User-facing display label.
+  example: []
+  syntax:
+    content: public string Label { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Label As String
+  overload: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Label*
+- uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RootLabel
+  commentId: P:Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RootLabel
+  id: RootLabel
+  parent: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset
+  langs:
+  - csharp
+  - vb
+  name: RootLabel
+  nameWithType: EncodingPreset.RootLabel
+  fullName: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RootLabel
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.Data/Features/Queue/Entities/EncodingPreset.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: RootLabel
+    path: ../src/Sannel.Encoding.Manager.Data/Features/Queue/Entities/EncodingPreset.cs
+    startLine: 11
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+  namespace: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  summary: The filesystem root label (matches a configured root).
+  example: []
+  syntax:
+    content: public string RootLabel { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RootLabel As String
+  overload: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RootLabel*
+- uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RelativePath
+  commentId: P:Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RelativePath
+  id: RelativePath
+  parent: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset
+  langs:
+  - csharp
+  - vb
+  name: RelativePath
+  nameWithType: EncodingPreset.RelativePath
+  fullName: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RelativePath
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.Data/Features/Queue/Entities/EncodingPreset.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: RelativePath
+    path: ../src/Sannel.Encoding.Manager.Data/Features/Queue/Entities/EncodingPreset.cs
+    startLine: 14
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+  namespace: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  summary: Path of the .json file relative to <xref href="Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RootLabel" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public string RelativePath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RelativePath As String
+  overload: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RelativePath*
+references:
+- uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  commentId: N:Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  href: Sannel.html
+  name: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  nameWithType: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  fullName: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  spec.csharp:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web
+    name: Web
+    href: Sannel.Encoding.Manager.Web.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web.Features
+    name: Features
+    href: Sannel.Encoding.Manager.Web.Features.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web.Features.Queue
+    name: Queue
+    href: Sannel.Encoding.Manager.Web.Features.Queue.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+    name: Entities
+    href: Sannel.Encoding.Manager.Web.Features.Queue.Entities.html
+  spec.vb:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web
+    name: Web
+    href: Sannel.Encoding.Manager.Web.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web.Features
+    name: Features
+    href: Sannel.Encoding.Manager.Web.Features.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web.Features.Queue
+    name: Queue
+    href: Sannel.Encoding.Manager.Web.Features.Queue.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+    name: Entities
+    href: Sannel.Encoding.Manager.Web.Features.Queue.Entities.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Id*
+  commentId: Overload:Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Id
+  href: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.html#Sannel_Encoding_Manager_Web_Features_Queue_Entities_EncodingPreset_Id
+  name: Id
+  nameWithType: EncodingPreset.Id
+  fullName: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Id
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Label*
+  commentId: Overload:Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Label
+  href: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.html#Sannel_Encoding_Manager_Web_Features_Queue_Entities_EncodingPreset_Label
+  name: Label
+  nameWithType: EncodingPreset.Label
+  fullName: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.Label
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RootLabel*
+  commentId: Overload:Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RootLabel
+  href: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.html#Sannel_Encoding_Manager_Web_Features_Queue_Entities_EncodingPreset_RootLabel
+  name: RootLabel
+  nameWithType: EncodingPreset.RootLabel
+  fullName: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RootLabel
+- uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RootLabel
+  commentId: P:Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RootLabel
+  href: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.html#Sannel_Encoding_Manager_Web_Features_Queue_Entities_EncodingPreset_RootLabel
+  name: RootLabel
+  nameWithType: EncodingPreset.RootLabel
+  fullName: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RootLabel
+- uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RelativePath*
+  commentId: Overload:Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RelativePath
+  href: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.html#Sannel_Encoding_Manager_Web_Features_Queue_Entities_EncodingPreset_RelativePath
+  name: RelativePath
+  nameWithType: EncodingPreset.RelativePath
+  fullName: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.RelativePath

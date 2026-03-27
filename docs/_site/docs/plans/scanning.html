@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Scanning Feature Plan | Sannel.Encoding.Manager </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Scanning Feature Plan | Sannel.Encoding.Manager ">
+      
+      
+      <link rel="icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/Sannel/Encoding.Manager/blob/copilot/fix-build-issue-docs-action/docs/docs/plans/scanning.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../logo.svg" alt="Sannel.Encoding.Manager">
+            Sannel.Encoding.Manager
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="scanning-feature-plan">Scanning Feature Plan</h1>
+
+<h2 id="overview">Overview</h2>
+<p>Add a <strong>Scan</strong> feature that lets a user scan a selected disc folder using HandBrakeCLI and then browse the discovered titles or chapters. The entry point is the existing &quot;Select Disc&quot; button in the Filesystem browser — clicking it will navigate to the new Scan page instead of merely displaying the selection inline.</p>
+<hr>
+<h2 id="1-navigation-change-filesystem--scan">1. Navigation Change: Filesystem → Scan</h2>
+<h3 id="current-behaviour">Current Behaviour</h3>
+<p><code>SelectDiscFolder()</code> in <code>FilesystemPage.razor.cs</code> sets a local <code>_selectedItem</code> string and shows a MudBlazor snackbar. Nothing further happens.</p>
+<h3 id="new-behaviour">New Behaviour</h3>
+<p>Inject <code>NavigationManager</code> into <code>FilesystemPage</code> and call <code>NavigateTo</code> when a disc is selected, passing the root label, relative path, and disc type as query-string parameters:</p>
+<pre><code>/scan?root=&lt;url-encoded-root-label&gt;&amp;path=&lt;url-encoded-relative-path&gt;&amp;discType=&lt;BluRay|Dvd|...&gt;
+</code></pre>
+<p>All paths remain relative to a configured root — physical paths are <strong>never</strong> exposed in the URL. The <code>root</code> value is the same label already used by <code>BrowseAsync</code>. The <code>path</code> value is the relative path built during browsing (e.g. <code>Movies/Die Hard</code>). The disc type comes from <code>DirectoryEntryResponse.DiscType</code>.</p>
+<p><code>ScanPage</code> will pass <code>root</code> + <code>path</code> to <code>IFilesystemService</code> (or a new overload/helper) to resolve the physical path server-side before calling <code>IHandBrakeService.ScanAsync()</code>.</p>
+<hr>
+<h2 id="2-feature-folder-structure">2. Feature Folder Structure</h2>
+<pre><code>Features/Scan/
+├── Pages/
+│   ├── ScanPage.razor          # @page &quot;/scan&quot;  — top-level scan page
+│   └── ScanPage.razor.cs       # code-behind
+├── Components/
+│   ├── TitlesModeView.razor    # Titles mode UI (receives scan result as parameter)
+│   └── ChaptersModeView.razor  # Chapters mode UI (receives scan result as parameter)
+└── Dto/
+    └── ScanMode.cs             # enum: Titles, Chapters
+</code></pre>
+<p>No new service is needed — all scan work goes through the existing <code>IHandBrakeService.ScanAsync()</code>.</p>
+<p>A navigation entry <code>Scan</code> pointing to <code>/scan</code> is <strong>not</strong> added to <code>NavMenu.razor</code> because this page is always reached by selecting a disc; it is not a free-standing destination.</p>
+<hr>
+<h2 id="3-scanpage--landing-page">3. ScanPage — Landing Page</h2>
+<h3 id="query-parameters">Query Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>root</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>URL-encoded root label (matches a configured directory)</td>
+</tr>
+<tr>
+<td><code>path</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>URL-encoded relative path within that root (e.g. <code>Movies/Die Hard</code>)</td>
+</tr>
+<tr>
+<td><code>discType</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Display only (e.g. <code>BluRay</code>, <code>Dvd</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Physical path resolution happens entirely server-side — <code>IFilesystemService</code> resolves <code>root</code> + <code>path</code> to an absolute path before it is passed to <code>IHandBrakeService.ScanAsync()</code>. Absolute paths are never surfaced in URLs or the browser.</p>
+<h3 id="path-traversal-protection">Path Traversal Protection</h3>
+<p><code>IFilesystemService.ResolvePhysicalPathAsync</code> (or its equivalent) <strong>must</strong> reject any <code>path</code> value that could escape the configured root. This validation applies before any file-system access occurs:</p>
+<ol>
+<li><strong>Segment check</strong> — split the relative path on <code>/</code> and <code>\</code>; if any segment is <code>..</code> or <code>.</code> (after trimming whitespace) reject it immediately.</li>
+<li><strong>Canonical resolution check</strong> — after joining the root's base path with the relative path, call <code>Path.GetFullPath()</code> on the result and verify the canonical absolute path <strong>starts with</strong> the root's canonical base path (also normalised via <code>Path.GetFullPath</code>). This catches encoded or multi-step traversal attempts (e.g. <code>a/../../etc</code>) that survive the segment check.</li>
+<li><strong>Null / empty segments</strong> — reject paths with empty segments (e.g. <code>//</code> or leading <code>/</code>).</li>
+</ol>
+<p>If any check fails, <code>ResolvePhysicalPathAsync</code> throws an <code>ArgumentException</code> (or returns a typed error). <code>ScanPage</code> catches this and displays a <code>MudAlert</code> with the message <strong>&quot;Invalid path: the specified path is not allowed.&quot;</strong> and a &quot;Go back to Filesystem&quot; link. No further processing occurs.</p>
+<h3 id="page-load-sequence">Page Load Sequence</h3>
+<ol>
+<li>Parse <code>root</code> and <code>path</code> from the query string. If either is missing or empty show an error and offer a &quot;Go back to Filesystem&quot; link.</li>
+<li>Resolve the physical path server-side; if path traversal validation fails show an error and stop (see Path Traversal Protection above).</li>
+<li>Display the root label and relative path as read-only context at the top of the page (never the physical path).</li>
+<li>Immediately trigger <code>IHandBrakeService.ScanAsync(resolvedPhysicalPath)</code> (show <code>MudProgressCircular</code> while in progress).</li>
+<li>On success, show the mode controls and results area.</li>
+<li>On failure, show a <code>MudAlert</code> with the error message and a <strong>Retry</strong> button that re-runs <code>ScanAsync</code> without leaving the page.</li>
+</ol>
+<h3 id="mode-controls-shown-after-a-successful-scan">Mode Controls (shown after a successful scan)</h3>
+<ul>
+<li>A <code>MudSelect&lt;ScanMode&gt;</code> labelled <strong>&quot;Mode&quot;</strong> with two items:
+<ul>
+<li><code>Titles</code> (default)</li>
+<li><code>Chapters</code></li>
+</ul>
+</li>
+<li>Changing the mode swaps the child component rendered below.</li>
+</ul>
+<hr>
+<h2 id="4-titles-mode-titlesmodeview">4. Titles Mode (<code>TitlesModeView</code>)</h2>
+<h3 id="parameters">Parameters</h3>
+<ul>
+<li><code>ScanResult</code> — the <code>HandBrakeScanResult</code> passed from the parent page.</li>
+</ul>
+<h3 id="controls">Controls</h3>
+<ul>
+<li>A <code>MudNumericField&lt;int&gt;</code> labelled <strong>&quot;Minimum Duration (seconds)&quot;</strong>, defaulting to <code>30</code>, minimum value <code>0</code>.</li>
+</ul>
+<h3 id="display">Display</h3>
+<p>Render a <code>MudTable</code> filtered to titles where <code>Duration.TotalSeconds &gt;= minimumSeconds</code> (inclusive — a title of exactly the minimum duration is included). The table updates reactively as the user changes the minimum-duration field (no extra button press needed). Rows are <strong>not</strong> clickable; there is no drill-down into individual titles from this mode.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title #</td>
+<td><code>TitleInfo.TitleNumber</code></td>
+</tr>
+<tr>
+<td>Duration</td>
+<td><code>TitleInfo.Duration</code> formatted as <code>h:mm:ss</code></td>
+</tr>
+<tr>
+<td>Resolution</td>
+<td><code>TitleInfo.Width × TitleInfo.Height</code></td>
+</tr>
+<tr>
+<td>Frame Rate</td>
+<td><code>TitleInfo.FrameRate</code></td>
+</tr>
+<tr>
+<td>Audio Tracks</td>
+<td><code>TitleInfo.AudioTracks.Count</code></td>
+</tr>
+<tr>
+<td>Subtitles</td>
+<td><code>TitleInfo.Subtitles.Count</code></td>
+</tr>
+<tr>
+<td>Chapters</td>
+<td><code>TitleInfo.Chapters.Count</code></td>
+</tr>
+</tbody>
+</table>
+<p>If no titles pass the filter, show a <code>MudAlert</code> info message: &quot;No titles found matching the minimum duration.&quot;</p>
+<hr>
+<h2 id="5-chapters-mode-chaptersmodeview">5. Chapters Mode (<code>ChaptersModeView</code>)</h2>
+<h3 id="parameters-1">Parameters</h3>
+<ul>
+<li><code>ScanResult</code> — the <code>HandBrakeScanResult</code> passed from the parent page.</li>
+</ul>
+<h3 id="controls-1">Controls</h3>
+<ul>
+<li>A <code>MudSelect&lt;TitleInfo?&gt;</code> labelled <strong>&quot;Title&quot;</strong>, listing every title in the scan result with no duration filter.
+<ul>
+<li>Each item displays: <code>Title {TitleInfo.TitleNumber}  —  {Duration h:mm:ss}  ({Chapters.Count} chapters)</code></li>
+<li>Default selection: none (placeholder text &quot;Select a title…&quot;).</li>
+</ul>
+</li>
+</ul>
+<h3 id="display-1">Display</h3>
+<p>When a title is selected, render a <code>MudTable</code> of its chapters:</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chapter #</td>
+<td><code>ChapterInfo.ChapterNumber</code></td>
+</tr>
+<tr>
+<td>Name</td>
+<td><code>ChapterInfo.Name</code> (shown as &quot;Chapter {n}&quot; if the name is empty or a default HandBrake placeholder)</td>
+</tr>
+<tr>
+<td>Duration</td>
+<td><code>ChapterInfo.Duration</code> formatted as <code>h:mm:ss</code></td>
+</tr>
+</tbody>
+</table>
+<p>A summary line below (or above) the table shows the cumulative duration of all chapters in the title.</p>
+<p>If a title is selected but has no chapters, show a <code>MudAlert</code> info message: &quot;This title has no chapter markers.&quot;</p>
+<hr>
+<h2 id="6-open-questions">6. Open Questions</h2>
+<p>The following items need clarification before implementation begins:</p>
+<ol>
+<li><p><del><strong>Filesystem service path resolution</strong></del> — <strong>Resolved:</strong> all URLs use <code>root</code> (label) + <code>path</code> (relative) parameters. Physical paths are resolved server-side inside <code>ScanPage</code> via <code>IFilesystemService</code>. A <code>ResolvePhysicalPathAsync(rootLabel, relativePath)</code> method (or equivalent) will need to be added to <code>IFilesystemService</code> if one does not already exist.</p>
+</li>
+<li><p><del><strong>Minimum-duration filter operator</strong></del> — <strong>Resolved:</strong> filter is <code>&gt;= minimumSeconds</code> (inclusive).</p>
+</li>
+<li><p><del><strong>Scan retry</strong></del> — <strong>Resolved:</strong> a <strong>Retry</strong> button re-runs the scan in-place. Additionally, changing the <code>root</code>/<code>path</code> query parameters (i.e. navigating back and selecting a different disc) naturally triggers a fresh scan via <code>OnInitializedAsync</code>.</p>
+</li>
+<li><p><del><strong>Titles mode: chapter drill-down</strong></del> — <strong>Resolved:</strong> no drill-down. The filtered title table is the final output for Titles mode; rows are not interactive.</p>
+</li>
+<li><p><del><strong>NavMenu entry</strong></del> — <strong>Resolved:</strong> <code>/scan</code> is <strong>not</strong> listed in the nav menu. It is only reachable by selecting a disc in the Filesystem browser.</p>
+</li>
+</ol>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/Sannel/Encoding.Manager/blob/copilot/fix-build-issue-docs-action/docs/docs/plans/scanning.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

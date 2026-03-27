@@ -1,0 +1,1109 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeService
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeService
+  id: HandBrakeService
+  parent: Sannel.Encoding.Manager.HandBrake
+  children:
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeService.#ctor(Sannel.Encoding.Manager.HandBrake.IProcessRunner,Microsoft.Extensions.Options.IOptions{Sannel.Encoding.Manager.HandBrake.HandBrakeOptions},Microsoft.Extensions.Logging.ILogger{Sannel.Encoding.Manager.HandBrake.HandBrakeService},Sannel.Encoding.Manager.HandBrake.IScanCacheProvider)
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeService.CliVersion
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeService.EncodeAsync(Sannel.Encoding.Manager.HandBrake.HandBrakeJob,System.IProgress{Sannel.Encoding.Manager.HandBrake.ProgressInfo},System.Threading.CancellationToken)
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeService.ScanAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: HandBrakeService
+  nameWithType: HandBrakeService
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeService
+  type: Class
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeService.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: HandBrakeService
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeService.cs
+    startLine: 10
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: >-
+    Default implementation of <xref href="Sannel.Encoding.Manager.HandBrake.IHandBrakeService" data-throw-if-not-resolved="false"></xref>.
+
+    Wraps HandBrakeCLI for scanning and encoding media files.
+  example: []
+  syntax:
+    content: 'public class HandBrakeService : IHandBrakeService'
+    content.vb: Public Class HandBrakeService Implements IHandBrakeService
+  inheritance:
+  - System.Object
+  implements:
+  - Sannel.Encoding.Manager.HandBrake.IHandBrakeService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeService.CliVersion
+  commentId: P:Sannel.Encoding.Manager.HandBrake.HandBrakeService.CliVersion
+  id: CliVersion
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeService
+  langs:
+  - csharp
+  - vb
+  name: CliVersion
+  nameWithType: HandBrakeService.CliVersion
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeService.CliVersion
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeService.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: CliVersion
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeService.cs
+    startLine: 19
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Returns the detected HandBrakeCLI version string.
+  example: []
+  syntax:
+    content: public string CliVersion { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property CliVersion As String
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeService.CliVersion*
+  implements:
+  - Sannel.Encoding.Manager.HandBrake.IHandBrakeService.CliVersion
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeService.#ctor(Sannel.Encoding.Manager.HandBrake.IProcessRunner,Microsoft.Extensions.Options.IOptions{Sannel.Encoding.Manager.HandBrake.HandBrakeOptions},Microsoft.Extensions.Logging.ILogger{Sannel.Encoding.Manager.HandBrake.HandBrakeService},Sannel.Encoding.Manager.HandBrake.IScanCacheProvider)
+  commentId: M:Sannel.Encoding.Manager.HandBrake.HandBrakeService.#ctor(Sannel.Encoding.Manager.HandBrake.IProcessRunner,Microsoft.Extensions.Options.IOptions{Sannel.Encoding.Manager.HandBrake.HandBrakeOptions},Microsoft.Extensions.Logging.ILogger{Sannel.Encoding.Manager.HandBrake.HandBrakeService},Sannel.Encoding.Manager.HandBrake.IScanCacheProvider)
+  id: '#ctor(Sannel.Encoding.Manager.HandBrake.IProcessRunner,Microsoft.Extensions.Options.IOptions{Sannel.Encoding.Manager.HandBrake.HandBrakeOptions},Microsoft.Extensions.Logging.ILogger{Sannel.Encoding.Manager.HandBrake.HandBrakeService},Sannel.Encoding.Manager.HandBrake.IScanCacheProvider)'
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeService
+  langs:
+  - csharp
+  - vb
+  name: HandBrakeService(IProcessRunner, IOptions<HandBrakeOptions>, ILogger<HandBrakeService>, IScanCacheProvider)
+  nameWithType: HandBrakeService.HandBrakeService(IProcessRunner, IOptions<HandBrakeOptions>, ILogger<HandBrakeService>, IScanCacheProvider)
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeService.HandBrakeService(Sannel.Encoding.Manager.HandBrake.IProcessRunner, Microsoft.Extensions.Options.IOptions<Sannel.Encoding.Manager.HandBrake.HandBrakeOptions>, Microsoft.Extensions.Logging.ILogger<Sannel.Encoding.Manager.HandBrake.HandBrakeService>, Sannel.Encoding.Manager.HandBrake.IScanCacheProvider)
+  type: Constructor
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeService.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: .ctor
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeService.cs
+    startLine: 21
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public HandBrakeService(IProcessRunner processRunner, IOptions<HandBrakeOptions> options, ILogger<HandBrakeService> logger, IScanCacheProvider scanCache)
+    parameters:
+    - id: processRunner
+      type: Sannel.Encoding.Manager.HandBrake.IProcessRunner
+    - id: options
+      type: Microsoft.Extensions.Options.IOptions{Sannel.Encoding.Manager.HandBrake.HandBrakeOptions}
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Sannel.Encoding.Manager.HandBrake.HandBrakeService}
+    - id: scanCache
+      type: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider
+    content.vb: Public Sub New(processRunner As IProcessRunner, options As IOptions(Of HandBrakeOptions), logger As ILogger(Of HandBrakeService), scanCache As IScanCacheProvider)
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeService.#ctor*
+  nameWithType.vb: HandBrakeService.New(IProcessRunner, IOptions(Of HandBrakeOptions), ILogger(Of HandBrakeService), IScanCacheProvider)
+  fullName.vb: Sannel.Encoding.Manager.HandBrake.HandBrakeService.New(Sannel.Encoding.Manager.HandBrake.IProcessRunner, Microsoft.Extensions.Options.IOptions(Of Sannel.Encoding.Manager.HandBrake.HandBrakeOptions), Microsoft.Extensions.Logging.ILogger(Of Sannel.Encoding.Manager.HandBrake.HandBrakeService), Sannel.Encoding.Manager.HandBrake.IScanCacheProvider)
+  name.vb: New(IProcessRunner, IOptions(Of HandBrakeOptions), ILogger(Of HandBrakeService), IScanCacheProvider)
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeService.ScanAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Sannel.Encoding.Manager.HandBrake.HandBrakeService.ScanAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  id: ScanAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeService
+  langs:
+  - csharp
+  - vb
+  name: ScanAsync(string, bool, CancellationToken)
+  nameWithType: HandBrakeService.ScanAsync(string, bool, CancellationToken)
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeService.ScanAsync(string, bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeService.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: ScanAsync
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeService.cs
+    startLine: 88
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Scans the input file and returns track/title/stream metadata.
+  example: []
+  syntax:
+    content: public Task<HandBrakeScanResult> ScanAsync(string inputPath, bool forceRescan = false, CancellationToken ct = default)
+    parameters:
+    - id: inputPath
+      type: System.String
+      description: Path to the disc image or directory to scan.
+    - id: forceRescan
+      type: System.Boolean
+      description: When true, skip the 24-hour disc scan cache and always call HandBrakeCLI.
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult}
+    content.vb: Public Function ScanAsync(inputPath As String, forceRescan As Boolean = False, ct As CancellationToken = Nothing) As Task(Of HandBrakeScanResult)
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeService.ScanAsync*
+  implements:
+  - Sannel.Encoding.Manager.HandBrake.IHandBrakeService.ScanAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  nameWithType.vb: HandBrakeService.ScanAsync(String, Boolean, CancellationToken)
+  fullName.vb: Sannel.Encoding.Manager.HandBrake.HandBrakeService.ScanAsync(String, Boolean, System.Threading.CancellationToken)
+  name.vb: ScanAsync(String, Boolean, CancellationToken)
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeService.EncodeAsync(Sannel.Encoding.Manager.HandBrake.HandBrakeJob,System.IProgress{Sannel.Encoding.Manager.HandBrake.ProgressInfo},System.Threading.CancellationToken)
+  commentId: M:Sannel.Encoding.Manager.HandBrake.HandBrakeService.EncodeAsync(Sannel.Encoding.Manager.HandBrake.HandBrakeJob,System.IProgress{Sannel.Encoding.Manager.HandBrake.ProgressInfo},System.Threading.CancellationToken)
+  id: EncodeAsync(Sannel.Encoding.Manager.HandBrake.HandBrakeJob,System.IProgress{Sannel.Encoding.Manager.HandBrake.ProgressInfo},System.Threading.CancellationToken)
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeService
+  langs:
+  - csharp
+  - vb
+  name: EncodeAsync(HandBrakeJob, IProgress<ProgressInfo>?, CancellationToken)
+  nameWithType: HandBrakeService.EncodeAsync(HandBrakeJob, IProgress<ProgressInfo>?, CancellationToken)
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeService.EncodeAsync(Sannel.Encoding.Manager.HandBrake.HandBrakeJob, System.IProgress<Sannel.Encoding.Manager.HandBrake.ProgressInfo>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeService.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: EncodeAsync
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeService.cs
+    startLine: 178
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Encodes the input according to the job spec, reporting progress via <code class="paramref">progress</code>.
+  example: []
+  syntax:
+    content: public Task<HandBrakeEncodeResult> EncodeAsync(HandBrakeJob job, IProgress<ProgressInfo>? progress = null, CancellationToken ct = default)
+    parameters:
+    - id: job
+      type: Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+    - id: progress
+      type: System.IProgress{Sannel.Encoding.Manager.HandBrake.ProgressInfo}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult}
+    content.vb: Public Function EncodeAsync(job As HandBrakeJob, progress As IProgress(Of ProgressInfo) = Nothing, ct As CancellationToken = Nothing) As Task(Of HandBrakeEncodeResult)
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeService.EncodeAsync*
+  implements:
+  - Sannel.Encoding.Manager.HandBrake.IHandBrakeService.EncodeAsync(Sannel.Encoding.Manager.HandBrake.HandBrakeJob,System.IProgress{Sannel.Encoding.Manager.HandBrake.ProgressInfo},System.Threading.CancellationToken)
+  nameWithType.vb: HandBrakeService.EncodeAsync(HandBrakeJob, IProgress(Of ProgressInfo), CancellationToken)
+  fullName.vb: Sannel.Encoding.Manager.HandBrake.HandBrakeService.EncodeAsync(Sannel.Encoding.Manager.HandBrake.HandBrakeJob, System.IProgress(Of Sannel.Encoding.Manager.HandBrake.ProgressInfo), System.Threading.CancellationToken)
+  name.vb: EncodeAsync(HandBrakeJob, IProgress(Of ProgressInfo), CancellationToken)
+references:
+- uid: Sannel.Encoding.Manager.HandBrake.IHandBrakeService
+  commentId: T:Sannel.Encoding.Manager.HandBrake.IHandBrakeService
+  parent: Sannel.Encoding.Manager.HandBrake
+  href: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.html
+  name: IHandBrakeService
+  nameWithType: IHandBrakeService
+  fullName: Sannel.Encoding.Manager.HandBrake.IHandBrakeService
+- uid: Sannel.Encoding.Manager.HandBrake
+  commentId: N:Sannel.Encoding.Manager.HandBrake
+  href: Sannel.html
+  name: Sannel.Encoding.Manager.HandBrake
+  nameWithType: Sannel.Encoding.Manager.HandBrake
+  fullName: Sannel.Encoding.Manager.HandBrake
+  spec.csharp:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+  spec.vb:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeService.CliVersion*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeService.CliVersion
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeService.html#Sannel_Encoding_Manager_HandBrake_HandBrakeService_CliVersion
+  name: CliVersion
+  nameWithType: HandBrakeService.CliVersion
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeService.CliVersion
+- uid: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.CliVersion
+  commentId: P:Sannel.Encoding.Manager.HandBrake.IHandBrakeService.CliVersion
+  parent: Sannel.Encoding.Manager.HandBrake.IHandBrakeService
+  href: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.html#Sannel_Encoding_Manager_HandBrake_IHandBrakeService_CliVersion
+  name: CliVersion
+  nameWithType: IHandBrakeService.CliVersion
+  fullName: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.CliVersion
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeService.#ctor*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeService.#ctor
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeService.html#Sannel_Encoding_Manager_HandBrake_HandBrakeService__ctor_Sannel_Encoding_Manager_HandBrake_IProcessRunner_Microsoft_Extensions_Options_IOptions_Sannel_Encoding_Manager_HandBrake_HandBrakeOptions__Microsoft_Extensions_Logging_ILogger_Sannel_Encoding_Manager_HandBrake_HandBrakeService__Sannel_Encoding_Manager_HandBrake_IScanCacheProvider_
+  name: HandBrakeService
+  nameWithType: HandBrakeService.HandBrakeService
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeService.HandBrakeService
+  nameWithType.vb: HandBrakeService.New
+  fullName.vb: Sannel.Encoding.Manager.HandBrake.HandBrakeService.New
+  name.vb: New
+- uid: Sannel.Encoding.Manager.HandBrake.IProcessRunner
+  commentId: T:Sannel.Encoding.Manager.HandBrake.IProcessRunner
+  parent: Sannel.Encoding.Manager.HandBrake
+  href: Sannel.Encoding.Manager.HandBrake.IProcessRunner.html
+  name: IProcessRunner
+  nameWithType: IProcessRunner
+  fullName: Sannel.Encoding.Manager.HandBrake.IProcessRunner
+- uid: Microsoft.Extensions.Options.IOptions{Sannel.Encoding.Manager.HandBrake.HandBrakeOptions}
+  commentId: T:Microsoft.Extensions.Options.IOptions{Sannel.Encoding.Manager.HandBrake.HandBrakeOptions}
+  parent: Microsoft.Extensions.Options
+  definition: Microsoft.Extensions.Options.IOptions`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1
+  name: IOptions<HandBrakeOptions>
+  nameWithType: IOptions<HandBrakeOptions>
+  fullName: Microsoft.Extensions.Options.IOptions<Sannel.Encoding.Manager.HandBrake.HandBrakeOptions>
+  nameWithType.vb: IOptions(Of HandBrakeOptions)
+  fullName.vb: Microsoft.Extensions.Options.IOptions(Of Sannel.Encoding.Manager.HandBrake.HandBrakeOptions)
+  name.vb: IOptions(Of HandBrakeOptions)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Options.IOptions`1
+    name: IOptions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1
+  - name: <
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeOptions
+    name: HandBrakeOptions
+    href: Sannel.Encoding.Manager.HandBrake.HandBrakeOptions.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Options.IOptions`1
+    name: IOptions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeOptions
+    name: HandBrakeOptions
+    href: Sannel.Encoding.Manager.HandBrake.HandBrakeOptions.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger{Sannel.Encoding.Manager.HandBrake.HandBrakeService}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Sannel.Encoding.Manager.HandBrake.HandBrakeService}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<HandBrakeService>
+  nameWithType: ILogger<HandBrakeService>
+  fullName: Microsoft.Extensions.Logging.ILogger<Sannel.Encoding.Manager.HandBrake.HandBrakeService>
+  nameWithType.vb: ILogger(Of HandBrakeService)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Sannel.Encoding.Manager.HandBrake.HandBrakeService)
+  name.vb: ILogger(Of HandBrakeService)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeService
+    name: HandBrakeService
+    href: Sannel.Encoding.Manager.HandBrake.HandBrakeService.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeService
+    name: HandBrakeService
+    href: Sannel.Encoding.Manager.HandBrake.HandBrakeService.html
+  - name: )
+- uid: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider
+  commentId: T:Sannel.Encoding.Manager.HandBrake.IScanCacheProvider
+  parent: Sannel.Encoding.Manager.HandBrake
+  href: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.html
+  name: IScanCacheProvider
+  nameWithType: IScanCacheProvider
+  fullName: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider
+- uid: Microsoft.Extensions.Options.IOptions`1
+  commentId: T:Microsoft.Extensions.Options.IOptions`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1
+  name: IOptions<TOptions>
+  nameWithType: IOptions<TOptions>
+  fullName: Microsoft.Extensions.Options.IOptions<TOptions>
+  nameWithType.vb: IOptions(Of TOptions)
+  fullName.vb: Microsoft.Extensions.Options.IOptions(Of TOptions)
+  name.vb: IOptions(Of TOptions)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Options.IOptions`1
+    name: IOptions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1
+  - name: <
+  - name: TOptions
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Options.IOptions`1
+    name: IOptions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TOptions
+  - name: )
+- uid: Microsoft.Extensions.Options
+  commentId: N:Microsoft.Extensions.Options
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Options
+  nameWithType: Microsoft.Extensions.Options
+  fullName: Microsoft.Extensions.Options
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Options
+    name: Options
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Options
+    name: Options
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeService.ScanAsync*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeService.ScanAsync
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeService.html#Sannel_Encoding_Manager_HandBrake_HandBrakeService_ScanAsync_System_String_System_Boolean_System_Threading_CancellationToken_
+  name: ScanAsync
+  nameWithType: HandBrakeService.ScanAsync
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeService.ScanAsync
+- uid: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.ScanAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Sannel.Encoding.Manager.HandBrake.IHandBrakeService.ScanAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  parent: Sannel.Encoding.Manager.HandBrake.IHandBrakeService
+  isExternal: true
+  href: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.html#Sannel_Encoding_Manager_HandBrake_IHandBrakeService_ScanAsync_System_String_System_Boolean_System_Threading_CancellationToken_
+  name: ScanAsync(string, bool, CancellationToken)
+  nameWithType: IHandBrakeService.ScanAsync(string, bool, CancellationToken)
+  fullName: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.ScanAsync(string, bool, System.Threading.CancellationToken)
+  nameWithType.vb: IHandBrakeService.ScanAsync(String, Boolean, CancellationToken)
+  fullName.vb: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.ScanAsync(String, Boolean, System.Threading.CancellationToken)
+  name.vb: ScanAsync(String, Boolean, CancellationToken)
+  spec.csharp:
+  - uid: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.ScanAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+    name: ScanAsync
+    href: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.html#Sannel_Encoding_Manager_HandBrake_IHandBrakeService_ScanAsync_System_String_System_Boolean_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.ScanAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+    name: ScanAsync
+    href: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.html#Sannel_Encoding_Manager_HandBrake_IHandBrakeService_ScanAsync_System_String_System_Boolean_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult}
+  commentId: T:System.Threading.Tasks.Task{Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<HandBrakeScanResult>
+  nameWithType: Task<HandBrakeScanResult>
+  fullName: System.Threading.Tasks.Task<Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult>
+  nameWithType.vb: Task(Of HandBrakeScanResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult)
+  name.vb: Task(Of HandBrakeScanResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult
+    name: HandBrakeScanResult
+    href: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult
+    name: HandBrakeScanResult
+    href: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeService.EncodeAsync*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeService.EncodeAsync
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeService.html#Sannel_Encoding_Manager_HandBrake_HandBrakeService_EncodeAsync_Sannel_Encoding_Manager_HandBrake_HandBrakeJob_System_IProgress_Sannel_Encoding_Manager_HandBrake_ProgressInfo__System_Threading_CancellationToken_
+  name: EncodeAsync
+  nameWithType: HandBrakeService.EncodeAsync
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeService.EncodeAsync
+- uid: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.EncodeAsync(Sannel.Encoding.Manager.HandBrake.HandBrakeJob,System.IProgress{Sannel.Encoding.Manager.HandBrake.ProgressInfo},System.Threading.CancellationToken)
+  commentId: M:Sannel.Encoding.Manager.HandBrake.IHandBrakeService.EncodeAsync(Sannel.Encoding.Manager.HandBrake.HandBrakeJob,System.IProgress{Sannel.Encoding.Manager.HandBrake.ProgressInfo},System.Threading.CancellationToken)
+  parent: Sannel.Encoding.Manager.HandBrake.IHandBrakeService
+  isExternal: true
+  href: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.html#Sannel_Encoding_Manager_HandBrake_IHandBrakeService_EncodeAsync_Sannel_Encoding_Manager_HandBrake_HandBrakeJob_System_IProgress_Sannel_Encoding_Manager_HandBrake_ProgressInfo__System_Threading_CancellationToken_
+  name: EncodeAsync(HandBrakeJob, IProgress<ProgressInfo>, CancellationToken)
+  nameWithType: IHandBrakeService.EncodeAsync(HandBrakeJob, IProgress<ProgressInfo>, CancellationToken)
+  fullName: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.EncodeAsync(Sannel.Encoding.Manager.HandBrake.HandBrakeJob, System.IProgress<Sannel.Encoding.Manager.HandBrake.ProgressInfo>, System.Threading.CancellationToken)
+  nameWithType.vb: IHandBrakeService.EncodeAsync(HandBrakeJob, IProgress(Of ProgressInfo), CancellationToken)
+  fullName.vb: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.EncodeAsync(Sannel.Encoding.Manager.HandBrake.HandBrakeJob, System.IProgress(Of Sannel.Encoding.Manager.HandBrake.ProgressInfo), System.Threading.CancellationToken)
+  name.vb: EncodeAsync(HandBrakeJob, IProgress(Of ProgressInfo), CancellationToken)
+  spec.csharp:
+  - uid: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.EncodeAsync(Sannel.Encoding.Manager.HandBrake.HandBrakeJob,System.IProgress{Sannel.Encoding.Manager.HandBrake.ProgressInfo},System.Threading.CancellationToken)
+    name: EncodeAsync
+    href: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.html#Sannel_Encoding_Manager_HandBrake_IHandBrakeService_EncodeAsync_Sannel_Encoding_Manager_HandBrake_HandBrakeJob_System_IProgress_Sannel_Encoding_Manager_HandBrake_ProgressInfo__System_Threading_CancellationToken_
+  - name: (
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+    name: HandBrakeJob
+    href: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.html
+  - name: ','
+  - name: " "
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - uid: Sannel.Encoding.Manager.HandBrake.ProgressInfo
+    name: ProgressInfo
+    href: Sannel.Encoding.Manager.HandBrake.ProgressInfo.html
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.EncodeAsync(Sannel.Encoding.Manager.HandBrake.HandBrakeJob,System.IProgress{Sannel.Encoding.Manager.HandBrake.ProgressInfo},System.Threading.CancellationToken)
+    name: EncodeAsync
+    href: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.html#Sannel_Encoding_Manager_HandBrake_IHandBrakeService_EncodeAsync_Sannel_Encoding_Manager_HandBrake_HandBrakeJob_System_IProgress_Sannel_Encoding_Manager_HandBrake_ProgressInfo__System_Threading_CancellationToken_
+  - name: (
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+    name: HandBrakeJob
+    href: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.html
+  - name: ','
+  - name: " "
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Sannel.Encoding.Manager.HandBrake.ProgressInfo
+    name: ProgressInfo
+    href: Sannel.Encoding.Manager.HandBrake.ProgressInfo.html
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+  parent: Sannel.Encoding.Manager.HandBrake
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.html
+  name: HandBrakeJob
+  nameWithType: HandBrakeJob
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+- uid: System.IProgress{Sannel.Encoding.Manager.HandBrake.ProgressInfo}
+  commentId: T:System.IProgress{Sannel.Encoding.Manager.HandBrake.ProgressInfo}
+  parent: System
+  definition: System.IProgress`1
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<ProgressInfo>
+  nameWithType: IProgress<ProgressInfo>
+  fullName: System.IProgress<Sannel.Encoding.Manager.HandBrake.ProgressInfo>
+  nameWithType.vb: IProgress(Of ProgressInfo)
+  fullName.vb: System.IProgress(Of Sannel.Encoding.Manager.HandBrake.ProgressInfo)
+  name.vb: IProgress(Of ProgressInfo)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - uid: Sannel.Encoding.Manager.HandBrake.ProgressInfo
+    name: ProgressInfo
+    href: Sannel.Encoding.Manager.HandBrake.ProgressInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Sannel.Encoding.Manager.HandBrake.ProgressInfo
+    name: ProgressInfo
+    href: Sannel.Encoding.Manager.HandBrake.ProgressInfo.html
+  - name: )
+- uid: System.Threading.Tasks.Task{Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult}
+  commentId: T:System.Threading.Tasks.Task{Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<HandBrakeEncodeResult>
+  nameWithType: Task<HandBrakeEncodeResult>
+  fullName: System.Threading.Tasks.Task<Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult>
+  nameWithType.vb: Task(Of HandBrakeEncodeResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult)
+  name.vb: Task(Of HandBrakeEncodeResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult
+    name: HandBrakeEncodeResult
+    href: Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult
+    name: HandBrakeEncodeResult
+    href: Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult.html
+  - name: )
+- uid: System.IProgress`1
+  commentId: T:System.IProgress`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<T>
+  nameWithType: IProgress<T>
+  fullName: System.IProgress<T>
+  nameWithType.vb: IProgress(Of T)
+  fullName.vb: System.IProgress(Of T)
+  name.vb: IProgress(Of T)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

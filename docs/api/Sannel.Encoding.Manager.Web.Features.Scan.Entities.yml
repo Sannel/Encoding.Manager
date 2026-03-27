@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.Web.Features.Scan.Entities
+  commentId: N:Sannel.Encoding.Manager.Web.Features.Scan.Entities
+  id: Sannel.Encoding.Manager.Web.Features.Scan.Entities
+  children:
+  - Sannel.Encoding.Manager.Web.Features.Scan.Entities.DiscScanCache
+  langs:
+  - csharp
+  - vb
+  name: Sannel.Encoding.Manager.Web.Features.Scan.Entities
+  nameWithType: Sannel.Encoding.Manager.Web.Features.Scan.Entities
+  fullName: Sannel.Encoding.Manager.Web.Features.Scan.Entities
+  type: Namespace
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+references:
+- uid: Sannel.Encoding.Manager.Web.Features.Scan.Entities.DiscScanCache
+  commentId: T:Sannel.Encoding.Manager.Web.Features.Scan.Entities.DiscScanCache
+  href: Sannel.Encoding.Manager.Web.Features.Scan.Entities.DiscScanCache.html
+  name: DiscScanCache
+  nameWithType: DiscScanCache
+  fullName: Sannel.Encoding.Manager.Web.Features.Scan.Entities.DiscScanCache

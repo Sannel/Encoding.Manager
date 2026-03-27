@@ -1,0 +1,867 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo
+  commentId: T:Sannel.Encoding.Manager.HandBrake.TitleInfo
+  id: TitleInfo
+  parent: Sannel.Encoding.Manager.HandBrake
+  children:
+  - Sannel.Encoding.Manager.HandBrake.TitleInfo.AudioTracks
+  - Sannel.Encoding.Manager.HandBrake.TitleInfo.Chapters
+  - Sannel.Encoding.Manager.HandBrake.TitleInfo.Duration
+  - Sannel.Encoding.Manager.HandBrake.TitleInfo.FrameRate
+  - Sannel.Encoding.Manager.HandBrake.TitleInfo.Height
+  - Sannel.Encoding.Manager.HandBrake.TitleInfo.Subtitles
+  - Sannel.Encoding.Manager.HandBrake.TitleInfo.TitleNumber
+  - Sannel.Encoding.Manager.HandBrake.TitleInfo.VideoStreams
+  - Sannel.Encoding.Manager.HandBrake.TitleInfo.Width
+  langs:
+  - csharp
+  - vb
+  name: TitleInfo
+  nameWithType: TitleInfo
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo
+  type: Class
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: TitleInfo
+    path: ../src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+    startLine: 3
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Per-title metadata from a scan.
+  example: []
+  syntax:
+    content: public class TitleInfo
+    content.vb: Public Class TitleInfo
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.TitleNumber
+  commentId: P:Sannel.Encoding.Manager.HandBrake.TitleInfo.TitleNumber
+  id: TitleNumber
+  parent: Sannel.Encoding.Manager.HandBrake.TitleInfo
+  langs:
+  - csharp
+  - vb
+  name: TitleNumber
+  nameWithType: TitleInfo.TitleNumber
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.TitleNumber
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: TitleNumber
+    path: ../src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+    startLine: 5
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public int TitleNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TitleNumber As Integer
+  overload: Sannel.Encoding.Manager.HandBrake.TitleInfo.TitleNumber*
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.Duration
+  commentId: P:Sannel.Encoding.Manager.HandBrake.TitleInfo.Duration
+  id: Duration
+  parent: Sannel.Encoding.Manager.HandBrake.TitleInfo
+  langs:
+  - csharp
+  - vb
+  name: Duration
+  nameWithType: TitleInfo.Duration
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.Duration
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: Duration
+    path: ../src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+    startLine: 6
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public TimeSpan Duration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property Duration As TimeSpan
+  overload: Sannel.Encoding.Manager.HandBrake.TitleInfo.Duration*
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.VideoStreams
+  commentId: P:Sannel.Encoding.Manager.HandBrake.TitleInfo.VideoStreams
+  id: VideoStreams
+  parent: Sannel.Encoding.Manager.HandBrake.TitleInfo
+  langs:
+  - csharp
+  - vb
+  name: VideoStreams
+  nameWithType: TitleInfo.VideoStreams
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.VideoStreams
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: VideoStreams
+    path: ../src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+    startLine: 7
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public IReadOnlyList<VideoStreamInfo> VideoStreams { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.VideoStreamInfo}
+    content.vb: Public Property VideoStreams As IReadOnlyList(Of VideoStreamInfo)
+  overload: Sannel.Encoding.Manager.HandBrake.TitleInfo.VideoStreams*
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.AudioTracks
+  commentId: P:Sannel.Encoding.Manager.HandBrake.TitleInfo.AudioTracks
+  id: AudioTracks
+  parent: Sannel.Encoding.Manager.HandBrake.TitleInfo
+  langs:
+  - csharp
+  - vb
+  name: AudioTracks
+  nameWithType: TitleInfo.AudioTracks
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.AudioTracks
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: AudioTracks
+    path: ../src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+    startLine: 8
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public IReadOnlyList<AudioTrackInfo> AudioTracks { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.AudioTrackInfo}
+    content.vb: Public Property AudioTracks As IReadOnlyList(Of AudioTrackInfo)
+  overload: Sannel.Encoding.Manager.HandBrake.TitleInfo.AudioTracks*
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.Subtitles
+  commentId: P:Sannel.Encoding.Manager.HandBrake.TitleInfo.Subtitles
+  id: Subtitles
+  parent: Sannel.Encoding.Manager.HandBrake.TitleInfo
+  langs:
+  - csharp
+  - vb
+  name: Subtitles
+  nameWithType: TitleInfo.Subtitles
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.Subtitles
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: Subtitles
+    path: ../src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+    startLine: 9
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public IReadOnlyList<SubtitleInfo> Subtitles { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.SubtitleInfo}
+    content.vb: Public Property Subtitles As IReadOnlyList(Of SubtitleInfo)
+  overload: Sannel.Encoding.Manager.HandBrake.TitleInfo.Subtitles*
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.Chapters
+  commentId: P:Sannel.Encoding.Manager.HandBrake.TitleInfo.Chapters
+  id: Chapters
+  parent: Sannel.Encoding.Manager.HandBrake.TitleInfo
+  langs:
+  - csharp
+  - vb
+  name: Chapters
+  nameWithType: TitleInfo.Chapters
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.Chapters
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: Chapters
+    path: ../src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+    startLine: 10
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public IReadOnlyList<ChapterInfo> Chapters { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.ChapterInfo}
+    content.vb: Public Property Chapters As IReadOnlyList(Of ChapterInfo)
+  overload: Sannel.Encoding.Manager.HandBrake.TitleInfo.Chapters*
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.FrameRate
+  commentId: P:Sannel.Encoding.Manager.HandBrake.TitleInfo.FrameRate
+  id: FrameRate
+  parent: Sannel.Encoding.Manager.HandBrake.TitleInfo
+  langs:
+  - csharp
+  - vb
+  name: FrameRate
+  nameWithType: TitleInfo.FrameRate
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.FrameRate
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: FrameRate
+    path: ../src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+    startLine: 11
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public double FrameRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property FrameRate As Double
+  overload: Sannel.Encoding.Manager.HandBrake.TitleInfo.FrameRate*
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.Width
+  commentId: P:Sannel.Encoding.Manager.HandBrake.TitleInfo.Width
+  id: Width
+  parent: Sannel.Encoding.Manager.HandBrake.TitleInfo
+  langs:
+  - csharp
+  - vb
+  name: Width
+  nameWithType: TitleInfo.Width
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.Width
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: Width
+    path: ../src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+    startLine: 12
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public int Width { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Width As Integer
+  overload: Sannel.Encoding.Manager.HandBrake.TitleInfo.Width*
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.Height
+  commentId: P:Sannel.Encoding.Manager.HandBrake.TitleInfo.Height
+  id: Height
+  parent: Sannel.Encoding.Manager.HandBrake.TitleInfo
+  langs:
+  - csharp
+  - vb
+  name: Height
+  nameWithType: TitleInfo.Height
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.Height
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: Height
+    path: ../src/Sannel.Encoding.Manager.HandBrake/TitleInfo.cs
+    startLine: 13
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public int Height { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Height As Integer
+  overload: Sannel.Encoding.Manager.HandBrake.TitleInfo.Height*
+references:
+- uid: Sannel.Encoding.Manager.HandBrake
+  commentId: N:Sannel.Encoding.Manager.HandBrake
+  href: Sannel.html
+  name: Sannel.Encoding.Manager.HandBrake
+  nameWithType: Sannel.Encoding.Manager.HandBrake
+  fullName: Sannel.Encoding.Manager.HandBrake
+  spec.csharp:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+  spec.vb:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.TitleNumber*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.TitleInfo.TitleNumber
+  href: Sannel.Encoding.Manager.HandBrake.TitleInfo.html#Sannel_Encoding_Manager_HandBrake_TitleInfo_TitleNumber
+  name: TitleNumber
+  nameWithType: TitleInfo.TitleNumber
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.TitleNumber
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.Duration*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.TitleInfo.Duration
+  href: Sannel.Encoding.Manager.HandBrake.TitleInfo.html#Sannel_Encoding_Manager_HandBrake_TitleInfo_Duration
+  name: Duration
+  nameWithType: TitleInfo.Duration
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.Duration
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.VideoStreams*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.TitleInfo.VideoStreams
+  href: Sannel.Encoding.Manager.HandBrake.TitleInfo.html#Sannel_Encoding_Manager_HandBrake_TitleInfo_VideoStreams
+  name: VideoStreams
+  nameWithType: TitleInfo.VideoStreams
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.VideoStreams
+- uid: System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.VideoStreamInfo}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.VideoStreamInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<VideoStreamInfo>
+  nameWithType: IReadOnlyList<VideoStreamInfo>
+  fullName: System.Collections.Generic.IReadOnlyList<Sannel.Encoding.Manager.HandBrake.VideoStreamInfo>
+  nameWithType.vb: IReadOnlyList(Of VideoStreamInfo)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Sannel.Encoding.Manager.HandBrake.VideoStreamInfo)
+  name.vb: IReadOnlyList(Of VideoStreamInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Sannel.Encoding.Manager.HandBrake.VideoStreamInfo
+    name: VideoStreamInfo
+    href: Sannel.Encoding.Manager.HandBrake.VideoStreamInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Sannel.Encoding.Manager.HandBrake.VideoStreamInfo
+    name: VideoStreamInfo
+    href: Sannel.Encoding.Manager.HandBrake.VideoStreamInfo.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.AudioTracks*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.TitleInfo.AudioTracks
+  href: Sannel.Encoding.Manager.HandBrake.TitleInfo.html#Sannel_Encoding_Manager_HandBrake_TitleInfo_AudioTracks
+  name: AudioTracks
+  nameWithType: TitleInfo.AudioTracks
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.AudioTracks
+- uid: System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.AudioTrackInfo}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.AudioTrackInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<AudioTrackInfo>
+  nameWithType: IReadOnlyList<AudioTrackInfo>
+  fullName: System.Collections.Generic.IReadOnlyList<Sannel.Encoding.Manager.HandBrake.AudioTrackInfo>
+  nameWithType.vb: IReadOnlyList(Of AudioTrackInfo)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Sannel.Encoding.Manager.HandBrake.AudioTrackInfo)
+  name.vb: IReadOnlyList(Of AudioTrackInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+    name: AudioTrackInfo
+    href: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+    name: AudioTrackInfo
+    href: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.html
+  - name: )
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.Subtitles*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.TitleInfo.Subtitles
+  href: Sannel.Encoding.Manager.HandBrake.TitleInfo.html#Sannel_Encoding_Manager_HandBrake_TitleInfo_Subtitles
+  name: Subtitles
+  nameWithType: TitleInfo.Subtitles
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.Subtitles
+- uid: System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.SubtitleInfo}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.SubtitleInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SubtitleInfo>
+  nameWithType: IReadOnlyList<SubtitleInfo>
+  fullName: System.Collections.Generic.IReadOnlyList<Sannel.Encoding.Manager.HandBrake.SubtitleInfo>
+  nameWithType.vb: IReadOnlyList(Of SubtitleInfo)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Sannel.Encoding.Manager.HandBrake.SubtitleInfo)
+  name.vb: IReadOnlyList(Of SubtitleInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Sannel.Encoding.Manager.HandBrake.SubtitleInfo
+    name: SubtitleInfo
+    href: Sannel.Encoding.Manager.HandBrake.SubtitleInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Sannel.Encoding.Manager.HandBrake.SubtitleInfo
+    name: SubtitleInfo
+    href: Sannel.Encoding.Manager.HandBrake.SubtitleInfo.html
+  - name: )
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.Chapters*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.TitleInfo.Chapters
+  href: Sannel.Encoding.Manager.HandBrake.TitleInfo.html#Sannel_Encoding_Manager_HandBrake_TitleInfo_Chapters
+  name: Chapters
+  nameWithType: TitleInfo.Chapters
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.Chapters
+- uid: System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.ChapterInfo}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.ChapterInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ChapterInfo>
+  nameWithType: IReadOnlyList<ChapterInfo>
+  fullName: System.Collections.Generic.IReadOnlyList<Sannel.Encoding.Manager.HandBrake.ChapterInfo>
+  nameWithType.vb: IReadOnlyList(Of ChapterInfo)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Sannel.Encoding.Manager.HandBrake.ChapterInfo)
+  name.vb: IReadOnlyList(Of ChapterInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Sannel.Encoding.Manager.HandBrake.ChapterInfo
+    name: ChapterInfo
+    href: Sannel.Encoding.Manager.HandBrake.ChapterInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Sannel.Encoding.Manager.HandBrake.ChapterInfo
+    name: ChapterInfo
+    href: Sannel.Encoding.Manager.HandBrake.ChapterInfo.html
+  - name: )
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.FrameRate*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.TitleInfo.FrameRate
+  href: Sannel.Encoding.Manager.HandBrake.TitleInfo.html#Sannel_Encoding_Manager_HandBrake_TitleInfo_FrameRate
+  name: FrameRate
+  nameWithType: TitleInfo.FrameRate
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.FrameRate
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.Width*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.TitleInfo.Width
+  href: Sannel.Encoding.Manager.HandBrake.TitleInfo.html#Sannel_Encoding_Manager_HandBrake_TitleInfo_Width
+  name: Width
+  nameWithType: TitleInfo.Width
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.Width
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo.Height*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.TitleInfo.Height
+  href: Sannel.Encoding.Manager.HandBrake.TitleInfo.html#Sannel_Encoding_Manager_HandBrake_TitleInfo_Height
+  name: Height
+  nameWithType: TitleInfo.Height
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo.Height

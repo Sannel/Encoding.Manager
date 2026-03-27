@@ -1,0 +1,529 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+  id: HandBrakeJob
+  parent: Sannel.Encoding.Manager.HandBrake
+  children:
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeJob.AdditionalArgs
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeJob.InputPath
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeJob.OutputPath
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetFilePath
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetName
+  langs:
+  - csharp
+  - vb
+  name: HandBrakeJob
+  nameWithType: HandBrakeJob
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+  type: Class
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeJob.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: HandBrakeJob
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeJob.cs
+    startLine: 3
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Describes an encoding request to HandBrakeCLI.
+  example: []
+  syntax:
+    content: public class HandBrakeJob
+    content.vb: Public Class HandBrakeJob
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.InputPath
+  commentId: P:Sannel.Encoding.Manager.HandBrake.HandBrakeJob.InputPath
+  id: InputPath
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+  langs:
+  - csharp
+  - vb
+  name: InputPath
+  nameWithType: HandBrakeJob.InputPath
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.InputPath
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeJob.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: InputPath
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeJob.cs
+    startLine: 6
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Absolute path to the source file.
+  example: []
+  syntax:
+    content: public required string InputPath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property InputPath As String
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.InputPath*
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.OutputPath
+  commentId: P:Sannel.Encoding.Manager.HandBrake.HandBrakeJob.OutputPath
+  id: OutputPath
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+  langs:
+  - csharp
+  - vb
+  name: OutputPath
+  nameWithType: HandBrakeJob.OutputPath
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.OutputPath
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeJob.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: OutputPath
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeJob.cs
+    startLine: 9
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Absolute path for the output file.
+  example: []
+  syntax:
+    content: public required string OutputPath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OutputPath As String
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.OutputPath*
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetName
+  commentId: P:Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetName
+  id: PresetName
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+  langs:
+  - csharp
+  - vb
+  name: PresetName
+  nameWithType: HandBrakeJob.PresetName
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetName
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeJob.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: PresetName
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeJob.cs
+    startLine: 12
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: HandBrake preset name (e.g. "Fast 1080p30"). Either this or <xref href="Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetFilePath" data-throw-if-not-resolved="false"></xref> must be set.
+  example: []
+  syntax:
+    content: public string? PresetName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PresetName As String
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetName*
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetFilePath
+  commentId: P:Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetFilePath
+  id: PresetFilePath
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+  langs:
+  - csharp
+  - vb
+  name: PresetFilePath
+  nameWithType: HandBrakeJob.PresetFilePath
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetFilePath
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeJob.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: PresetFilePath
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeJob.cs
+    startLine: 15
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Path to a .json preset file. Takes precedence over <xref href="Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetName" data-throw-if-not-resolved="false"></xref> if both are set.
+  example: []
+  syntax:
+    content: public string? PresetFilePath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PresetFilePath As String
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetFilePath*
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.AdditionalArgs
+  commentId: P:Sannel.Encoding.Manager.HandBrake.HandBrakeJob.AdditionalArgs
+  id: AdditionalArgs
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+  langs:
+  - csharp
+  - vb
+  name: AdditionalArgs
+  nameWithType: HandBrakeJob.AdditionalArgs
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.AdditionalArgs
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeJob.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: AdditionalArgs
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeJob.cs
+    startLine: 18
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Raw extra CLI arguments appended verbatim. Caller is responsible for sanitizing.
+  example: []
+  syntax:
+    content: public string? AdditionalArgs { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AdditionalArgs As String
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.AdditionalArgs*
+references:
+- uid: Sannel.Encoding.Manager.HandBrake
+  commentId: N:Sannel.Encoding.Manager.HandBrake
+  href: Sannel.html
+  name: Sannel.Encoding.Manager.HandBrake
+  nameWithType: Sannel.Encoding.Manager.HandBrake
+  fullName: Sannel.Encoding.Manager.HandBrake
+  spec.csharp:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+  spec.vb:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.InputPath*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeJob.InputPath
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.html#Sannel_Encoding_Manager_HandBrake_HandBrakeJob_InputPath
+  name: InputPath
+  nameWithType: HandBrakeJob.InputPath
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.InputPath
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.OutputPath*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeJob.OutputPath
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.html#Sannel_Encoding_Manager_HandBrake_HandBrakeJob_OutputPath
+  name: OutputPath
+  nameWithType: HandBrakeJob.OutputPath
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.OutputPath
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetFilePath
+  commentId: P:Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetFilePath
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.html#Sannel_Encoding_Manager_HandBrake_HandBrakeJob_PresetFilePath
+  name: PresetFilePath
+  nameWithType: HandBrakeJob.PresetFilePath
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetFilePath
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetName*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetName
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.html#Sannel_Encoding_Manager_HandBrake_HandBrakeJob_PresetName
+  name: PresetName
+  nameWithType: HandBrakeJob.PresetName
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetName
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetName
+  commentId: P:Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetName
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.html#Sannel_Encoding_Manager_HandBrake_HandBrakeJob_PresetName
+  name: PresetName
+  nameWithType: HandBrakeJob.PresetName
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetName
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetFilePath*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetFilePath
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.html#Sannel_Encoding_Manager_HandBrake_HandBrakeJob_PresetFilePath
+  name: PresetFilePath
+  nameWithType: HandBrakeJob.PresetFilePath
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.PresetFilePath
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.AdditionalArgs*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeJob.AdditionalArgs
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.html#Sannel_Encoding_Manager_HandBrake_HandBrakeJob_AdditionalArgs
+  name: AdditionalArgs
+  nameWithType: HandBrakeJob.AdditionalArgs
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.AdditionalArgs

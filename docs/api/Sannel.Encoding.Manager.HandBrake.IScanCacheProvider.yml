@@ -1,0 +1,331 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider
+  commentId: T:Sannel.Encoding.Manager.HandBrake.IScanCacheProvider
+  id: IScanCacheProvider
+  parent: Sannel.Encoding.Manager.HandBrake
+  children:
+  - Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.GetCachedScanJsonAsync(System.String,System.Threading.CancellationToken)
+  - Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.SaveScanAsync(System.String,System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IScanCacheProvider
+  nameWithType: IScanCacheProvider
+  fullName: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider
+  type: Interface
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/IScanCacheProvider.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: IScanCacheProvider
+    path: ../src/Sannel.Encoding.Manager.HandBrake/IScanCacheProvider.cs
+    startLine: 6
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: >-
+    Abstraction over disc scan result caching, allowing different
+
+    implementations (EF Core, in-memory, no-op, etc.).
+  example: []
+  syntax:
+    content: public interface IScanCacheProvider
+    content.vb: Public Interface IScanCacheProvider
+- uid: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.GetCachedScanJsonAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.GetCachedScanJsonAsync(System.String,System.Threading.CancellationToken)
+  id: GetCachedScanJsonAsync(System.String,System.Threading.CancellationToken)
+  parent: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider
+  langs:
+  - csharp
+  - vb
+  name: GetCachedScanJsonAsync(string, CancellationToken)
+  nameWithType: IScanCacheProvider.GetCachedScanJsonAsync(string, CancellationToken)
+  fullName: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.GetCachedScanJsonAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/IScanCacheProvider.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: GetCachedScanJsonAsync
+    path: ../src/Sannel.Encoding.Manager.HandBrake/IScanCacheProvider.cs
+    startLine: 12
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: >-
+    Retrieves the cached scan JSON for <code class="paramref">inputPath</code>
+
+    if it was cached within the last 24 hours. Returns null otherwise.
+  example: []
+  syntax:
+    content: Task<string?> GetCachedScanJsonAsync(string inputPath, CancellationToken ct = default)
+    parameters:
+    - id: inputPath
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: Function GetCachedScanJsonAsync(inputPath As String, ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.GetCachedScanJsonAsync*
+  nameWithType.vb: IScanCacheProvider.GetCachedScanJsonAsync(String, CancellationToken)
+  fullName.vb: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.GetCachedScanJsonAsync(String, System.Threading.CancellationToken)
+  name.vb: GetCachedScanJsonAsync(String, CancellationToken)
+- uid: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.SaveScanAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.SaveScanAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: SaveScanAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider
+  langs:
+  - csharp
+  - vb
+  name: SaveScanAsync(string, string, CancellationToken)
+  nameWithType: IScanCacheProvider.SaveScanAsync(string, string, CancellationToken)
+  fullName: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.SaveScanAsync(string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/IScanCacheProvider.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: SaveScanAsync
+    path: ../src/Sannel.Encoding.Manager.HandBrake/IScanCacheProvider.cs
+    startLine: 18
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: >-
+    Stores the raw scan JSON for <code class="paramref">inputPath</code>
+
+    in the cache, replacing any previous entry.
+  example: []
+  syntax:
+    content: Task SaveScanAsync(string inputPath, string scanJson, CancellationToken ct = default)
+    parameters:
+    - id: inputPath
+      type: System.String
+    - id: scanJson
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SaveScanAsync(inputPath As String, scanJson As String, ct As CancellationToken = Nothing) As Task
+  overload: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.SaveScanAsync*
+  nameWithType.vb: IScanCacheProvider.SaveScanAsync(String, String, CancellationToken)
+  fullName.vb: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.SaveScanAsync(String, String, System.Threading.CancellationToken)
+  name.vb: SaveScanAsync(String, String, CancellationToken)
+references:
+- uid: Sannel.Encoding.Manager.HandBrake
+  commentId: N:Sannel.Encoding.Manager.HandBrake
+  href: Sannel.html
+  name: Sannel.Encoding.Manager.HandBrake
+  nameWithType: Sannel.Encoding.Manager.HandBrake
+  fullName: Sannel.Encoding.Manager.HandBrake
+  spec.csharp:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+  spec.vb:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+- uid: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.GetCachedScanJsonAsync*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.GetCachedScanJsonAsync
+  href: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.html#Sannel_Encoding_Manager_HandBrake_IScanCacheProvider_GetCachedScanJsonAsync_System_String_System_Threading_CancellationToken_
+  name: GetCachedScanJsonAsync
+  nameWithType: IScanCacheProvider.GetCachedScanJsonAsync
+  fullName: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.GetCachedScanJsonAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.SaveScanAsync*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.SaveScanAsync
+  href: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.html#Sannel_Encoding_Manager_HandBrake_IScanCacheProvider_SaveScanAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: SaveScanAsync
+  nameWithType: IScanCacheProvider.SaveScanAsync
+  fullName: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.SaveScanAsync
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task

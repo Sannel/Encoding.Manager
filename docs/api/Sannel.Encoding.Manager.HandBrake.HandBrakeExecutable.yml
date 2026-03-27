@@ -1,0 +1,614 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable
+  id: HandBrakeExecutable
+  parent: Sannel.Encoding.Manager.HandBrake
+  children:
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.Binary
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.PrefixArgs
+  langs:
+  - csharp
+  - vb
+  name: HandBrakeExecutable
+  nameWithType: HandBrakeExecutable
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable
+  type: Class
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeExecutable.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: HandBrakeExecutable
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeExecutable.cs
+    startLine: 7
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Resolved HandBrake executable information.
+  example: []
+  syntax:
+    content: 'public record HandBrakeExecutable : IEquatable<HandBrakeExecutable>'
+    content.vb: Public Class HandBrakeExecutable Implements IEquatable(Of HandBrakeExecutable)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  commentId: M:Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  id: '#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String})'
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable
+  langs:
+  - csharp
+  - vb
+  name: HandBrakeExecutable(string, IReadOnlyList<string>)
+  nameWithType: HandBrakeExecutable.HandBrakeExecutable(string, IReadOnlyList<string>)
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.HandBrakeExecutable(string, System.Collections.Generic.IReadOnlyList<string>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeExecutable.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: .ctor
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeExecutable.cs
+    startLine: 7
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Resolved HandBrake executable information.
+  example: []
+  syntax:
+    content: public HandBrakeExecutable(string Binary, IReadOnlyList<string> PrefixArgs)
+    parameters:
+    - id: Binary
+      type: System.String
+      description: The executable to launch (e.g. "HandBrakeCLI" or "flatpak").
+    - id: PrefixArgs
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+      description: Arguments to prepend before HandBrake flags (e.g. ["run", "--command=HandBrakeCLI", "fr.handbrake.HandBrake"] for Flatpak).
+    content.vb: Public Sub New(Binary As String, PrefixArgs As IReadOnlyList(Of String))
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.#ctor*
+  nameWithType.vb: HandBrakeExecutable.New(String, IReadOnlyList(Of String))
+  fullName.vb: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.New(String, System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: New(String, IReadOnlyList(Of String))
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.Binary
+  commentId: P:Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.Binary
+  id: Binary
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable
+  langs:
+  - csharp
+  - vb
+  name: Binary
+  nameWithType: HandBrakeExecutable.Binary
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.Binary
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeExecutable.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: Binary
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeExecutable.cs
+    startLine: 7
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: The executable to launch (e.g. "HandBrakeCLI" or "flatpak").
+  example: []
+  syntax:
+    content: public string Binary { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Binary As String
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.Binary*
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.PrefixArgs
+  commentId: P:Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.PrefixArgs
+  id: PrefixArgs
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable
+  langs:
+  - csharp
+  - vb
+  name: PrefixArgs
+  nameWithType: HandBrakeExecutable.PrefixArgs
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.PrefixArgs
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeExecutable.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: PrefixArgs
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeExecutable.cs
+    startLine: 7
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Arguments to prepend before HandBrake flags (e.g. ["run", "--command=HandBrakeCLI", "fr.handbrake.HandBrake"] for Flatpak).
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> PrefixArgs { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property PrefixArgs As IReadOnlyList(Of String)
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.PrefixArgs*
+references:
+- uid: Sannel.Encoding.Manager.HandBrake
+  commentId: N:Sannel.Encoding.Manager.HandBrake
+  href: Sannel.html
+  name: Sannel.Encoding.Manager.HandBrake
+  nameWithType: Sannel.Encoding.Manager.HandBrake
+  fullName: Sannel.Encoding.Manager.HandBrake
+  spec.csharp:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+  spec.vb:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable}
+  commentId: T:System.IEquatable{Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<HandBrakeExecutable>
+  nameWithType: IEquatable<HandBrakeExecutable>
+  fullName: System.IEquatable<Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable>
+  nameWithType.vb: IEquatable(Of HandBrakeExecutable)
+  fullName.vb: System.IEquatable(Of Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable)
+  name.vb: IEquatable(Of HandBrakeExecutable)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable
+    name: HandBrakeExecutable
+    href: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable
+    name: HandBrakeExecutable
+    href: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.#ctor*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.#ctor
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.html#Sannel_Encoding_Manager_HandBrake_HandBrakeExecutable__ctor_System_String_System_Collections_Generic_IReadOnlyList_System_String__
+  name: HandBrakeExecutable
+  nameWithType: HandBrakeExecutable.HandBrakeExecutable
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.HandBrakeExecutable
+  nameWithType.vb: HandBrakeExecutable.New
+  fullName.vb: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.Binary*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.Binary
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.html#Sannel_Encoding_Manager_HandBrake_HandBrakeExecutable_Binary
+  name: Binary
+  nameWithType: HandBrakeExecutable.Binary
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.Binary
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.PrefixArgs*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.PrefixArgs
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.html#Sannel_Encoding_Manager_HandBrake_HandBrakeExecutable_PrefixArgs
+  name: PrefixArgs
+  nameWithType: HandBrakeExecutable.PrefixArgs
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.PrefixArgs

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Server Installation | Sannel.Encoding.Manager </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Server Installation | Sannel.Encoding.Manager ">
+      
+      
+      <link rel="icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/Sannel/Encoding.Manager/blob/copilot/fix-build-issue-docs-action/docs/docs/installation/server.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../logo.svg" alt="Sannel.Encoding.Manager">
+            Sannel.Encoding.Manager
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="server-installation">Server Installation</h1>
+
+<p>This guide covers installing the <strong>Encoding Manager Server</strong> — the Blazor web UI and API that manages encoding workflows.</p>
+<h2 id="supported-platforms">Supported Platforms</h2>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Architecture</th>
+<th>Method</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows</td>
+<td>x64, ARM64</td>
+<td>Install script or Docker</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>x64, ARM64</td>
+<td>Install script or Docker</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="install-script-windows">Install Script (Windows)</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<ul>
+<li>Windows 10/11 or Windows Server 2019+</li>
+<li>PowerShell 5.1+ (built-in) or PowerShell 7+</li>
+<li>Administrator privileges</li>
+</ul>
+<h3 id="install--update">Install / Update</h3>
+<ol>
+<li>Download <code>server-win-x64.zip</code> (or <code>server-win-arm64.zip</code> for ARM devices) from the <a href="https://github.com/Sannel/Encoding.Manager/releases">Releases</a> page.</li>
+<li>Extract the archive.</li>
+<li>Open PowerShell <strong>as Administrator</strong> and run:</li>
+</ol>
+<pre><code class="lang-powershell">.\install.ps1
+</code></pre>
+<p>You will be prompted for an install directory. Press <strong>Enter</strong> to accept the default:</p>
+<pre><code>C:\Program Files\Encoding Manager\Server
+</code></pre>
+<p>The script will:</p>
+<ul>
+<li>Copy files to the install directory</li>
+<li>Register and start a Windows Service named <code>sannel-encoding-server</code></li>
+</ul>
+<p>If the service is <strong>already installed</strong>, the script automatically stops it, copies the updated files, and restarts it.</p>
+<h3 id="uninstall">Uninstall</h3>
+<p>From the install directory, run as Administrator:</p>
+<pre><code class="lang-powershell">.\uninstall.ps1
+</code></pre>
+<p>This stops the service, removes it, and (after confirmation) deletes the install directory.</p>
+<hr>
+<h2 id="install-script-linux">Install Script (Linux)</h2>
+<h3 id="prerequisites-1">Prerequisites</h3>
+<ul>
+<li>A systemd-based Linux distribution (Ubuntu 20.04+, Debian 11+, RHEL 8+, etc.)</li>
+<li>Root access (<code>sudo</code>)</li>
+</ul>
+<h3 id="install--update-1">Install / Update</h3>
+<ol>
+<li>Download <code>server-linux-x64.tar.gz</code> (or <code>server-linux-arm64.tar.gz</code> for ARM devices) from the <a href="https://github.com/Sannel/Encoding.Manager/releases">Releases</a> page.</li>
+<li>Extract the archive:</li>
+</ol>
+<pre><code class="lang-bash">mkdir -p server &amp;&amp; tar -xzf server-linux-x64.tar.gz -C server
+</code></pre>
+<ol start="3">
+<li>Run the install script:</li>
+</ol>
+<pre><code class="lang-bash">sudo ./server/install.sh
+</code></pre>
+<p>You will be prompted for an install directory. Press <strong>Enter</strong> to accept the default:</p>
+<pre><code>/opt/sannel/encoding-manager/server
+</code></pre>
+<p>The script will:</p>
+<ul>
+<li>Copy files to the install directory</li>
+<li>Create a systemd unit at <code>/etc/systemd/system/sannel-encoding-server.service</code></li>
+<li>Enable and start the service</li>
+</ul>
+<p>If the service is <strong>already installed</strong>, the script automatically stops it, copies the updated files, and restarts it.</p>
+<h3 id="service-management">Service Management</h3>
+<pre><code class="lang-bash">sudo systemctl status sannel-encoding-server
+sudo systemctl stop sannel-encoding-server
+sudo systemctl start sannel-encoding-server
+sudo systemctl restart sannel-encoding-server
+sudo journalctl -u sannel-encoding-server -f
+</code></pre>
+<h3 id="uninstall-1">Uninstall</h3>
+<pre><code class="lang-bash">sudo ./uninstall.sh
+</code></pre>
+<p>This stops and disables the service, removes the systemd unit file, and (after confirmation) deletes the install directory.</p>
+<hr>
+<h2 id="docker">Docker</h2>
+<p>The server is available as a multi-architecture Docker image supporting <code>linux/amd64</code> and <code>linux/arm64</code>.</p>
+<h3 id="image">Image</h3>
+<pre><code>ghcr.io/sannel/encoding-manager-server:&lt;tag&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>latest</code></td>
+<td>Latest stable release</td>
+</tr>
+<tr>
+<td><code>x.y.z</code></td>
+<td>Specific version (e.g., <code>1.0.0</code>)</td>
+</tr>
+<tr>
+<td><code>rc</code></td>
+<td>Latest release candidate</td>
+</tr>
+<tr>
+<td><code>develop</code></td>
+<td>Latest preview build</td>
+</tr>
+</tbody>
+</table>
+<h3 id="quick-start">Quick Start</h3>
+<pre><code class="lang-bash">docker run -d \
+  --name encoding-manager-server \
+  -p 8080:8080 \
+  -v encoding-manager-data:/app/data \
+  -e ConnectionStrings__DefaultConnection=&quot;Data Source=/app/data/encoding.db&quot; \
+  -e DB_PROVIDER=&quot;sqlite&quot; \
+  ghcr.io/sannel/encoding-manager-server:latest
+</code></pre>
+<h3 id="environment-variables">Environment Variables</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DB_PROVIDER</code></td>
+<td>Database provider (<code>sqlite</code> or <code>postgres</code>)</td>
+<td><code>sqlite</code></td>
+</tr>
+<tr>
+<td><code>ConnectionStrings__DefaultConnection</code></td>
+<td>Database connection string</td>
+<td>See below</td>
+</tr>
+<tr>
+<td><code>AzureAd__Instance</code></td>
+<td>Microsoft Entra instance URL</td>
+<td><code>https://login.microsoftonline.com/</code></td>
+</tr>
+<tr>
+<td><code>AzureAd__TenantId</code></td>
+<td>Entra tenant ID</td>
+<td><code>your-tenant-id</code></td>
+</tr>
+<tr>
+<td><code>AzureAd__ClientId</code></td>
+<td>Entra client (application) ID</td>
+<td><code>your-client-id</code></td>
+</tr>
+<tr>
+<td><code>AzureAd__ClientSecret</code></td>
+<td>Entra client secret</td>
+<td><code>your-client-secret</code></td>
+</tr>
+<tr>
+<td><code>ASPNETCORE_URLS</code></td>
+<td>Listening URLs</td>
+<td><code>http://+:8080</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="connection-string-examples">Connection String Examples</h4>
+<p><strong>SQLite:</strong></p>
+<pre><code>Data Source=/app/data/encoding.db
+</code></pre>
+<p><strong>PostgreSQL:</strong></p>
+<pre><code>Host=db;Port=5432;Database=encoding_manager;Username=postgres;Password=yourpassword
+</code></pre>
+<h3 id="volumes">Volumes</h3>
+<table>
+<thead>
+<tr>
+<th>Mount Point</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/app/data</code></td>
+<td>SQLite database and application data</td>
+</tr>
+</tbody>
+</table>
+<h3 id="docker-compose">Docker Compose</h3>
+<p>See the <a href="docker-compose.html">Docker Compose</a> guide for a full-stack example with the server, runner, and PostgreSQL.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/Sannel/Encoding.Manager/blob/copilot/fix-build-issue-docs-action/docs/docs/installation/server.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,587 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeParser
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeParser
+  id: HandBrakeParser
+  parent: Sannel.Encoding.Manager.HandBrake
+  children:
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseProgressLine(System.String)
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseScan(System.String)
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeParser.TryParseVersion(System.String,System.Version@)
+  langs:
+  - csharp
+  - vb
+  name: HandBrakeParser
+  nameWithType: HandBrakeParser
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeParser
+  type: Class
+  source:
+    id: HandBrakeParser
+    path: /home/runner/work/Encoding.Manager/Encoding.Manager/src/Sannel.Encoding.Manager.HandBrake/obj/Release/net10.0/System.Text.RegularExpressions.Generator/System.Text.RegularExpressions.Generator.RegexGenerator/RegexGenerator.g.cs
+    startLine: 190
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: >-
+    Stateless parser for HandBrakeCLI output.
+
+    Prefers JSON scan output; falls back to text parsing.
+  example: []
+  syntax:
+    content: public static class HandBrakeParser
+    content.vb: Public Module HandBrakeParser
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.TryParseVersion(System.String,System.Version@)
+  commentId: M:Sannel.Encoding.Manager.HandBrake.HandBrakeParser.TryParseVersion(System.String,System.Version@)
+  id: TryParseVersion(System.String,System.Version@)
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeParser
+  langs:
+  - csharp
+  - vb
+  name: TryParseVersion(string, out Version?)
+  nameWithType: HandBrakeParser.TryParseVersion(string, out Version?)
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.TryParseVersion(string, out System.Version?)
+  type: Method
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeParser.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: TryParseVersion
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeParser.cs
+    startLine: 15
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: >-
+    Attempts to parse the version from HandBrakeCLI --version output.
+
+    Expected format: "HandBrake 10.1.0" or similar.
+  example: []
+  syntax:
+    content: public static bool TryParseVersion(string output, out Version? version)
+    parameters:
+    - id: output
+      type: System.String
+    - id: version
+      type: System.Version
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function TryParseVersion(output As String, version As Version) As Boolean
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.TryParseVersion*
+  nameWithType.vb: HandBrakeParser.TryParseVersion(String, Version)
+  fullName.vb: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.TryParseVersion(String, System.Version)
+  name.vb: TryParseVersion(String, Version)
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseScan(System.String)
+  commentId: M:Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseScan(System.String)
+  id: ParseScan(System.String)
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeParser
+  langs:
+  - csharp
+  - vb
+  name: ParseScan(string)
+  nameWithType: HandBrakeParser.ParseScan(string)
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseScan(string)
+  type: Method
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeParser.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: ParseScan
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeParser.cs
+    startLine: 35
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Parses a scan result from HandBrakeCLI output. Attempts JSON first, then text fallback.
+  example: []
+  syntax:
+    content: public static IReadOnlyList<TitleInfo> ParseScan(string output)
+    parameters:
+    - id: output
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.TitleInfo}
+    content.vb: Public Shared Function ParseScan(output As String) As IReadOnlyList(Of TitleInfo)
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseScan*
+  nameWithType.vb: HandBrakeParser.ParseScan(String)
+  fullName.vb: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseScan(String)
+  name.vb: ParseScan(String)
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseProgressLine(System.String)
+  commentId: M:Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseProgressLine(System.String)
+  id: ParseProgressLine(System.String)
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeParser
+  langs:
+  - csharp
+  - vb
+  name: ParseProgressLine(string)
+  nameWithType: HandBrakeParser.ParseProgressLine(string)
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseProgressLine(string)
+  type: Method
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeParser.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: ParseProgressLine
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeParser.cs
+    startLine: 87
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: >-
+    Parses a single progress line from HandBrakeCLI stdout during encoding.
+
+    Returns null if the line is not a progress line.
+  example: []
+  syntax:
+    content: public static ProgressInfo? ParseProgressLine(string line)
+    parameters:
+    - id: line
+      type: System.String
+    return:
+      type: Sannel.Encoding.Manager.HandBrake.ProgressInfo
+    content.vb: Public Shared Function ParseProgressLine(line As String) As ProgressInfo
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseProgressLine*
+  nameWithType.vb: HandBrakeParser.ParseProgressLine(String)
+  fullName.vb: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseProgressLine(String)
+  name.vb: ParseProgressLine(String)
+references:
+- uid: Sannel.Encoding.Manager.HandBrake
+  commentId: N:Sannel.Encoding.Manager.HandBrake
+  href: Sannel.html
+  name: Sannel.Encoding.Manager.HandBrake
+  nameWithType: Sannel.Encoding.Manager.HandBrake
+  fullName: Sannel.Encoding.Manager.HandBrake
+  spec.csharp:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+  spec.vb:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.TryParseVersion*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeParser.TryParseVersion
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.html#Sannel_Encoding_Manager_HandBrake_HandBrakeParser_TryParseVersion_System_String_System_Version__
+  name: TryParseVersion
+  nameWithType: HandBrakeParser.TryParseVersion
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.TryParseVersion
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Version
+  commentId: T:System.Version
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.version
+  name: Version
+  nameWithType: Version
+  fullName: System.Version
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseScan*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseScan
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.html#Sannel_Encoding_Manager_HandBrake_HandBrakeParser_ParseScan_System_String_
+  name: ParseScan
+  nameWithType: HandBrakeParser.ParseScan
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseScan
+- uid: System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.TitleInfo}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.TitleInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<TitleInfo>
+  nameWithType: IReadOnlyList<TitleInfo>
+  fullName: System.Collections.Generic.IReadOnlyList<Sannel.Encoding.Manager.HandBrake.TitleInfo>
+  nameWithType.vb: IReadOnlyList(Of TitleInfo)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Sannel.Encoding.Manager.HandBrake.TitleInfo)
+  name.vb: IReadOnlyList(Of TitleInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Sannel.Encoding.Manager.HandBrake.TitleInfo
+    name: TitleInfo
+    href: Sannel.Encoding.Manager.HandBrake.TitleInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Sannel.Encoding.Manager.HandBrake.TitleInfo
+    name: TitleInfo
+    href: Sannel.Encoding.Manager.HandBrake.TitleInfo.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseProgressLine*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseProgressLine
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.html#Sannel_Encoding_Manager_HandBrake_HandBrakeParser_ParseProgressLine_System_String_
+  name: ParseProgressLine
+  nameWithType: HandBrakeParser.ParseProgressLine
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.ParseProgressLine
+- uid: Sannel.Encoding.Manager.HandBrake.ProgressInfo
+  commentId: T:Sannel.Encoding.Manager.HandBrake.ProgressInfo
+  parent: Sannel.Encoding.Manager.HandBrake
+  href: Sannel.Encoding.Manager.HandBrake.ProgressInfo.html
+  name: ProgressInfo
+  nameWithType: ProgressInfo
+  fullName: Sannel.Encoding.Manager.HandBrake.ProgressInfo

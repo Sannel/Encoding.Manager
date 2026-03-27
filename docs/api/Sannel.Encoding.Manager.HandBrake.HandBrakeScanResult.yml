@@ -1,0 +1,623 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult
+  id: HandBrakeScanResult
+  parent: Sannel.Encoding.Manager.HandBrake
+  children:
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Error
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.InputPath
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.IsSuccess
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.ScanOutputFilePath
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Titles
+  langs:
+  - csharp
+  - vb
+  name: HandBrakeScanResult
+  nameWithType: HandBrakeScanResult
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult
+  type: Class
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeScanResult.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: HandBrakeScanResult
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeScanResult.cs
+    startLine: 3
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Result of a HandBrakeCLI scan operation.
+  example: []
+  syntax:
+    content: public class HandBrakeScanResult
+    content.vb: Public Class HandBrakeScanResult
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.IsSuccess
+  commentId: P:Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.IsSuccess
+  id: IsSuccess
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult
+  langs:
+  - csharp
+  - vb
+  name: IsSuccess
+  nameWithType: HandBrakeScanResult.IsSuccess
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.IsSuccess
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeScanResult.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: IsSuccess
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeScanResult.cs
+    startLine: 5
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public required bool IsSuccess { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsSuccess As Boolean
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.IsSuccess*
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Error
+  commentId: P:Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Error
+  id: Error
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: HandBrakeScanResult.Error
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Error
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeScanResult.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: Error
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeScanResult.cs
+    startLine: 6
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public HandBrakeError? Error { get; init; }
+    parameters: []
+    return:
+      type: Sannel.Encoding.Manager.HandBrake.HandBrakeError
+    content.vb: Public Property [Error] As HandBrakeError
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Error*
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.InputPath
+  commentId: P:Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.InputPath
+  id: InputPath
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult
+  langs:
+  - csharp
+  - vb
+  name: InputPath
+  nameWithType: HandBrakeScanResult.InputPath
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.InputPath
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeScanResult.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: InputPath
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeScanResult.cs
+    startLine: 7
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public required string InputPath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property InputPath As String
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.InputPath*
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.ScanOutputFilePath
+  commentId: P:Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.ScanOutputFilePath
+  id: ScanOutputFilePath
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult
+  langs:
+  - csharp
+  - vb
+  name: ScanOutputFilePath
+  nameWithType: HandBrakeScanResult.ScanOutputFilePath
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.ScanOutputFilePath
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeScanResult.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: ScanOutputFilePath
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeScanResult.cs
+    startLine: 8
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public string? ScanOutputFilePath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ScanOutputFilePath As String
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.ScanOutputFilePath*
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Titles
+  commentId: P:Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Titles
+  id: Titles
+  parent: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult
+  langs:
+  - csharp
+  - vb
+  name: Titles
+  nameWithType: HandBrakeScanResult.Titles
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Titles
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/HandBrakeScanResult.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: Titles
+    path: ../src/Sannel.Encoding.Manager.HandBrake/HandBrakeScanResult.cs
+    startLine: 9
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public IReadOnlyList<TitleInfo> Titles { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.TitleInfo}
+    content.vb: Public Property Titles As IReadOnlyList(Of TitleInfo)
+  overload: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Titles*
+references:
+- uid: Sannel.Encoding.Manager.HandBrake
+  commentId: N:Sannel.Encoding.Manager.HandBrake
+  href: Sannel.html
+  name: Sannel.Encoding.Manager.HandBrake
+  nameWithType: Sannel.Encoding.Manager.HandBrake
+  fullName: Sannel.Encoding.Manager.HandBrake
+  spec.csharp:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+  spec.vb:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.IsSuccess*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.IsSuccess
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.html#Sannel_Encoding_Manager_HandBrake_HandBrakeScanResult_IsSuccess
+  name: IsSuccess
+  nameWithType: HandBrakeScanResult.IsSuccess
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.IsSuccess
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Error*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Error
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.html#Sannel_Encoding_Manager_HandBrake_HandBrakeScanResult_Error
+  name: Error
+  nameWithType: HandBrakeScanResult.Error
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Error
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeError
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeError
+  parent: Sannel.Encoding.Manager.HandBrake
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeError.html
+  name: HandBrakeError
+  nameWithType: HandBrakeError
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeError
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.InputPath*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.InputPath
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.html#Sannel_Encoding_Manager_HandBrake_HandBrakeScanResult_InputPath
+  name: InputPath
+  nameWithType: HandBrakeScanResult.InputPath
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.InputPath
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.ScanOutputFilePath*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.ScanOutputFilePath
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.html#Sannel_Encoding_Manager_HandBrake_HandBrakeScanResult_ScanOutputFilePath
+  name: ScanOutputFilePath
+  nameWithType: HandBrakeScanResult.ScanOutputFilePath
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.ScanOutputFilePath
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Titles*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Titles
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.html#Sannel_Encoding_Manager_HandBrake_HandBrakeScanResult_Titles
+  name: Titles
+  nameWithType: HandBrakeScanResult.Titles
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.Titles
+- uid: System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.TitleInfo}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Sannel.Encoding.Manager.HandBrake.TitleInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<TitleInfo>
+  nameWithType: IReadOnlyList<TitleInfo>
+  fullName: System.Collections.Generic.IReadOnlyList<Sannel.Encoding.Manager.HandBrake.TitleInfo>
+  nameWithType.vb: IReadOnlyList(Of TitleInfo)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Sannel.Encoding.Manager.HandBrake.TitleInfo)
+  name.vb: IReadOnlyList(Of TitleInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Sannel.Encoding.Manager.HandBrake.TitleInfo
+    name: TitleInfo
+    href: Sannel.Encoding.Manager.HandBrake.TitleInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Sannel.Encoding.Manager.HandBrake.TitleInfo
+    name: TitleInfo
+    href: Sannel.Encoding.Manager.HandBrake.TitleInfo.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

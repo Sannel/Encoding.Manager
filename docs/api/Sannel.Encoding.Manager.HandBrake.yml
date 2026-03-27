@@ -1,0 +1,200 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.HandBrake
+  commentId: N:Sannel.Encoding.Manager.HandBrake
+  id: Sannel.Encoding.Manager.HandBrake
+  children:
+  - Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+  - Sannel.Encoding.Manager.HandBrake.ChapterInfo
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeError
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeExecutableLocator
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeOptions
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeParser
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult
+  - Sannel.Encoding.Manager.HandBrake.HandBrakeService
+  - Sannel.Encoding.Manager.HandBrake.IHandBrakeService
+  - Sannel.Encoding.Manager.HandBrake.IProcessRunner
+  - Sannel.Encoding.Manager.HandBrake.IScanCacheProvider
+  - Sannel.Encoding.Manager.HandBrake.ProcessResult
+  - Sannel.Encoding.Manager.HandBrake.ProcessRunner
+  - Sannel.Encoding.Manager.HandBrake.ProgressInfo
+  - Sannel.Encoding.Manager.HandBrake.SubtitleInfo
+  - Sannel.Encoding.Manager.HandBrake.TitleInfo
+  - Sannel.Encoding.Manager.HandBrake.VideoStreamInfo
+  langs:
+  - csharp
+  - vb
+  name: Sannel.Encoding.Manager.HandBrake
+  nameWithType: Sannel.Encoding.Manager.HandBrake
+  fullName: Sannel.Encoding.Manager.HandBrake
+  type: Namespace
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+references:
+- uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+  commentId: T:Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+  href: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.html
+  name: AudioTrackInfo
+  nameWithType: AudioTrackInfo
+  fullName: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+- uid: Sannel.Encoding.Manager.HandBrake.ChapterInfo
+  commentId: T:Sannel.Encoding.Manager.HandBrake.ChapterInfo
+  href: Sannel.Encoding.Manager.HandBrake.ChapterInfo.html
+  name: ChapterInfo
+  nameWithType: ChapterInfo
+  fullName: Sannel.Encoding.Manager.HandBrake.ChapterInfo
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult.html
+  name: HandBrakeEncodeResult
+  nameWithType: HandBrakeEncodeResult
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeError
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeError
+  parent: Sannel.Encoding.Manager.HandBrake
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeError.html
+  name: HandBrakeError
+  nameWithType: HandBrakeError
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeError
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable.html
+  name: HandBrakeExecutable
+  nameWithType: HandBrakeExecutable
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutableLocator
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeExecutableLocator
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutableLocator.html
+  name: HandBrakeExecutableLocator
+  nameWithType: HandBrakeExecutableLocator
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutableLocator
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+  parent: Sannel.Encoding.Manager.HandBrake
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeJob.html
+  name: HandBrakeJob
+  nameWithType: HandBrakeJob
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeOptions
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeOptions
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeOptions.html
+  name: HandBrakeOptions
+  nameWithType: HandBrakeOptions
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeOptions
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeParser
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeParser
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeParser.html
+  name: HandBrakeParser
+  nameWithType: HandBrakeParser
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeParser
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult.html
+  name: HandBrakeScanResult
+  nameWithType: HandBrakeScanResult
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult
+- uid: Sannel.Encoding.Manager.HandBrake.HandBrakeService
+  commentId: T:Sannel.Encoding.Manager.HandBrake.HandBrakeService
+  href: Sannel.Encoding.Manager.HandBrake.HandBrakeService.html
+  name: HandBrakeService
+  nameWithType: HandBrakeService
+  fullName: Sannel.Encoding.Manager.HandBrake.HandBrakeService
+- uid: Sannel.Encoding.Manager.HandBrake.IHandBrakeService
+  commentId: T:Sannel.Encoding.Manager.HandBrake.IHandBrakeService
+  parent: Sannel.Encoding.Manager.HandBrake
+  href: Sannel.Encoding.Manager.HandBrake.IHandBrakeService.html
+  name: IHandBrakeService
+  nameWithType: IHandBrakeService
+  fullName: Sannel.Encoding.Manager.HandBrake.IHandBrakeService
+- uid: Sannel.Encoding.Manager.HandBrake.IProcessRunner
+  commentId: T:Sannel.Encoding.Manager.HandBrake.IProcessRunner
+  parent: Sannel.Encoding.Manager.HandBrake
+  href: Sannel.Encoding.Manager.HandBrake.IProcessRunner.html
+  name: IProcessRunner
+  nameWithType: IProcessRunner
+  fullName: Sannel.Encoding.Manager.HandBrake.IProcessRunner
+- uid: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider
+  commentId: T:Sannel.Encoding.Manager.HandBrake.IScanCacheProvider
+  parent: Sannel.Encoding.Manager.HandBrake
+  href: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider.html
+  name: IScanCacheProvider
+  nameWithType: IScanCacheProvider
+  fullName: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider
+- uid: Sannel.Encoding.Manager.HandBrake.ProcessResult
+  commentId: T:Sannel.Encoding.Manager.HandBrake.ProcessResult
+  href: Sannel.Encoding.Manager.HandBrake.ProcessResult.html
+  name: ProcessResult
+  nameWithType: ProcessResult
+  fullName: Sannel.Encoding.Manager.HandBrake.ProcessResult
+- uid: Sannel.Encoding.Manager.HandBrake.ProcessRunner
+  commentId: T:Sannel.Encoding.Manager.HandBrake.ProcessRunner
+  href: Sannel.Encoding.Manager.HandBrake.ProcessRunner.html
+  name: ProcessRunner
+  nameWithType: ProcessRunner
+  fullName: Sannel.Encoding.Manager.HandBrake.ProcessRunner
+- uid: Sannel.Encoding.Manager.HandBrake.ProgressInfo
+  commentId: T:Sannel.Encoding.Manager.HandBrake.ProgressInfo
+  parent: Sannel.Encoding.Manager.HandBrake
+  href: Sannel.Encoding.Manager.HandBrake.ProgressInfo.html
+  name: ProgressInfo
+  nameWithType: ProgressInfo
+  fullName: Sannel.Encoding.Manager.HandBrake.ProgressInfo
+- uid: Sannel.Encoding.Manager.HandBrake.SubtitleInfo
+  commentId: T:Sannel.Encoding.Manager.HandBrake.SubtitleInfo
+  href: Sannel.Encoding.Manager.HandBrake.SubtitleInfo.html
+  name: SubtitleInfo
+  nameWithType: SubtitleInfo
+  fullName: Sannel.Encoding.Manager.HandBrake.SubtitleInfo
+- uid: Sannel.Encoding.Manager.HandBrake.TitleInfo
+  commentId: T:Sannel.Encoding.Manager.HandBrake.TitleInfo
+  href: Sannel.Encoding.Manager.HandBrake.TitleInfo.html
+  name: TitleInfo
+  nameWithType: TitleInfo
+  fullName: Sannel.Encoding.Manager.HandBrake.TitleInfo
+- uid: Sannel.Encoding.Manager.HandBrake.VideoStreamInfo
+  commentId: T:Sannel.Encoding.Manager.HandBrake.VideoStreamInfo
+  href: Sannel.Encoding.Manager.HandBrake.VideoStreamInfo.html
+  name: VideoStreamInfo
+  nameWithType: VideoStreamInfo
+  fullName: Sannel.Encoding.Manager.HandBrake.VideoStreamInfo
+- uid: Sannel.Encoding.Manager.HandBrake
+  commentId: N:Sannel.Encoding.Manager.HandBrake
+  href: Sannel.html
+  name: Sannel.Encoding.Manager.HandBrake
+  nameWithType: Sannel.Encoding.Manager.HandBrake
+  fullName: Sannel.Encoding.Manager.HandBrake
+  spec.csharp:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+  spec.vb:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html

@@ -1,0 +1,122 @@
+### YamlMime:TableOfContent
+items:
+- uid: Sannel.Encoding.Manager.HandBrake
+  name: Sannel.Encoding.Manager.HandBrake
+  type: Namespace
+  items:
+  - uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+    name: AudioTrackInfo
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.ChapterInfo
+    name: ChapterInfo
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeEncodeResult
+    name: HandBrakeEncodeResult
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeError
+    name: HandBrakeError
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutable
+    name: HandBrakeExecutable
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeExecutableLocator
+    name: HandBrakeExecutableLocator
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeJob
+    name: HandBrakeJob
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeOptions
+    name: HandBrakeOptions
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeParser
+    name: HandBrakeParser
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeScanResult
+    name: HandBrakeScanResult
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.HandBrakeService
+    name: HandBrakeService
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.IHandBrakeService
+    name: IHandBrakeService
+    type: Interface
+  - uid: Sannel.Encoding.Manager.HandBrake.IProcessRunner
+    name: IProcessRunner
+    type: Interface
+  - uid: Sannel.Encoding.Manager.HandBrake.IScanCacheProvider
+    name: IScanCacheProvider
+    type: Interface
+  - uid: Sannel.Encoding.Manager.HandBrake.ProcessResult
+    name: ProcessResult
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.ProcessRunner
+    name: ProcessRunner
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.ProgressInfo
+    name: ProgressInfo
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.SubtitleInfo
+    name: SubtitleInfo
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.TitleInfo
+    name: TitleInfo
+    type: Class
+  - uid: Sannel.Encoding.Manager.HandBrake.VideoStreamInfo
+    name: VideoStreamInfo
+    type: Class
+- uid: Sannel.Encoding.Manager.Web.Features.Data
+  name: Sannel.Encoding.Manager.Web.Features.Data
+  type: Namespace
+  items:
+  - uid: Sannel.Encoding.Manager.Web.Features.Data.AppDbContext
+    name: AppDbContext
+    type: Class
+- uid: Sannel.Encoding.Manager.Web.Features.Data.Options
+  name: Sannel.Encoding.Manager.Web.Features.Data.Options
+  type: Namespace
+  items:
+  - uid: Sannel.Encoding.Manager.Web.Features.Data.Options.DatabaseOptions
+    name: DatabaseOptions
+    type: Class
+- uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  name: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  type: Namespace
+  items:
+  - uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem
+    name: EncodeQueueItem
+    type: Class
+  - uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset
+    name: EncodingPreset
+    type: Class
+- uid: Sannel.Encoding.Manager.Web.Features.Runner.Entities
+  name: Sannel.Encoding.Manager.Web.Features.Runner.Entities
+  type: Namespace
+  items:
+  - uid: Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner
+    name: Runner
+    type: Class
+- uid: Sannel.Encoding.Manager.Web.Features.Scan.Entities
+  name: Sannel.Encoding.Manager.Web.Features.Scan.Entities
+  type: Namespace
+  items:
+  - uid: Sannel.Encoding.Manager.Web.Features.Scan.Entities.DiscScanCache
+    name: DiscScanCache
+    type: Class
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  name: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  type: Namespace
+  items:
+  - uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings
+    name: AppSettings
+    type: Class
+- uid: Sannel.Encoding.Manager.Web.Features.Tvdb.Entities
+  name: Sannel.Encoding.Manager.Web.Features.Tvdb.Entities
+  type: Namespace
+  items:
+  - uid: Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbEpisodeCache
+    name: TvdbEpisodeCache
+    type: Class
+  - uid: Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbSeriesCache
+    name: TvdbSeriesCache
+    type: Class
+memberLayout: SamePage

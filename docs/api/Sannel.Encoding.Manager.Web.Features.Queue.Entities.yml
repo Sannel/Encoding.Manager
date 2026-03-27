@@ -1,0 +1,30 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  commentId: N:Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  id: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  children:
+  - Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem
+  - Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset
+  langs:
+  - csharp
+  - vb
+  name: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  nameWithType: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  fullName: Sannel.Encoding.Manager.Web.Features.Queue.Entities
+  type: Namespace
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+references:
+- uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem
+  commentId: T:Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem
+  href: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem.html
+  name: EncodeQueueItem
+  nameWithType: EncodeQueueItem
+  fullName: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem
+- uid: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset
+  commentId: T:Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset
+  href: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset.html
+  name: EncodingPreset
+  nameWithType: EncodingPreset
+  fullName: Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodingPreset

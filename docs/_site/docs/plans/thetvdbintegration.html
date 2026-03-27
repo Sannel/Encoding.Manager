@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Plan: TVDB Naming Panel with Cascade | Sannel.Encoding.Manager </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Plan: TVDB Naming Panel with Cascade | Sannel.Encoding.Manager ">
+      
+      
+      <link rel="icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/Sannel/Encoding.Manager/blob/copilot/fix-build-issue-docs-action/docs/docs/plans/thetvdbintegration.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../logo.svg" alt="Sannel.Encoding.Manager">
+            Sannel.Encoding.Manager
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="plan-tvdb-naming-panel-with-cascade">Plan: TVDB Naming Panel with Cascade</h1>
+
+<h2 id="tldr">TL;DR</h2>
+<p>Add a naming panel below both Titles and Chapters mode views. Each row represents a title or chapter segment and has: a free-text name, season dropdown, and episode dropdown populated from TheTVDB v4 API. A &quot;Cascade&quot; button fills subsequent rows by incrementing the episode/season from the first filled row. API key stored in appsettings/user-secrets.</p>
+<hr>
+<h2 id="phase-1--tvdb-feature-slice">Phase 1 — TVDB Feature Slice</h2>
+<p><strong>1. <code>Features/Tvdb/Options/TvdbOptions.cs</code></strong></p>
+<ul>
+<li><code>ApiKey</code> (string, from user-secrets)</li>
+<li><code>BaseUrl</code> (string, default <code>https://api4.thetvdb.com/v4</code>)</li>
+</ul>
+<p><strong>2. <code>Features/Tvdb/Dto/TvdbEpisode.cs</code></strong></p>
+<ul>
+<li><code>int SeasonNumber</code>, <code>int EpisodeNumber</code>, <code>string Name</code></li>
+</ul>
+<p><strong>3. <code>Features/Tvdb/Services/ITvdbService.cs</code></strong></p>
+<ul>
+<li><code>Task&lt;IReadOnlyList&lt;TvdbEpisode&gt;&gt; GetEpisodesAsync(int seriesId, CancellationToken ct)</code></li>
+</ul>
+<p><strong>4. <code>Features/Tvdb/Services/TvdbService.cs</code></strong></p>
+<ul>
+<li>Injects <code>HttpClient</code> (typed client) and <code>IOptions&lt;TvdbOptions&gt;</code></li>
+<li>On first call: POST <code>/login</code> with <code>{&quot;apikey&quot;: &quot;...&quot;}</code> to get bearer token; cache it in <code>_token</code></li>
+<li>Paginate GET <code>/series/{id}/episodes/official?page=0,1,…</code> until <code>links.next</code> is null</li>
+<li>Return flat <code>List&lt;TvdbEpisode&gt;</code> sorted by (SeasonNumber, EpisodeNumber)</li>
+</ul>
+<p><strong>5. <code>appsettings.json</code></strong> — Add <code>&quot;Tvdb&quot;: { &quot;BaseUrl&quot;: &quot;https://api4.thetvdb.com/v4&quot;, &quot;ApiKey&quot;: &quot;&quot; }</code></p>
+<p><strong>6. <code>Program.cs</code></strong></p>
+<ul>
+<li><code>builder.Services.Configure&lt;TvdbOptions&gt;(builder.Configuration.GetSection(&quot;Tvdb&quot;))</code></li>
+<li><code>builder.Services.AddHttpClient&lt;ITvdbService, TvdbService&gt;()</code></li>
+</ul>
+<hr>
+<h2 id="phase-2--naming-panel-component">Phase 2 — Naming Panel Component</h2>
+<p><strong>7. <code>Features/Scan/Dto/NamingItem.cs</code></strong></p>
+<ul>
+<li><code>record NamingItem(string Label)</code> — passed from each mode view to NamingPanel</li>
+</ul>
+<p><strong>8. <code>Features/Scan/Components/NamingPanel.razor</code> + <code>.razor.cs</code></strong></p>
+<p>Razor: collapsible <code>MudExpansionPanel</code> titled &quot;Episode Naming&quot;</p>
+<ul>
+<li>Row 1 controls: <code>MudTextField</code> &quot;Show ID&quot; + <code>MudButton</code> &quot;Load from TVDB&quot; + loading spinner + error chip</li>
+<li><code>MudButton</code> &quot;Cascade&quot; (disabled if no rows have season+episode set)</li>
+<li><code>MudTable</code> with columns: <strong>Item</strong>, <strong>Name</strong> (MudTextField), <strong>Season</strong> (MudSelect&lt;int?&gt;), <strong>Episode</strong> (MudSelect&lt;TvdbEpisode?&gt;)</li>
+</ul>
+<p>Code-behind (private state):</p>
+<ul>
+<li><code>private record NamingRow(string Label) { public string Name; public int? Season; public TvdbEpisode? Episode; }</code></li>
+<li><code>_rows</code>: <code>List&lt;NamingRow&gt;</code> rebuilt when <code>Items</code> parameter changes (<code>OnParametersSet</code>)</li>
+<li><code>_showId</code>, <code>_isLoading</code>, <code>_errorMessage</code>, <code>_allEpisodes</code>, <code>_seasons</code></li>
+<li><code>_allEpisodes</code>: <code>IReadOnlyList&lt;TvdbEpisode&gt;</code> — loaded from TVDB</li>
+<li><code>_seasons</code>: <code>IReadOnlyList&lt;int&gt;</code> derived from <code>_allEpisodes</code></li>
+<li><code>EpisodesForSeason(int season)</code> helper method</li>
+<li><code>OnEpisodeSelected(NamingRow row, TvdbEpisode? ep)</code> — sets <code>row.Episode = ep</code>, auto-fills <code>row.Name = ep?.Name</code></li>
+<li><code>OnCascadeClicked()</code>:
+<ol>
+<li>Find first row where <code>Season != null &amp;&amp; Episode != null</code></li>
+<li>Collect all episodes ordered by (SeasonNumber, EpisodeNumber) starting from found episode (exclusive)</li>
+<li>For each subsequent row, assign next episode and auto-fill Name</li>
+</ol>
+</li>
+</ul>
+<p>Parameters:</p>
+<ul>
+<li><code>[Parameter] public required IReadOnlyList&lt;NamingItem&gt; Items { get; set; }</code></li>
+<li><code>[Inject] private ITvdbService TvdbService { get; set; }</code></li>
+<li><code>[Inject] private ISnackbar Snackbar { get; set; }</code></li>
+</ul>
+<hr>
+<h2 id="phase-3--wire-into-mode-views">Phase 3 — Wire into Mode Views</h2>
+<p><strong>9. <code>TitlesModeView.razor</code> + <code>.razor.cs</code></strong></p>
+<ul>
+<li>After the titles table, add <code>&lt;NamingPanel Items=&quot;@NamingItems&quot; /&gt;</code></li>
+<li><code>NamingItems</code> computed property: <code>FilteredTitles.Select(t =&gt; new NamingItem($&quot;Title {t.TitleNumber} — {FormatDuration(t.Duration)}&quot;)).ToList()</code></li>
+<li>Add <code>@using Sannel.Encoding.Manager.Web.Features.Scan.Dto</code> to razor</li>
+</ul>
+<p><strong>10. <code>ChaptersModeView.razor</code> + <code>.razor.cs</code></strong></p>
+<ul>
+<li>After segments table, inside the <code>@if (_selectedTitle is not null)</code> block: <code>&lt;NamingPanel Items=&quot;@NamingItems&quot; /&gt;</code></li>
+<li><code>NamingItems</code> computed property: <code>Segments.Select(s =&gt; new NamingItem($&quot;Segment {s.SegmentNumber} (Ch {s.StartChapter}–{s.EndChapter})&quot;)).ToList()</code></li>
+<li><code>_rows</code> in NamingPanel must reset when <code>Items</code> changes (cover: title selection → new segments)</li>
+</ul>
+<hr>
+<h2 id="relevant-files">Relevant Files</h2>
+<ul>
+<li><code>src/Sannel.Encoding.Manager.Web/Program.cs</code> — register typed HttpClient + TvdbService, TvdbOptions</li>
+<li><code>src/Sannel.Encoding.Manager.Web/appsettings.json</code> — add Tvdb section</li>
+<li><code>src/Sannel.Encoding.Manager.Web/Features/Scan/Components/TitlesModeView.razor</code> + <code>.razor.cs</code></li>
+<li><code>src/Sannel.Encoding.Manager.Web/Features/Scan/Components/ChaptersModeView.razor</code> + <code>.razor.cs</code></li>
+<li>New files: <code>Features/Tvdb/Options/TvdbOptions.cs</code>, <code>Features/Tvdb/Dto/TvdbEpisode.cs</code>, <code>Features/Tvdb/Services/ITvdbService.cs</code>, <code>Features/Tvdb/Services/TvdbService.cs</code>, <code>Features/Scan/Dto/NamingItem.cs</code>, <code>Features/Scan/Components/NamingPanel.razor</code> + <code>.razor.cs</code></li>
+</ul>
+<hr>
+<h2 id="verification">Verification</h2>
+<ol>
+<li>Build succeeds with <code>dotnet build</code> — 0 errors</li>
+<li>All 27 tests still pass with <code>dotnet test</code></li>
+<li>Manually: enter a valid TVDB series ID → click &quot;Load from TVDB&quot; → seasons/episodes populate in rows</li>
+<li>Manually: fill Season+Episode on row 1 → click &quot;Cascade&quot; → rows 2+ get S1E2, S1E3, etc. Names auto-fill from TVDB</li>
+<li>Manually: switch title in Chapters mode → NamingPanel rows reset to match new segment count</li>
+<li>TVDB section missing ApiKey → graceful error shown in UI (not a crash)</li>
+</ol>
+<hr>
+<h2 id="decisions">Decisions</h2>
+<ul>
+<li>TVDB API key: appsettings/user-secrets only (no UI input)</li>
+<li>No auto-fill on load — full manual per-row selection; Cascade is the only bulk-fill mechanism</li>
+<li>Cascade increments episode within season; crosses to next season (sorted by SeasonNumber then EpisodeNumber) when current season is exhausted</li>
+<li>On episode dropdown selection, Name auto-fills from episode name (user can still edit)</li>
+<li>NamingPanel is a sub-component used by both mode views (not owned by ScanPage) so it naturally resets when the parent re-renders with new Items</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/Sannel/Encoding.Manager/blob/copilot/fix-build-issue-docs-action/docs/docs/plans/thetvdbintegration.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
