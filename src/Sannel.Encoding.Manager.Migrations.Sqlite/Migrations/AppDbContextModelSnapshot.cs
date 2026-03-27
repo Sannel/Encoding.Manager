@@ -27,6 +27,9 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("CompletedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("CreatedAt")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -35,8 +38,20 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("DiscRootLabel")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Mode")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ProgressPercent")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RunnerName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StartedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Status")
@@ -78,6 +93,33 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                     b.ToTable("EncodingPresets");
                 });
 
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CurrentJobId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("LastSeenAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Runners");
+                });
+
             modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Scan.Entities.DiscScanCache", b =>
                 {
                     b.Property<string>("InputPath")
@@ -103,6 +145,14 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("AudioDefault")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AudioLanguages")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SubtitleLanguages")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

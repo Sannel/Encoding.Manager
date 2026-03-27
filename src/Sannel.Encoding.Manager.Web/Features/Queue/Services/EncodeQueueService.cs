@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Sannel.Encoding.Manager.Web.Features.Data;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
+using Sannel.Encoding.Manager.Web.Features.Shared.Services;
 
 namespace Sannel.Encoding.Manager.Web.Features.Queue.Services;
 
@@ -18,6 +19,7 @@ public class EncodeQueueService : IEncodeQueueService
 	/// <inheritdoc />
 	public async Task AddItemAsync(EncodeQueueItem item, CancellationToken ct = default)
 	{
+		item.DiscPath = PathHelper.ToForwardSlash(item.DiscPath);
 		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
 		ctx.EncodeQueueItems.Add(item);
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);

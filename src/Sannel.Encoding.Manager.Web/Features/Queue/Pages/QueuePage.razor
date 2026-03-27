@@ -47,6 +47,11 @@ else
 				<MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)" Variant="Variant.Outlined">
 					@context.Status
 				</MudChip>
+				@if (context.Status == "Encoding" && context.ProgressPercent.HasValue)
+				{
+					<MudProgressLinear Value="@context.ProgressPercent.Value" Color="Color.Primary"
+						Size="Size.Small" Class="mt-1" Style="max-width: 120px;" />
+				}
 			</MudTd>
 			<MudTd DataLabel="Queued">
 				<MudText Typo="Typo.caption">@context.CreatedAt.ToLocalTime().ToString("g")</MudText>

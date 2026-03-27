@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sannel.Encoding.Manager.Web.Features.Data;
 using Sannel.Encoding.Manager.Web.Features.Settings.Entities;
+using Sannel.Encoding.Manager.Web.Features.Shared.Services;
 
 namespace Sannel.Encoding.Manager.Web.Features.Settings.Services;
 
@@ -29,13 +30,16 @@ public class SettingsService : ISettingsService
 		if (existing is null)
 		{
 			settings.Id = 1;
+			settings.TrackDestinationTemplate = PathHelper.ToForwardSlash(settings.TrackDestinationTemplate);
 			ctx.AppSettings.Add(settings);
 		}
 		else
 		{
 			existing.TrackDestinationRoot = settings.TrackDestinationRoot;
-			existing.TrackDestinationTemplate = settings.TrackDestinationTemplate;
+			existing.TrackDestinationTemplate = PathHelper.ToForwardSlash(settings.TrackDestinationTemplate);
 			existing.AudioDefault = settings.AudioDefault;
+			existing.AudioLanguages = settings.AudioLanguages;
+			existing.SubtitleLanguages = settings.SubtitleLanguages;
 		}
 
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Services;
 using Sannel.Encoding.Manager.Web.Features.Scan.Dto;
-using Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
+using Sannel.Encoding.Manager.HandBrake;
 
 namespace Sannel.Encoding.Manager.Web.Features.Scan.Pages;
 

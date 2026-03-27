@@ -1,0 +1,61 @@
+@page "/runners"
+@rendermode InteractiveServer
+
+<PageTitle>Runners</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Runners</MudText>
+
+@if (_isLoading)
+{
+	<MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+}
+else if (_runners.Count == 0)
+{
+	<MudAlert Severity="Severity.Info">
+		No runners have registered yet. Start a runner service and it will appear here after its first heartbeat.
+	</MudAlert>
+}
+else
+{
+	<MudTable Items="_runners" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
+		<HeaderContent>
+			<MudTh>Name</MudTh>
+			<MudTh>Enabled</MudTh>
+			<MudTh>Last Seen</MudTh>
+			<MudTh>Current Job</MudTh>
+			<MudTh></MudTh>
+		</HeaderContent>
+		<RowTemplate>
+			<MudTd DataLabel="Name">@context.Name</MudTd>
+			<MudTd DataLabel="Enabled">
+				<MudSwitch T="bool" Value="@context.IsEnabled"
+					ValueChanged="@(v => ToggleEnabledAsync(context.Id, v))"
+					Color="Color.Primary" />
+			</MudTd>
+			<MudTd DataLabel="Last Seen">
+				@if (context.LastSeenAt.HasValue)
+				{
+					<MudText Typo="Typo.body2">@context.LastSeenAt.Value.ToLocalTime().ToString("g")</MudText>
+				}
+				else
+				{
+					<MudText Typo="Typo.body2" Style="opacity:.5">Never</MudText>
+				}
+			</MudTd>
+			<MudTd DataLabel="Current Job">
+				@if (context.CurrentJobId.HasValue)
+				{
+					<MudText Typo="Typo.caption">@context.CurrentJobId.Value.ToString("D")[..8]…</MudText>
+				}
+				else
+				{
+					<MudText Typo="Typo.body2" Style="opacity:.5">Idle</MudText>
+				}
+			</MudTd>
+			<MudTd>
+				<MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+					Size="Size.Small" OnClick="@(() => DeleteRunnerAsync(context.Id))" />
+			</MudTd>
+		</RowTemplate>
+	</MudTable>
+}

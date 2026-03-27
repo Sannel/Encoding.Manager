@@ -32,6 +32,9 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("CompletedAt")
+                        .HasColumnType("character varying(48)");
+
                     b.Property<string>("CreatedAt")
                         .IsRequired()
                         .HasColumnType("character varying(48)");
@@ -40,9 +43,21 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("DiscRootLabel")
+                        .HasColumnType("text");
+
                     b.Property<string>("Mode")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int?>("ProgressPercent")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RunnerName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("StartedAt")
+                        .HasColumnType("character varying(48)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -83,6 +98,33 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                     b.ToTable("EncodingPresets");
                 });
 
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CurrentJobId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastSeenAt")
+                        .HasColumnType("character varying(48)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Runners");
+                });
+
             modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Scan.Entities.DiscScanCache", b =>
                 {
                     b.Property<string>("InputPath")
@@ -110,6 +152,14 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AudioDefault")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AudioLanguages")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SubtitleLanguages")
                         .IsRequired()
                         .HasColumnType("text");
 

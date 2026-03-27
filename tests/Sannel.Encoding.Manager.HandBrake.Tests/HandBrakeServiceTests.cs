@@ -1,11 +1,8 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using Sannel.Encoding.Manager.Web.Features.Data;
-using Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
+using Sannel.Encoding.Manager.HandBrake;
 
 namespace Sannel.Encoding.Manager.HandBrake.Tests;
 
@@ -59,17 +56,16 @@ public class HandBrakeServiceTests
 			options.ExecutablePath = executablePath;
 		}
 
+		options.ContentRootPath = Path.GetTempPath();
+
 		var optionsMock = Substitute.For<IOptions<HandBrakeOptions>>();
 		optionsMock.Value.Returns(options);
 
 		var logger = Substitute.For<ILogger<HandBrakeService>>();
 
-		var env = Substitute.For<IWebHostEnvironment>();
-		env.ContentRootPath.Returns(Path.GetTempPath());
+		var scanCache = Substitute.For<IScanCacheProvider>();
 
-		var dbFactory = Substitute.For<IDbContextFactory<AppDbContext>>();
-
-		return new HandBrakeService(runner, optionsMock, logger, env, dbFactory);
+		return new HandBrakeService(runner, optionsMock, logger, scanCache);
 	}
 
 	[Fact]

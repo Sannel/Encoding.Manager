@@ -12,16 +12,25 @@ using Sannel.Encoding.Manager.Web.Features.Filesystem.Services;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Options;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
 using Sannel.Encoding.Manager.Web.Features.Queue.Services;
+using Sannel.Encoding.Manager.Web.Features.Runner.Services;
+using Sannel.Encoding.Manager.Web.Features.Runners.Services;
 using Sannel.Encoding.Manager.Web.Features.Settings.Services;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Options;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Services;
+using Sannel.Encoding.Manager.HandBrake;
 using Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Microsoft Entra (Azure AD) authentication
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
+    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
+    .EnableTokenAcquisitionToCallDownstreamApi()
+    .AddInMemoryTokenCaches();
+
+// Bearer token auth for runner API
+builder.Services.AddAuthentication()
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"), jwtBearerScheme: "RunnerBearer");
 
 // Require authentication for all pages by default; use [AllowAnonymous] to opt out
 builder.Services.AddAuthorization(options =>
@@ -29,6 +38,10 @@ builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
+
+    options.AddPolicy("RunnerApi", policy =>
+        policy.AddAuthenticationSchemes("RunnerBearer")
+              .RequireAuthenticatedUser());
 });
 
 // Razor Pages are required for the Microsoft Identity login/logout UI
@@ -45,7 +58,9 @@ builder.Services.AddCascadingAuthenticationState();
 
 // HandBrake CLI integration
 builder.Services.Configure<HandBrakeOptions>(builder.Configuration.GetSection("HandBrake"));
+builder.Services.PostConfigure<HandBrakeOptions>(o => o.ContentRootPath = builder.Environment.ContentRootPath);
 builder.Services.AddSingleton<IProcessRunner, ProcessRunner>();
+builder.Services.AddSingleton<IScanCacheProvider, EfCoreScanCacheProvider>();
 builder.Services.AddSingleton<IHandBrakeService, HandBrakeService>();
 
 // Filesystem browsing
@@ -91,6 +106,12 @@ builder.Services.AddScoped<ISettingsService, SettingsService>();
 // Encoding queue
 builder.Services.AddScoped<IEncodeQueueService, EncodeQueueService>();
 builder.Services.AddScoped<IPresetService, PresetService>();
+
+// Runner job service
+builder.Services.AddScoped<IRunnerJobService, RunnerJobService>();
+
+// Runner management (web UI)
+builder.Services.AddScoped<IRunnerManagementService, RunnerManagementService>();
 
 // TheTVDB integration
 builder.Services.Configure<TvdbOptions>(builder.Configuration.GetSection("Tvdb"));

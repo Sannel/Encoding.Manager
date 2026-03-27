@@ -1,4 +1,4 @@
-using Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
+using Sannel.Encoding.Manager.HandBrake;
 
 namespace Sannel.Encoding.Manager.HandBrake.Tests;
 

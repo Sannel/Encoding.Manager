@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Sannel.Encoding.Manager.Web\Sannel.Encoding.Manager.Web.csproj" />
+    <ProjectReference Include="..\..\src\Sannel.Encoding.Manager.HandBrake\Sannel.Encoding.Manager.HandBrake.csproj" />
   </ItemGroup>
 
 </Project>

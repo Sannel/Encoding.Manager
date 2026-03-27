@@ -26,4 +26,10 @@ public class AppSettings
 
 	/// <summary>Default audio codec: "Opus" or "Aac".</summary>
 	public string AudioDefault { get; set; } = "Opus";
+
+	/// <summary>Comma-separated ISO 639-2 audio language codes (e.g. "eng,jpn").</summary>
+	public string AudioLanguages { get; set; } = "eng";
+
+	/// <summary>Comma-separated ISO 639-2 subtitle language codes (e.g. "eng").</summary>
+	public string SubtitleLanguages { get; set; } = "eng";
 }

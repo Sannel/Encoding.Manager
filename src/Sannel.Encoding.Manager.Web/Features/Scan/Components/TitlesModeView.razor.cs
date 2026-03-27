@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
-using Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
+using Sannel.Encoding.Manager.HandBrake;
 
 namespace Sannel.Encoding.Manager.Web.Features.Scan.Components;
 

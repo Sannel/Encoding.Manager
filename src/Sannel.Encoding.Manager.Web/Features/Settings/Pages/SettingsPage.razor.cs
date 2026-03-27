@@ -31,9 +31,12 @@ public partial class SettingsPage : ComponentBase
 
 	private IReadOnlyList<RootDirectory> _roots = [];
 	private IReadOnlyList<EncodingPreset> _presets = [];
+	private IReadOnlyList<LanguageDefinition> _allLanguages = LanguageList.Languages;
 	private string? _trackDestinationRoot;
 	private string _trackDestinationTemplate = string.Empty;
 	private AudioDefault _audioDefault = AudioDefault.Opus;
+	private IReadOnlyCollection<string> _selectedAudioLanguages = new HashSet<string> { "eng" };
+	private IReadOnlyCollection<string> _selectedSubtitleLanguages = new HashSet<string> { "eng" };
 	private bool _isSaving;
 	private bool _isLoading = true;
 
@@ -46,6 +49,12 @@ public partial class SettingsPage : ComponentBase
 		this._audioDefault = Enum.TryParse<AudioDefault>(settings.AudioDefault, ignoreCase: true, out var parsed)
 			? parsed
 			: AudioDefault.Opus;
+		this._selectedAudioLanguages = settings.AudioLanguages
+			.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+			.ToHashSet();
+		this._selectedSubtitleLanguages = settings.SubtitleLanguages
+			.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+			.ToHashSet();
 		this._presets = await this.PresetService.GetPresetsAsync();
 		this._isLoading = false;
 	}
@@ -65,6 +74,8 @@ public partial class SettingsPage : ComponentBase
 				TrackDestinationRoot = this._trackDestinationRoot,
 				TrackDestinationTemplate = this._trackDestinationTemplate,
 				AudioDefault = this._audioDefault.ToString(),
+				AudioLanguages = string.Join(",", this._selectedAudioLanguages),
+				SubtitleLanguages = string.Join(",", this._selectedSubtitleLanguages),
 			});
 			this.Snackbar.Add("Settings saved.", Severity.Success);
 		}

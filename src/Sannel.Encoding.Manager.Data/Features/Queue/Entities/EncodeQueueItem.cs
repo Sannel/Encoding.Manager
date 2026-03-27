@@ -21,8 +21,26 @@ public class EncodeQueueItem
 	/// </summary>
 	public string TracksJson { get; set; } = "[]";
 
-	/// <summary>"Queued", "Encoding", "Done", or "Failed".</summary>
+	/// <summary>"Queued", "Encoding", "Finished", or "Failed".</summary>
 	public string Status { get; set; } = "Queued";
 
 	public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+	/// <summary>Name of the runner that claimed this job.</summary>
+	public string? RunnerName { get; set; }
+
+	/// <summary>When encoding started.</summary>
+	public DateTimeOffset? StartedAt { get; set; }
+
+	/// <summary>When encoding completed or failed.</summary>
+	public DateTimeOffset? CompletedAt { get; set; }
+
+	/// <summary>
+	/// Filesystem root label for <see cref="DiscPath"/>.
+	/// When set, DiscPath is root-relative (forward-slash). When null, DiscPath is an absolute path.
+	/// </summary>
+	public string? DiscRootLabel { get; set; }
+
+	/// <summary>Encoding progress percentage (0-100) reported by the runner.</summary>
+	public int? ProgressPercent { get; set; }
 }

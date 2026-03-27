@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sannel.Encoding.Manager.Data\Sannel.Encoding.Manager.Data.csproj" />
+    <ProjectReference Include="..\Sannel.Encoding.Manager.HandBrake\Sannel.Encoding.Manager.HandBrake.csproj" />
     <ProjectReference Include="..\Sannel.Encoding.Manager.Migrations.Sqlite\Sannel.Encoding.Manager.Migrations.Sqlite.csproj" />
     <ProjectReference Include="..\Sannel.Encoding.Manager.Migrations.Postgres\Sannel.Encoding.Manager.Migrations.Postgres.csproj" />
   </ItemGroup>

@@ -68,7 +68,7 @@ public partial class QueuePage : ComponentBase
 	private static Color GetStatusColor(string status) => status switch
 	{
 		"Encoding" => Color.Warning,
-		"Done" => Color.Success,
+		"Finished" => Color.Success,
 		"Failed" => Color.Error,
 		_ => Color.Default,
 	};

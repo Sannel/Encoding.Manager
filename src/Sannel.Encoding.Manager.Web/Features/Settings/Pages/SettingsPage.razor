@@ -76,6 +76,32 @@ else
 
 		<MudCard>
 			<MudCardContent>
+				<MudText Typo="Typo.h6" Class="mb-3">Languages</MudText>
+
+				<MudSelect T="string" Label="Audio Languages" MultiSelection="true"
+					@bind-SelectedValues="_selectedAudioLanguages"
+					Variant="Variant.Outlined" Class="mb-4"
+					HelperText="Languages for audio track selection by the runner">
+					@foreach (var lang in _allLanguages)
+					{
+						<MudSelectItem T="string" Value="@lang.Code">@lang.Name (@lang.Code)</MudSelectItem>
+					}
+				</MudSelect>
+
+				<MudSelect T="string" Label="Subtitle Languages" MultiSelection="true"
+					@bind-SelectedValues="_selectedSubtitleLanguages"
+					Variant="Variant.Outlined"
+					HelperText="Languages for subtitle track selection by the runner">
+					@foreach (var lang in _allLanguages)
+					{
+						<MudSelectItem T="string" Value="@lang.Code">@lang.Name (@lang.Code)</MudSelectItem>
+					}
+				</MudSelect>
+			</MudCardContent>
+		</MudCard>
+
+		<MudCard>
+			<MudCardContent>
 				<MudText Typo="Typo.h6" Class="mb-3">HandBrake Presets</MudText>
 				@if (_presets.Count == 0)
 				{

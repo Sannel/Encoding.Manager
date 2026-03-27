@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sannel.Encoding.Manager.Web.Features.Data;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
+using Sannel.Encoding.Manager.Web.Features.Shared.Services;
 
 namespace Sannel.Encoding.Manager.Web.Features.Queue.Services;
 
@@ -27,6 +28,7 @@ public class PresetService : IPresetService
 	/// <inheritdoc />
 	public async Task AddPresetAsync(EncodingPreset preset, CancellationToken ct = default)
 	{
+		preset.RelativePath = PathHelper.ToForwardSlash(preset.RelativePath);
 		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
 		ctx.EncodingPresets.Add(preset);
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);

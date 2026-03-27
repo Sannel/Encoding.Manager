@@ -4,6 +4,7 @@ using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
 using Sannel.Encoding.Manager.Web.Features.Scan.Entities;
 using Sannel.Encoding.Manager.Web.Features.Settings.Entities;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Entities;
+using RunnerEntity = Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner;
 
 namespace Sannel.Encoding.Manager.Web.Features.Data;
 
@@ -31,6 +32,7 @@ public class AppDbContext : DbContext
 	public DbSet<DiscScanCache> DiscScanCache => this.Set<DiscScanCache>();
 	public DbSet<TvdbSeriesCache> TvdbSeriesCache => this.Set<TvdbSeriesCache>();
 	public DbSet<TvdbEpisodeCache> TvdbEpisodeCache => this.Set<TvdbEpisodeCache>();
+	public DbSet<RunnerEntity> Runners => this.Set<RunnerEntity>();
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
@@ -59,6 +61,12 @@ public class AppDbContext : DbContext
 		modelBuilder.Entity<TvdbEpisodeCache>(entity =>
 		{
 			entity.HasKey(e => new { e.SeriesId, e.OrderType, e.SeasonNumber, e.EpisodeNumber });
+		});
+
+		modelBuilder.Entity<RunnerEntity>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasIndex(e => e.Name).IsUnique();
 		});
 	}
 }
