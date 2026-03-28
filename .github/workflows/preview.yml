@@ -252,6 +252,7 @@ jobs:
         with:
           path: ./artifacts
           merge-multiple: true
+          pattern: '{server,runner}-*'
 
       - name: Create or update rolling pre-release
         env:
