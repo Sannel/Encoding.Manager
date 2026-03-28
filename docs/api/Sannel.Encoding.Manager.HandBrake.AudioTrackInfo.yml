@@ -1,0 +1,554 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+  commentId: T:Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+  id: AudioTrackInfo
+  parent: Sannel.Encoding.Manager.HandBrake
+  children:
+  - Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Bitrate
+  - Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.ChannelLayout
+  - Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Codec
+  - Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Language
+  - Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.SampleRate
+  - Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.TrackNumber
+  langs:
+  - csharp
+  - vb
+  name: AudioTrackInfo
+  nameWithType: AudioTrackInfo
+  fullName: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+  type: Class
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/AudioTrackInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: AudioTrackInfo
+    path: ../src/Sannel.Encoding.Manager.HandBrake/AudioTrackInfo.cs
+    startLine: 3
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Audio track metadata.
+  example: []
+  syntax:
+    content: public class AudioTrackInfo
+    content.vb: Public Class AudioTrackInfo
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.TrackNumber
+  commentId: P:Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.TrackNumber
+  id: TrackNumber
+  parent: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+  langs:
+  - csharp
+  - vb
+  name: TrackNumber
+  nameWithType: AudioTrackInfo.TrackNumber
+  fullName: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.TrackNumber
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/AudioTrackInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: TrackNumber
+    path: ../src/Sannel.Encoding.Manager.HandBrake/AudioTrackInfo.cs
+    startLine: 5
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public int TrackNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TrackNumber As Integer
+  overload: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.TrackNumber*
+- uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Codec
+  commentId: P:Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Codec
+  id: Codec
+  parent: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+  langs:
+  - csharp
+  - vb
+  name: Codec
+  nameWithType: AudioTrackInfo.Codec
+  fullName: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Codec
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/AudioTrackInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: Codec
+    path: ../src/Sannel.Encoding.Manager.HandBrake/AudioTrackInfo.cs
+    startLine: 6
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public string Codec { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Codec As String
+  overload: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Codec*
+- uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Language
+  commentId: P:Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Language
+  id: Language
+  parent: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+  langs:
+  - csharp
+  - vb
+  name: Language
+  nameWithType: AudioTrackInfo.Language
+  fullName: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Language
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/AudioTrackInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: Language
+    path: ../src/Sannel.Encoding.Manager.HandBrake/AudioTrackInfo.cs
+    startLine: 7
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public string Language { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Language As String
+  overload: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Language*
+- uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.SampleRate
+  commentId: P:Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.SampleRate
+  id: SampleRate
+  parent: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+  langs:
+  - csharp
+  - vb
+  name: SampleRate
+  nameWithType: AudioTrackInfo.SampleRate
+  fullName: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.SampleRate
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/AudioTrackInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: SampleRate
+    path: ../src/Sannel.Encoding.Manager.HandBrake/AudioTrackInfo.cs
+    startLine: 8
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public int SampleRate { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SampleRate As Integer
+  overload: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.SampleRate*
+- uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Bitrate
+  commentId: P:Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Bitrate
+  id: Bitrate
+  parent: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+  langs:
+  - csharp
+  - vb
+  name: Bitrate
+  nameWithType: AudioTrackInfo.Bitrate
+  fullName: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Bitrate
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/AudioTrackInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: Bitrate
+    path: ../src/Sannel.Encoding.Manager.HandBrake/AudioTrackInfo.cs
+    startLine: 9
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public int Bitrate { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Bitrate As Integer
+  overload: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Bitrate*
+- uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.ChannelLayout
+  commentId: P:Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.ChannelLayout
+  id: ChannelLayout
+  parent: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo
+  langs:
+  - csharp
+  - vb
+  name: ChannelLayout
+  nameWithType: AudioTrackInfo.ChannelLayout
+  fullName: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.ChannelLayout
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/AudioTrackInfo.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: ChannelLayout
+    path: ../src/Sannel.Encoding.Manager.HandBrake/AudioTrackInfo.cs
+    startLine: 10
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  syntax:
+    content: public string ChannelLayout { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ChannelLayout As String
+  overload: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.ChannelLayout*
+references:
+- uid: Sannel.Encoding.Manager.HandBrake
+  commentId: N:Sannel.Encoding.Manager.HandBrake
+  href: Sannel.html
+  name: Sannel.Encoding.Manager.HandBrake
+  nameWithType: Sannel.Encoding.Manager.HandBrake
+  fullName: Sannel.Encoding.Manager.HandBrake
+  spec.csharp:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+  spec.vb:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.TrackNumber*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.TrackNumber
+  href: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.html#Sannel_Encoding_Manager_HandBrake_AudioTrackInfo_TrackNumber
+  name: TrackNumber
+  nameWithType: AudioTrackInfo.TrackNumber
+  fullName: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.TrackNumber
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Codec*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Codec
+  href: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.html#Sannel_Encoding_Manager_HandBrake_AudioTrackInfo_Codec
+  name: Codec
+  nameWithType: AudioTrackInfo.Codec
+  fullName: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Codec
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Language*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Language
+  href: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.html#Sannel_Encoding_Manager_HandBrake_AudioTrackInfo_Language
+  name: Language
+  nameWithType: AudioTrackInfo.Language
+  fullName: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Language
+- uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.SampleRate*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.SampleRate
+  href: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.html#Sannel_Encoding_Manager_HandBrake_AudioTrackInfo_SampleRate
+  name: SampleRate
+  nameWithType: AudioTrackInfo.SampleRate
+  fullName: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.SampleRate
+- uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Bitrate*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Bitrate
+  href: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.html#Sannel_Encoding_Manager_HandBrake_AudioTrackInfo_Bitrate
+  name: Bitrate
+  nameWithType: AudioTrackInfo.Bitrate
+  fullName: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.Bitrate
+- uid: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.ChannelLayout*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.ChannelLayout
+  href: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.html#Sannel_Encoding_Manager_HandBrake_AudioTrackInfo_ChannelLayout
+  name: ChannelLayout
+  nameWithType: AudioTrackInfo.ChannelLayout
+  fullName: Sannel.Encoding.Manager.HandBrake.AudioTrackInfo.ChannelLayout

@@ -7,6 +7,12 @@
           "src": "../src",
           "files": [
             "**/*.csproj"
+          ],
+          "exclude": [
+            "Sannel.Encoding.Manager.Web/**",
+            "Sannel.Encoding.Runner/**",
+            "Sannel.Encoding.Manager.Migrations.Sqlite/**",
+            "Sannel.Encoding.Manager.Migrations.Postgres/**"
           ]
         }
       ],

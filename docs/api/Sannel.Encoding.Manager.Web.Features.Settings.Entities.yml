@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  commentId: N:Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  id: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  children:
+  - Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings
+  langs:
+  - csharp
+  - vb
+  name: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  nameWithType: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  type: Namespace
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+references:
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings
+  commentId: T:Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings
+  href: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.html
+  name: AppSettings
+  nameWithType: AppSettings
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings

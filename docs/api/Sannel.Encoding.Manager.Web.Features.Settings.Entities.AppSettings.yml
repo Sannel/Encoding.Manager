@@ -1,0 +1,601 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings
+  commentId: T:Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings
+  id: AppSettings
+  parent: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  children:
+  - Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioDefault
+  - Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioLanguages
+  - Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.Id
+  - Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.SubtitleLanguages
+  - Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationRoot
+  - Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationTemplate
+  langs:
+  - csharp
+  - vb
+  name: AppSettings
+  nameWithType: AppSettings
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings
+  type: Class
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.Data/Features/Settings/Entities/AppSettings.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: AppSettings
+    path: ../src/Sannel.Encoding.Manager.Data/Features/Settings/Entities/AppSettings.cs
+    startLine: 5
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+  namespace: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  summary: Singleton application settings row — always stored with Id = 1.
+  example: []
+  syntax:
+    content: public class AppSettings
+    content.vb: Public Class AppSettings
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.Id
+  commentId: P:Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.Id
+  id: Id
+  parent: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: AppSettings.Id
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.Id
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.Data/Features/Settings/Entities/AppSettings.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: Id
+    path: ../src/Sannel.Encoding.Manager.Data/Features/Settings/Entities/AppSettings.cs
+    startLine: 7
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+  namespace: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  syntax:
+    content: public int Id { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Id As Integer
+  overload: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.Id*
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationTemplate
+  commentId: P:Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationTemplate
+  id: TrackDestinationTemplate
+  parent: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings
+  langs:
+  - csharp
+  - vb
+  name: TrackDestinationTemplate
+  nameWithType: AppSettings.TrackDestinationTemplate
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationTemplate
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.Data/Features/Settings/Entities/AppSettings.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: TrackDestinationTemplate
+    path: ../src/Sannel.Encoding.Manager.Data/Features/Settings/Entities/AppSettings.cs
+    startLine: 17
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+  namespace: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  summary: >-
+    Output file path template. Supported variables:
+
+    {SourceDisk}, {TVDBShow}, {TVDBID}, {SeasonNumber}, {EpisodeName}.
+
+
+    {SeasonNumber} expands to "Season 01" / "Season 12".
+
+    {EpisodeName}  expands to "s01e05 - Title.mkv"; omits season/episode when
+
+    unknown; falls back to "Title {N} Ch {start}-{end}" when no episode title.
+  example: []
+  syntax:
+    content: public string TrackDestinationTemplate { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TrackDestinationTemplate As String
+  overload: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationTemplate*
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationRoot
+  commentId: P:Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationRoot
+  id: TrackDestinationRoot
+  parent: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings
+  langs:
+  - csharp
+  - vb
+  name: TrackDestinationRoot
+  nameWithType: AppSettings.TrackDestinationRoot
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationRoot
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.Data/Features/Settings/Entities/AppSettings.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: TrackDestinationRoot
+    path: ../src/Sannel.Encoding.Manager.Data/Features/Settings/Entities/AppSettings.cs
+    startLine: 24
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+  namespace: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  summary: >-
+    The label of the configured filesystem root to use as the base output directory.
+
+    Matches a label from FilesystemOptions.Roots.
+  example: []
+  syntax:
+    content: public string? TrackDestinationRoot { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TrackDestinationRoot As String
+  overload: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationRoot*
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioDefault
+  commentId: P:Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioDefault
+  id: AudioDefault
+  parent: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings
+  langs:
+  - csharp
+  - vb
+  name: AudioDefault
+  nameWithType: AppSettings.AudioDefault
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioDefault
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.Data/Features/Settings/Entities/AppSettings.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: AudioDefault
+    path: ../src/Sannel.Encoding.Manager.Data/Features/Settings/Entities/AppSettings.cs
+    startLine: 27
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+  namespace: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  summary: 'Default audio codec: "Opus" or "Aac".'
+  example: []
+  syntax:
+    content: public string AudioDefault { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AudioDefault As String
+  overload: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioDefault*
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioLanguages
+  commentId: P:Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioLanguages
+  id: AudioLanguages
+  parent: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings
+  langs:
+  - csharp
+  - vb
+  name: AudioLanguages
+  nameWithType: AppSettings.AudioLanguages
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioLanguages
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.Data/Features/Settings/Entities/AppSettings.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: AudioLanguages
+    path: ../src/Sannel.Encoding.Manager.Data/Features/Settings/Entities/AppSettings.cs
+    startLine: 30
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+  namespace: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  summary: Comma-separated ISO 639-2 audio language codes (e.g. "eng,jpn").
+  example: []
+  syntax:
+    content: public string AudioLanguages { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AudioLanguages As String
+  overload: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioLanguages*
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.SubtitleLanguages
+  commentId: P:Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.SubtitleLanguages
+  id: SubtitleLanguages
+  parent: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings
+  langs:
+  - csharp
+  - vb
+  name: SubtitleLanguages
+  nameWithType: AppSettings.SubtitleLanguages
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.SubtitleLanguages
+  type: Property
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.Data/Features/Settings/Entities/AppSettings.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: SubtitleLanguages
+    path: ../src/Sannel.Encoding.Manager.Data/Features/Settings/Entities/AppSettings.cs
+    startLine: 33
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+  namespace: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  summary: Comma-separated ISO 639-2 subtitle language codes (e.g. "eng").
+  example: []
+  syntax:
+    content: public string SubtitleLanguages { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SubtitleLanguages As String
+  overload: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.SubtitleLanguages*
+references:
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  commentId: N:Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  href: Sannel.html
+  name: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  nameWithType: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+  spec.csharp:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web
+    name: Web
+    href: Sannel.Encoding.Manager.Web.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web.Features
+    name: Features
+    href: Sannel.Encoding.Manager.Web.Features.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web.Features.Settings
+    name: Settings
+    href: Sannel.Encoding.Manager.Web.Features.Settings.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+    name: Entities
+    href: Sannel.Encoding.Manager.Web.Features.Settings.Entities.html
+  spec.vb:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web
+    name: Web
+    href: Sannel.Encoding.Manager.Web.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web.Features
+    name: Features
+    href: Sannel.Encoding.Manager.Web.Features.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web.Features.Settings
+    name: Settings
+    href: Sannel.Encoding.Manager.Web.Features.Settings.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities
+    name: Entities
+    href: Sannel.Encoding.Manager.Web.Features.Settings.Entities.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.Id*
+  commentId: Overload:Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.Id
+  href: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.html#Sannel_Encoding_Manager_Web_Features_Settings_Entities_AppSettings_Id
+  name: Id
+  nameWithType: AppSettings.Id
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.Id
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationTemplate*
+  commentId: Overload:Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationTemplate
+  href: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.html#Sannel_Encoding_Manager_Web_Features_Settings_Entities_AppSettings_TrackDestinationTemplate
+  name: TrackDestinationTemplate
+  nameWithType: AppSettings.TrackDestinationTemplate
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationTemplate
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationRoot*
+  commentId: Overload:Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationRoot
+  href: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.html#Sannel_Encoding_Manager_Web_Features_Settings_Entities_AppSettings_TrackDestinationRoot
+  name: TrackDestinationRoot
+  nameWithType: AppSettings.TrackDestinationRoot
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.TrackDestinationRoot
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioDefault*
+  commentId: Overload:Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioDefault
+  href: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.html#Sannel_Encoding_Manager_Web_Features_Settings_Entities_AppSettings_AudioDefault
+  name: AudioDefault
+  nameWithType: AppSettings.AudioDefault
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioDefault
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioLanguages*
+  commentId: Overload:Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioLanguages
+  href: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.html#Sannel_Encoding_Manager_Web_Features_Settings_Entities_AppSettings_AudioLanguages
+  name: AudioLanguages
+  nameWithType: AppSettings.AudioLanguages
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.AudioLanguages
+- uid: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.SubtitleLanguages*
+  commentId: Overload:Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.SubtitleLanguages
+  href: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.html#Sannel_Encoding_Manager_Web_Features_Settings_Entities_AppSettings_SubtitleLanguages
+  name: SubtitleLanguages
+  nameWithType: AppSettings.SubtitleLanguages
+  fullName: Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings.SubtitleLanguages

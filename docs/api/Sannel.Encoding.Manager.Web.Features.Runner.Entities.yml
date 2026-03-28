@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.Web.Features.Runner.Entities
+  commentId: N:Sannel.Encoding.Manager.Web.Features.Runner.Entities
+  id: Sannel.Encoding.Manager.Web.Features.Runner.Entities
+  children:
+  - Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner
+  langs:
+  - csharp
+  - vb
+  name: Sannel.Encoding.Manager.Web.Features.Runner.Entities
+  nameWithType: Sannel.Encoding.Manager.Web.Features.Runner.Entities
+  fullName: Sannel.Encoding.Manager.Web.Features.Runner.Entities
+  type: Namespace
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+references:
+- uid: Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner
+  commentId: T:Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner
+  href: Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner.html
+  name: Runner
+  nameWithType: Runner
+  fullName: Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner

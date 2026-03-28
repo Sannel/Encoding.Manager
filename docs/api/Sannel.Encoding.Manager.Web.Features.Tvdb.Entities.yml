@@ -1,0 +1,30 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.Web.Features.Tvdb.Entities
+  commentId: N:Sannel.Encoding.Manager.Web.Features.Tvdb.Entities
+  id: Sannel.Encoding.Manager.Web.Features.Tvdb.Entities
+  children:
+  - Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbEpisodeCache
+  - Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbSeriesCache
+  langs:
+  - csharp
+  - vb
+  name: Sannel.Encoding.Manager.Web.Features.Tvdb.Entities
+  nameWithType: Sannel.Encoding.Manager.Web.Features.Tvdb.Entities
+  fullName: Sannel.Encoding.Manager.Web.Features.Tvdb.Entities
+  type: Namespace
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+references:
+- uid: Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbEpisodeCache
+  commentId: T:Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbEpisodeCache
+  href: Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbEpisodeCache.html
+  name: TvdbEpisodeCache
+  nameWithType: TvdbEpisodeCache
+  fullName: Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbEpisodeCache
+- uid: Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbSeriesCache
+  commentId: T:Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbSeriesCache
+  href: Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbSeriesCache.html
+  name: TvdbSeriesCache
+  nameWithType: TvdbSeriesCache
+  fullName: Sannel.Encoding.Manager.Web.Features.Tvdb.Entities.TvdbSeriesCache

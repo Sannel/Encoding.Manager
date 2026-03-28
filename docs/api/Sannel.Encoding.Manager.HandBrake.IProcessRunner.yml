@@ -1,0 +1,484 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.HandBrake.IProcessRunner
+  commentId: T:Sannel.Encoding.Manager.HandBrake.IProcessRunner
+  id: IProcessRunner
+  parent: Sannel.Encoding.Manager.HandBrake
+  children:
+  - Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunAsync(System.String,System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  - Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunWithLineCallbackAsync(System.String,System.Collections.Generic.IEnumerable{System.String},System.Action{System.String},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IProcessRunner
+  nameWithType: IProcessRunner
+  fullName: Sannel.Encoding.Manager.HandBrake.IProcessRunner
+  type: Interface
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/IProcessRunner.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: IProcessRunner
+    path: ../src/Sannel.Encoding.Manager.HandBrake/IProcessRunner.cs
+    startLine: 5
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Abstraction over System.Diagnostics.Process to allow unit testing without spawning real processes.
+  example: []
+  syntax:
+    content: public interface IProcessRunner
+    content.vb: Public Interface IProcessRunner
+  derivedClasses:
+  - Sannel.Encoding.Manager.HandBrake.ProcessRunner
+- uid: Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunAsync(System.String,System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  commentId: M:Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunAsync(System.String,System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  id: RunAsync(System.String,System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  parent: Sannel.Encoding.Manager.HandBrake.IProcessRunner
+  langs:
+  - csharp
+  - vb
+  name: RunAsync(string, IEnumerable<string>, CancellationToken)
+  nameWithType: IProcessRunner.RunAsync(string, IEnumerable<string>, CancellationToken)
+  fullName: Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunAsync(string, System.Collections.Generic.IEnumerable<string>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/IProcessRunner.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: RunAsync
+    path: ../src/Sannel.Encoding.Manager.HandBrake/IProcessRunner.cs
+    startLine: 10
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: Runs a process to completion, capturing all stdout and stderr.
+  example: []
+  syntax:
+    content: Task<ProcessResult> RunAsync(string fileName, IEnumerable<string> arguments, CancellationToken ct = default)
+    parameters:
+    - id: fileName
+      type: System.String
+    - id: arguments
+      type: System.Collections.Generic.IEnumerable{System.String}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Sannel.Encoding.Manager.HandBrake.ProcessResult}
+    content.vb: Function RunAsync(fileName As String, arguments As IEnumerable(Of String), ct As CancellationToken = Nothing) As Task(Of ProcessResult)
+  overload: Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunAsync*
+  nameWithType.vb: IProcessRunner.RunAsync(String, IEnumerable(Of String), CancellationToken)
+  fullName.vb: Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunAsync(String, System.Collections.Generic.IEnumerable(Of String), System.Threading.CancellationToken)
+  name.vb: RunAsync(String, IEnumerable(Of String), CancellationToken)
+- uid: Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunWithLineCallbackAsync(System.String,System.Collections.Generic.IEnumerable{System.String},System.Action{System.String},System.Threading.CancellationToken)
+  commentId: M:Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunWithLineCallbackAsync(System.String,System.Collections.Generic.IEnumerable{System.String},System.Action{System.String},System.Threading.CancellationToken)
+  id: RunWithLineCallbackAsync(System.String,System.Collections.Generic.IEnumerable{System.String},System.Action{System.String},System.Threading.CancellationToken)
+  parent: Sannel.Encoding.Manager.HandBrake.IProcessRunner
+  langs:
+  - csharp
+  - vb
+  name: RunWithLineCallbackAsync(string, IEnumerable<string>, Action<string>, CancellationToken)
+  nameWithType: IProcessRunner.RunWithLineCallbackAsync(string, IEnumerable<string>, Action<string>, CancellationToken)
+  fullName: Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunWithLineCallbackAsync(string, System.Collections.Generic.IEnumerable<string>, System.Action<string>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Sannel.Encoding.Manager.HandBrake/IProcessRunner.cs
+      branch: copilot/fix-build-issue-docs-action
+      repo: https://github.com/Sannel/Encoding.Manager
+    id: RunWithLineCallbackAsync
+    path: ../src/Sannel.Encoding.Manager.HandBrake/IProcessRunner.cs
+    startLine: 19
+  assemblies:
+  - Sannel.Encoding.Manager.HandBrake
+  namespace: Sannel.Encoding.Manager.HandBrake
+  summary: >-
+    Runs a process and streams stdout lines as they arrive.
+
+    Stderr is captured fully and returned in the result.
+  example: []
+  syntax:
+    content: Task<ProcessResult> RunWithLineCallbackAsync(string fileName, IEnumerable<string> arguments, Action<string> onOutputLine, CancellationToken ct = default)
+    parameters:
+    - id: fileName
+      type: System.String
+    - id: arguments
+      type: System.Collections.Generic.IEnumerable{System.String}
+    - id: onOutputLine
+      type: System.Action{System.String}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Sannel.Encoding.Manager.HandBrake.ProcessResult}
+    content.vb: Function RunWithLineCallbackAsync(fileName As String, arguments As IEnumerable(Of String), onOutputLine As Action(Of String), ct As CancellationToken = Nothing) As Task(Of ProcessResult)
+  overload: Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunWithLineCallbackAsync*
+  nameWithType.vb: IProcessRunner.RunWithLineCallbackAsync(String, IEnumerable(Of String), Action(Of String), CancellationToken)
+  fullName.vb: Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunWithLineCallbackAsync(String, System.Collections.Generic.IEnumerable(Of String), System.Action(Of String), System.Threading.CancellationToken)
+  name.vb: RunWithLineCallbackAsync(String, IEnumerable(Of String), Action(Of String), CancellationToken)
+references:
+- uid: Sannel.Encoding.Manager.HandBrake
+  commentId: N:Sannel.Encoding.Manager.HandBrake
+  href: Sannel.html
+  name: Sannel.Encoding.Manager.HandBrake
+  nameWithType: Sannel.Encoding.Manager.HandBrake
+  fullName: Sannel.Encoding.Manager.HandBrake
+  spec.csharp:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+  spec.vb:
+  - uid: Sannel
+    name: Sannel
+    href: Sannel.html
+  - name: .
+  - uid: Sannel.Encoding
+    name: Encoding
+    href: Sannel.Encoding.html
+  - name: .
+  - uid: Sannel.Encoding.Manager
+    name: Manager
+    href: Sannel.Encoding.Manager.html
+  - name: .
+  - uid: Sannel.Encoding.Manager.HandBrake
+    name: HandBrake
+    href: Sannel.Encoding.Manager.HandBrake.html
+- uid: Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunAsync*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunAsync
+  href: Sannel.Encoding.Manager.HandBrake.IProcessRunner.html#Sannel_Encoding_Manager_HandBrake_IProcessRunner_RunAsync_System_String_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_
+  name: RunAsync
+  nameWithType: IProcessRunner.RunAsync
+  fullName: Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Sannel.Encoding.Manager.HandBrake.ProcessResult}
+  commentId: T:System.Threading.Tasks.Task{Sannel.Encoding.Manager.HandBrake.ProcessResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ProcessResult>
+  nameWithType: Task<ProcessResult>
+  fullName: System.Threading.Tasks.Task<Sannel.Encoding.Manager.HandBrake.ProcessResult>
+  nameWithType.vb: Task(Of ProcessResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Sannel.Encoding.Manager.HandBrake.ProcessResult)
+  name.vb: Task(Of ProcessResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Sannel.Encoding.Manager.HandBrake.ProcessResult
+    name: ProcessResult
+    href: Sannel.Encoding.Manager.HandBrake.ProcessResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Sannel.Encoding.Manager.HandBrake.ProcessResult
+    name: ProcessResult
+    href: Sannel.Encoding.Manager.HandBrake.ProcessResult.html
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunWithLineCallbackAsync*
+  commentId: Overload:Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunWithLineCallbackAsync
+  href: Sannel.Encoding.Manager.HandBrake.IProcessRunner.html#Sannel_Encoding_Manager_HandBrake_IProcessRunner_RunWithLineCallbackAsync_System_String_System_Collections_Generic_IEnumerable_System_String__System_Action_System_String__System_Threading_CancellationToken_
+  name: RunWithLineCallbackAsync
+  nameWithType: IProcessRunner.RunWithLineCallbackAsync
+  fullName: Sannel.Encoding.Manager.HandBrake.IProcessRunner.RunWithLineCallbackAsync
+- uid: System.Action{System.String}
+  commentId: T:System.Action{System.String}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<string>
+  nameWithType: Action<string>
+  fullName: System.Action<string>
+  nameWithType.vb: Action(Of String)
+  fullName.vb: System.Action(Of String)
+  name.vb: Action(Of String)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

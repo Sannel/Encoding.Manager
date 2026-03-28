@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Sannel.Encoding.Manager.Web.Features.Data
+  commentId: N:Sannel.Encoding.Manager.Web.Features.Data
+  id: Sannel.Encoding.Manager.Web.Features.Data
+  children:
+  - Sannel.Encoding.Manager.Web.Features.Data.AppDbContext
+  langs:
+  - csharp
+  - vb
+  name: Sannel.Encoding.Manager.Web.Features.Data
+  nameWithType: Sannel.Encoding.Manager.Web.Features.Data
+  fullName: Sannel.Encoding.Manager.Web.Features.Data
+  type: Namespace
+  assemblies:
+  - Sannel.Encoding.Manager.Data
+references:
+- uid: Sannel.Encoding.Manager.Web.Features.Data.AppDbContext
+  commentId: T:Sannel.Encoding.Manager.Web.Features.Data.AppDbContext
+  href: Sannel.Encoding.Manager.Web.Features.Data.AppDbContext.html
+  name: AppDbContext
+  nameWithType: AppDbContext
+  fullName: Sannel.Encoding.Manager.Web.Features.Data.AppDbContext
