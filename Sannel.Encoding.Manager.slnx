@@ -9,6 +9,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Sannel.Encoding.Manager.HandBrake.Tests/Sannel.Encoding.Manager.HandBrake.Tests.csproj" />
+    <Project Path="tests/Sannel.Encoding.Runner.Tests/Sannel.Encoding.Runner.Tests.csproj" />
   </Folder>
   <Project Path="docs/docs.csproj" />
 </Solution>

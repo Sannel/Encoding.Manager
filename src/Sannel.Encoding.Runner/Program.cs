@@ -1,12 +1,28 @@
 using Sannel.Encoding.Manager.HandBrake;
 using Sannel.Encoding.Runner;
+using Sannel.Encoding.Runner.Features.Configuration;
 using Sannel.Encoding.Runner.Features.Runner.Options;
 using Sannel.Encoding.Runner.Features.Runner.Services;
+
+var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.0.1";
+Console.WriteLine($"Sannel Encoding Runner v{version}");
+
+// Handle the 'configure' subcommand before building the host.
+if (args.Length > 0 && args[0].Equals("configure", StringComparison.OrdinalIgnoreCase))
+{
+	ConfigureCommand.Run();
+	return;
+}
 
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddWindowsService();
 builder.Services.AddSystemd();
+
+// Encrypted config overlay — loaded after appsettings.json so it takes precedence.
+// Values prefixed with "enc:" are transparently decrypted at startup.
+// Add config/appsettings.json to .gitignore — it may contain secrets.
+builder.Configuration.AddEncryptedJsonFile(ConfigureCommand.ConfigFilePath, optional: true);
 
 // Options
 builder.Services.Configure<RunnerOptions>(builder.Configuration.GetSection("Runner"));

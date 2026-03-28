@@ -19,8 +19,21 @@ using Sannel.Encoding.Manager.Web.Features.Tvdb.Options;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Services;
 using Sannel.Encoding.Manager.HandBrake;
 using Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
+using Sannel.Encoding.Manager.Web.Features.Configuration;
+
+// Handle the 'configure' subcommand before building the web host.
+if (args.Length > 0 && args[0].Equals("configure", StringComparison.OrdinalIgnoreCase))
+{
+	ConfigureCommand.Run();
+	return;
+}
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Encrypted config overlay — loaded after appsettings.json so it takes precedence.
+// Values prefixed with "enc:" are transparently decrypted at startup.
+// Add config/appsettings.json to .gitignore — it may contain secrets.
+builder.Configuration.AddEncryptedJsonFile(ConfigureCommand.ConfigFilePath, optional: true);
 
 // Microsoft Entra (Azure AD) authentication
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
