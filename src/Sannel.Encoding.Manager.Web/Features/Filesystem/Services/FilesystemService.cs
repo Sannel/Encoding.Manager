@@ -39,6 +39,8 @@ public class FilesystemService : IFilesystemService
 	/// <inheritdoc />
 	public Task<BrowseResponse> BrowseAsync(string label, string? relativePath = null, CancellationToken cancellationToken = default)
 	{
+		var normalizedRelativePath = NormalizeRelativePath(relativePath);
+
 		// Find the root configuration by label
 		var rootConfig = _options.Roots.FirstOrDefault(r => r.Label.Equals(label, StringComparison.OrdinalIgnoreCase));
 		if (rootConfig == null)
@@ -50,9 +52,9 @@ public class FilesystemService : IFilesystemService
 		var canonicalRootPath = Path.GetFullPath(rootConfig.Path);
 
 		// Construct the target path
-		var targetPath = string.IsNullOrWhiteSpace(relativePath)
+		var targetPath = string.IsNullOrWhiteSpace(normalizedRelativePath)
 			? canonicalRootPath
-			: Path.Combine(canonicalRootPath, relativePath);
+			: Path.Combine(canonicalRootPath, normalizedRelativePath);
 
 		// Canonicalize the target path to prevent symlink/traversal attacks
 		var canonicalTargetPath = Path.GetFullPath(targetPath);
@@ -60,13 +62,19 @@ public class FilesystemService : IFilesystemService
 		// Ensure the target path is within the root boundary
 		if (!IsPathWithinRoot(canonicalTargetPath, canonicalRootPath))
 		{
-			throw new ArgumentException($"Path escapes root boundary: '{relativePath}'", nameof(relativePath));
+			_logger.LogWarning(
+				"Browse validation failed. Label={Label}, RelativePath={RelativePath}, CanonicalRoot={CanonicalRoot}, CanonicalTarget={CanonicalTarget}",
+				label,
+				normalizedRelativePath,
+				canonicalRootPath,
+				canonicalTargetPath);
+			throw new ArgumentException($"Path escapes root boundary: '{normalizedRelativePath}'", nameof(relativePath));
 		}
 
 		// Check if the directory exists
 		if (!Directory.Exists(canonicalTargetPath))
 		{
-			throw new DirectoryNotFoundException($"Directory not found: '{relativePath ?? "/"}'");
+			throw new DirectoryNotFoundException($"Directory not found: '{(string.IsNullOrWhiteSpace(normalizedRelativePath) ? "/" : normalizedRelativePath)}'");
 		}
 
 		// Get immediate subdirectories
@@ -104,10 +112,29 @@ public class FilesystemService : IFilesystemService
 	/// </summary>
 	private static bool IsPathWithinRoot(string path, string root)
 	{
-		// Both paths should already be canonicalized
-		// Ensure the path starts with the root and has a directory separator
-		return path.StartsWith(root, StringComparison.OrdinalIgnoreCase) &&
-			   (path.Length == root.Length || path[root.Length] == Path.DirectorySeparatorChar || path[root.Length] == Path.AltDirectorySeparatorChar);
+		// Compare canonical paths using a trailing separator boundary check.
+		// This correctly handles Windows drive roots like "D:\\".
+		var normalizedPath = Path.TrimEndingDirectorySeparator(path);
+		var normalizedRoot = Path.TrimEndingDirectorySeparator(root);
+
+		if (string.Equals(normalizedPath, normalizedRoot, StringComparison.OrdinalIgnoreCase))
+		{
+			return true;
+		}
+
+		var rootPrefix = normalizedRoot + Path.DirectorySeparatorChar;
+		return normalizedPath.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase);
+	}
+
+	private static string? NormalizeRelativePath(string? relativePath)
+	{
+		if (string.IsNullOrWhiteSpace(relativePath))
+		{
+			return null;
+		}
+
+		var normalized = relativePath.Replace('\\', '/').Trim('/');
+		return normalized.Length == 0 ? null : normalized;
 	}
 
 	/// <inheritdoc />
@@ -117,6 +144,8 @@ public class FilesystemService : IFilesystemService
 		string[] fileExtensions,
 		CancellationToken cancellationToken = default)
 	{
+		var normalizedRelativePath = NormalizeRelativePath(relativePath);
+
 		var rootConfig = _options.Roots.FirstOrDefault(r => r.Label.Equals(label, StringComparison.OrdinalIgnoreCase));
 		if (rootConfig == null)
 		{
@@ -124,19 +153,25 @@ public class FilesystemService : IFilesystemService
 		}
 
 		var canonicalRootPath = Path.GetFullPath(rootConfig.Path);
-		var targetPath = string.IsNullOrWhiteSpace(relativePath)
+		var targetPath = string.IsNullOrWhiteSpace(normalizedRelativePath)
 			? canonicalRootPath
-			: Path.Combine(canonicalRootPath, relativePath);
+			: Path.Combine(canonicalRootPath, normalizedRelativePath);
 		var canonicalTargetPath = Path.GetFullPath(targetPath);
 
 		if (!IsPathWithinRoot(canonicalTargetPath, canonicalRootPath))
 		{
-			throw new ArgumentException($"Path escapes root boundary: '{relativePath}'", nameof(relativePath));
+			_logger.LogWarning(
+				"BrowseWithExtensionFilter validation failed. Label={Label}, RelativePath={RelativePath}, CanonicalRoot={CanonicalRoot}, CanonicalTarget={CanonicalTarget}",
+				label,
+				normalizedRelativePath,
+				canonicalRootPath,
+				canonicalTargetPath);
+			throw new ArgumentException($"Path escapes root boundary: '{normalizedRelativePath}'", nameof(relativePath));
 		}
 
 		if (!Directory.Exists(canonicalTargetPath))
 		{
-			throw new DirectoryNotFoundException($"Directory not found: '{relativePath ?? "/"}'" );
+			throw new DirectoryNotFoundException($"Directory not found: '{(string.IsNullOrWhiteSpace(normalizedRelativePath) ? "/" : normalizedRelativePath)}'" );
 		}
 
 		var extSet = new HashSet<string>(fileExtensions, StringComparer.OrdinalIgnoreCase);
@@ -177,13 +212,15 @@ public class FilesystemService : IFilesystemService
 			throw new ArgumentException("Label must not be empty.", nameof(label));
 		}
 
-		if (string.IsNullOrWhiteSpace(relativePath))
+		var normalizedRelativePath = NormalizeRelativePath(relativePath);
+
+		if (string.IsNullOrWhiteSpace(normalizedRelativePath))
 		{
 			throw new ArgumentException("Relative path must not be empty.", nameof(relativePath));
 		}
 
 		// Reject path segments that attempt traversal
-		var segments = relativePath.Split('/', '\\');
+		var segments = normalizedRelativePath.Split('/');
 		foreach (var segment in segments)
 		{
 			var trimmed = segment.Trim();
@@ -197,11 +234,17 @@ public class FilesystemService : IFilesystemService
 			?? throw new ArgumentException($"Invalid label: '{label}'", nameof(label));
 
 		var canonicalRootPath = Path.GetFullPath(rootConfig.Path);
-		var combinedPath = Path.Combine(canonicalRootPath, relativePath);
+		var combinedPath = Path.Combine(canonicalRootPath, normalizedRelativePath);
 		var canonicalPath = Path.GetFullPath(combinedPath);
 
 		if (!IsPathWithinRoot(canonicalPath, canonicalRootPath))
 		{
+			_logger.LogWarning(
+				"ResolvePhysicalPath validation failed. Label={Label}, RelativePath={RelativePath}, CanonicalRoot={CanonicalRoot}, CanonicalTarget={CanonicalTarget}",
+				label,
+				normalizedRelativePath,
+				canonicalRootPath,
+				canonicalPath);
 			throw new ArgumentException("Invalid path: the specified path is not allowed.", nameof(relativePath));
 		}
 

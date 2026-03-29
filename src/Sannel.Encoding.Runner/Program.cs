@@ -36,7 +36,7 @@ if (OperatingSystem.IsWindows())
 		eventLogSettings?.LogName = "Application";
 	});
 	// Filter to only Error and Critical level messages for Event Log
-	builder.Logging.AddFilter("Microsoft.Extensions.Logging.EventLog.EventLogLoggerProvider", LogLevel.Error);
+	builder.Logging.AddFilter("Microsoft.Extensions.Logging.EventLog.EventLogLoggerProvider", LogLevel.Warning);
 }
 
 // Encrypted config overlay — loaded after appsettings.json so it takes precedence.
