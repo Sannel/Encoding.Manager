@@ -112,18 +112,21 @@ public class FilesystemService : IFilesystemService
 	/// </summary>
 	private static bool IsPathWithinRoot(string path, string root)
 	{
-		// Compare canonical paths using a trailing separator boundary check.
-		// This correctly handles Windows drive roots like "D:\\".
-		var normalizedPath = Path.TrimEndingDirectorySeparator(path);
-		var normalizedRoot = Path.TrimEndingDirectorySeparator(root);
+		var relative = Path.GetRelativePath(root, path);
 
-		if (string.Equals(normalizedPath, normalizedRoot, StringComparison.OrdinalIgnoreCase))
+		if (relative is "." or "")
 		{
 			return true;
 		}
 
-		var rootPrefix = normalizedRoot + Path.DirectorySeparatorChar;
-		return normalizedPath.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase);
+		if (Path.IsPathRooted(relative))
+		{
+			return false;
+		}
+
+		return !relative.Equals("..", StringComparison.Ordinal)
+			&& !relative.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
+			&& !relative.StartsWith($"..{Path.AltDirectorySeparatorChar}", StringComparison.Ordinal);
 	}
 
 	private static string? NormalizeRelativePath(string? relativePath)
