@@ -42,7 +42,6 @@ jobs:
         run: dotnet test --no-build --configuration Release --verbosity normal
 
   publish-server:
-    if: github.event_name == 'push'
     needs: build-and-test
     runs-on: ubuntu-latest
     strategy:
@@ -103,7 +102,6 @@ jobs:
           path: server-${{ matrix.rid }}.*
 
   publish-runner:
-    if: github.event_name == 'push'
     needs: build-and-test
     runs-on: ubuntu-latest
     strategy:
