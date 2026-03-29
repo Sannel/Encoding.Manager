@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Client;
+using System.Security;
 
 namespace Sannel.Encoding.Runner.Features.Runner.Services;
 
@@ -34,8 +35,10 @@ public class RunnerAccessTokenProvider : IRunnerAccessTokenProvider
 			}
 
 			var tenantId = GetRequired("AzureAd:TenantId");
-			var clientId = GetRequired("AzureAd:ClientId");
-			var clientSecret = GetRequired("AzureAd:ClientSecret");
+			var clientId = GetOptional("AzureAd:ClientId")
+				?? throw new InvalidOperationException("Missing required configuration value 'AzureAd:ClientId'.");
+			var username = GetRequired("AzureAd:Username");
+			var password = GetRequired("AzureAd:Password");
 			var instance = _configuration["AzureAd:Instance"]?.Trim();
 			if (string.IsNullOrWhiteSpace(instance))
 			{
@@ -45,14 +48,15 @@ public class RunnerAccessTokenProvider : IRunnerAccessTokenProvider
 			var scope = ResolveScope(clientId);
 			var authority = BuildAuthority(instance, tenantId);
 
-			var app = ConfidentialClientApplicationBuilder
+			var app = PublicClientApplicationBuilder
 				.Create(clientId)
-				.WithClientSecret(clientSecret)
 				.WithAuthority(authority)
 				.Build();
 
+			using var securePassword = ToSecureString(password);
+
 			var result = await app
-				.AcquireTokenForClient([scope])
+				.AcquireTokenByUsernamePassword([scope], username, securePassword)
 				.ExecuteAsync(ct);
 
 			_accessToken = result.AccessToken;
@@ -79,14 +83,8 @@ public class RunnerAccessTokenProvider : IRunnerAccessTokenProvider
 			return configuredScope;
 		}
 
-		var configuredApiClientId = _configuration["AzureAd:ApiClientId"]?.Trim();
-		if (!string.IsNullOrWhiteSpace(configuredApiClientId))
-		{
-			return $"api://{configuredApiClientId}/.default";
-		}
-
 		_logger.LogWarning(
-			"AzureAd:Scope and AzureAd:ApiClientId are not configured. Falling back to api://{ClientId}/.default.",
+			"AzureAd:Scope is not configured. Falling back to api://{ClientId}/.default.",
 			clientId);
 		return $"api://{clientId}/.default";
 	}
@@ -99,12 +97,36 @@ public class RunnerAccessTokenProvider : IRunnerAccessTokenProvider
 
 	private string GetRequired(string key)
 	{
-		var value = _configuration[key];
+		var value = GetOptional(key);
 		if (string.IsNullOrWhiteSpace(value))
 		{
 			throw new InvalidOperationException($"Missing required configuration value '{key}'.");
 		}
 
 		return value;
+	}
+
+	private string? GetOptional(string key)
+	{
+		var value = _configuration[key];
+		if (!string.IsNullOrWhiteSpace(value)
+			&& value.StartsWith("YOUR_", StringComparison.OrdinalIgnoreCase))
+		{
+			return null;
+		}
+
+		return value;
+	}
+
+	private static SecureString ToSecureString(string value)
+	{
+		var secure = new SecureString();
+		foreach (var c in value)
+		{
+			secure.AppendChar(c);
+		}
+
+		secure.MakeReadOnly();
+		return secure;
 	}
 }

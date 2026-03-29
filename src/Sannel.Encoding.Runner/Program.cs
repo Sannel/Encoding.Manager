@@ -66,4 +66,54 @@ builder.Services.AddHttpClient<IRunnerApiClient, RunnerApiClient>()
 builder.Services.AddHostedService<EncodingWorkerService>();
 
 var host = builder.Build();
+
+var startupLogger = host.Services.GetRequiredService<ILoggerFactory>()
+	.CreateLogger("Sannel.Encoding.Runner.Startup");
+var configuration = host.Services.GetRequiredService<IConfiguration>();
+
+var tenantId = configuration["AzureAd:TenantId"]?.Trim();
+var clientId = configuration["AzureAd:ClientId"]?.Trim();
+var username = configuration["AzureAd:Username"]?.Trim();
+var password = configuration["AzureAd:Password"]?.Trim();
+var configuredScope = configuration["AzureAd:Scope"]?.Trim();
+
+if (!IsConfigured(tenantId))
+{
+	startupLogger.LogWarning("AzureAd:TenantId is not configured. Token acquisition will fail.");
+}
+
+if (!IsConfigured(clientId))
+{
+	startupLogger.LogWarning("AzureAd:ClientId is not configured. Token acquisition will fail.");
+}
+
+if (!IsConfigured(username))
+{
+	startupLogger.LogWarning("AzureAd:Username is not configured. Token acquisition will fail.");
+}
+
+if (!IsConfigured(password))
+{
+	startupLogger.LogWarning("AzureAd:Password is not configured. Token acquisition will fail.");
+}
+
+if (string.IsNullOrWhiteSpace(configuredScope))
+{
+	if (IsConfigured(clientId))
+	{
+		startupLogger.LogWarning(
+			"AzureAd:Scope is not configured. Runner will fall back to scope 'api://{ClientId}/.default'. Configure AzureAd:Scope explicitly to avoid audience mismatch.",
+			clientId);
+	}
+	else
+	{
+		startupLogger.LogWarning(
+			"AzureAd:Scope is not configured and AzureAd:ClientId is missing. Token acquisition will fail until Azure AD settings are configured.");
+	}
+}
+
+static bool IsConfigured(string? value) =>
+	!string.IsNullOrWhiteSpace(value)
+	&& !value.StartsWith("YOUR_", StringComparison.OrdinalIgnoreCase);
+
 host.Run();
