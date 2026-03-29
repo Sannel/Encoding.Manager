@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - develop
+  pull_request:
+    branches:
+      - develop
 
 permissions:
   contents: write
@@ -39,6 +42,7 @@ jobs:
         run: dotnet test --no-build --configuration Release --verbosity normal
 
   publish-server:
+    if: github.event_name == 'push'
     needs: build-and-test
     runs-on: ubuntu-latest
     strategy:
@@ -99,6 +103,7 @@ jobs:
           path: server-${{ matrix.rid }}.*
 
   publish-runner:
+    if: github.event_name == 'push'
     needs: build-and-test
     runs-on: ubuntu-latest
     strategy:
@@ -159,6 +164,7 @@ jobs:
           path: runner-${{ matrix.rid }}.*
 
   docker-server:
+    if: github.event_name == 'push'
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
@@ -200,6 +206,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   docker-runner:
+    if: github.event_name == 'push'
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
@@ -241,6 +248,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   create-prerelease:
+    if: github.event_name == 'push'
     needs: [publish-server, publish-runner, docker-server, docker-runner]
     runs-on: ubuntu-latest
     steps:
