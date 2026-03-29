@@ -57,7 +57,10 @@ builder.Services.AddSingleton<IHandBrakeService, HandBrakeService>();
 
 // Runner services
 builder.Services.AddSingleton<PathNormalizer>();
-builder.Services.AddHttpClient<IRunnerApiClient, RunnerApiClient>();
+builder.Services.AddSingleton<IRunnerAccessTokenProvider, RunnerAccessTokenProvider>();
+builder.Services.AddTransient<RunnerBearerTokenHandler>();
+builder.Services.AddHttpClient<IRunnerApiClient, RunnerApiClient>()
+	.AddHttpMessageHandler<RunnerBearerTokenHandler>();
 
 // Worker
 builder.Services.AddHostedService<EncodingWorkerService>();

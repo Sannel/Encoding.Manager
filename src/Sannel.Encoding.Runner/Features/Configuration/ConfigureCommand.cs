@@ -37,6 +37,7 @@ public static class ConfigureCommand
 		PromptPlaintext(root, "AzureAd:TenantId",     "  Tenant ID    ");
 		PromptPlaintext(root, "AzureAd:ClientId",      "  Client ID    ");
 		PromptSecret(root,    "AzureAd:ClientSecret",  "  Client Secret");
+		PromptPlaintext(root, "AzureAd:ApiClientId",   "  API Client ID");
 		Console.WriteLine();
 
 		Save(root);
