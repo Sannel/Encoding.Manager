@@ -32,8 +32,8 @@ if (OperatingSystem.IsWindows())
 {
 	builder.Logging.AddEventLog(eventLogSettings =>
 	{
-		eventLogSettings.SourceName = "Sannel Encoding Runner";
-		eventLogSettings.LogName = "Application";
+		eventLogSettings?.SourceName = "Sannel Encoding Runner";
+		eventLogSettings?.LogName = "Application";
 	});
 	// Filter to only Error and Critical level messages for Event Log
 	builder.Logging.AddFilter("Microsoft.Extensions.Logging.EventLog.EventLogLoggerProvider", LogLevel.Error);
