@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting.Systemd;
+using Microsoft.Extensions.Hosting.WindowsServices;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
@@ -29,6 +31,18 @@ if (args.Length > 0 && args[0].Equals("configure", StringComparison.OrdinalIgnor
 }
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (OperatingSystem.IsWindows())
+{
+	// Configure for Windows Service hosting
+	builder.Host.UseWindowsService();
+}
+
+if (OperatingSystem.IsLinux())
+{
+	// Configure for systemd hosting (Linux)
+	builder.Host.UseSystemd();
+}
 
 // Encrypted config overlay — loaded after appsettings.json so it takes precedence.
 // Values prefixed with "enc:" are transparently decrypted at startup.
@@ -167,4 +181,4 @@ app.MapControllers(); // API controllers
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.Run();
+await app.RunAsync();

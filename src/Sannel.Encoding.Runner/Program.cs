@@ -16,8 +16,15 @@ if (args.Length > 0 && args[0].Equals("configure", StringComparison.OrdinalIgnor
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddWindowsService();
-builder.Services.AddSystemd();
+if (OperatingSystem.IsWindows())
+{
+	builder.Services.AddWindowsService();
+}
+
+if (OperatingSystem.IsLinux())
+{
+	builder.Services.AddSystemd();
+}
 
 // Encrypted config overlay — loaded after appsettings.json so it takes precedence.
 // Values prefixed with "enc:" are transparently decrypted at startup.
