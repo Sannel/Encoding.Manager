@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.EventLog;
 using Sannel.Encoding.Manager.HandBrake;
 using Sannel.Encoding.Runner;
 using Sannel.Encoding.Runner.Features.Configuration;
@@ -24,6 +25,18 @@ if (OperatingSystem.IsWindows())
 if (OperatingSystem.IsLinux())
 {
 	builder.Services.AddSystemd();
+}
+
+// Configure Event Log logging on Windows (only logs errors and above)
+if (OperatingSystem.IsWindows())
+{
+	builder.Logging.AddEventLog(eventLogSettings =>
+	{
+		eventLogSettings.SourceName = "Sannel Encoding Runner";
+		eventLogSettings.LogName = "Application";
+	});
+	// Filter to only Error and Critical level messages for Event Log
+	builder.Logging.AddFilter("Microsoft.Extensions.Logging.EventLog.EventLogLoggerProvider", LogLevel.Error);
 }
 
 // Encrypted config overlay — loaded after appsettings.json so it takes precedence.

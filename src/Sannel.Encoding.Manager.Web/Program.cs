@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting.Systemd;
 using Microsoft.Extensions.Hosting.WindowsServices;
+using Microsoft.Extensions.Logging.EventLog;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
@@ -42,6 +43,18 @@ if (OperatingSystem.IsLinux())
 {
 	// Configure for systemd hosting (Linux)
 	builder.Host.UseSystemd();
+}
+
+// Configure Event Log logging on Windows (only logs errors and above)
+if (OperatingSystem.IsWindows())
+{
+	builder.Logging.AddEventLog(eventLogSettings =>
+	{
+		eventLogSettings.SourceName = "Sannel Encoding Manager";
+		eventLogSettings.LogName = "Application";
+	});
+	// Filter to only Error and Critical level messages for Event Log
+	builder.Logging.AddFilter("Microsoft.Extensions.Logging.EventLog.EventLogLoggerProvider", LogLevel.Error);
 }
 
 // Encrypted config overlay — loaded after appsettings.json so it takes precedence.
