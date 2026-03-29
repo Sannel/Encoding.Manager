@@ -98,6 +98,7 @@ public static class ConfigureCommand
 				if (sb.Length > 0)
 				{
 					sb.Length--;
+					Console.Write("\b \b");
 				}
 			}
 			else if (key.KeyChar != '\0')
