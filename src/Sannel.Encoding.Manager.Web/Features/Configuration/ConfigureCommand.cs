@@ -26,7 +26,7 @@ public static class ConfigureCommand
 	{
 		Console.WriteLine("=== Sannel Encoding Manager — Configuration Wizard ===");
 		Console.WriteLine($"Config file : {ConfigFilePath}");
-		Console.WriteLine("Secrets are encrypted with Microsoft.Extensions.DataProtection (cross-platform).");
+		Console.WriteLine("Secrets are encrypted with Microsoft.AspNetCore.DataProtection (cross-platform).");
 		Console.WriteLine("Press Enter to keep an existing value.");
 		Console.WriteLine();
 
