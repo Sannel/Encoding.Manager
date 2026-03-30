@@ -1,7 +1,9 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Sannel.Encoding.Manager.Web.Features.Data;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
+using Sannel.Encoding.Manager.Web.Features.Queue.Hubs;
 using Sannel.Encoding.Manager.Web.Features.Runner.Dto;
 using RunnerEntity = Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner;
 
@@ -12,11 +14,16 @@ public class RunnerJobService : IRunnerJobService
 {
 	private readonly IDbContextFactory<AppDbContext> _dbFactory;
 	private readonly ILogger<RunnerJobService> _logger;
+	private readonly IHubContext<QueueHub> _hubContext;
 
-	public RunnerJobService(IDbContextFactory<AppDbContext> dbFactory, ILogger<RunnerJobService> logger)
+	public RunnerJobService(
+		IDbContextFactory<AppDbContext> dbFactory,
+		ILogger<RunnerJobService> logger,
+		IHubContext<QueueHub> hubContext)
 	{
 		_dbFactory = dbFactory;
 		_logger = logger;
+		_hubContext = hubContext;
 	}
 
 	/// <inheritdoc />
@@ -91,6 +98,7 @@ public class RunnerJobService : IRunnerJobService
 		}
 
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
+		await NotifyQueueItemUpsertedAsync(nextItem, ct).ConfigureAwait(false);
 
 		// Build preset map from tracks
 		var presetMap = await BuildPresetMapAsync(ctx, nextItem.TracksJson, ct).ConfigureAwait(false);
@@ -164,8 +172,12 @@ public class RunnerJobService : IRunnerJobService
 		}
 
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
+		await NotifyQueueItemUpsertedAsync(item, ct).ConfigureAwait(false);
 		return true;
 	}
+
+	private Task NotifyQueueItemUpsertedAsync(Queue.Entities.EncodeQueueItem item, CancellationToken ct) =>
+		_hubContext.Clients.All.SendAsync("QueueItemUpserted", item, ct);
 
 	private static async Task ClearRunnerCurrentJobAsync(AppDbContext ctx, string? runnerName, CancellationToken ct)
 	{

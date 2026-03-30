@@ -14,7 +14,9 @@ using Sannel.Encoding.Manager.Web.Features.Data.Options;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Services;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Options;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
+using Sannel.Encoding.Manager.Web.Features.Queue.Hubs;
 using Sannel.Encoding.Manager.Web.Features.Queue.Services;
+using Sannel.Encoding.Manager.Web.Features.Runner.Hubs;
 using Sannel.Encoding.Manager.Web.Features.Runner.Services;
 using Sannel.Encoding.Manager.Web.Features.Runners.Services;
 using Sannel.Encoding.Manager.Web.Features.Settings.Services;
@@ -163,6 +165,7 @@ builder.Services.AddHttpClient<ITvdbService, TvdbService>((sp, client) =>
 
 // MVC Controllers for API endpoints
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -191,6 +194,8 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorPages(); // Microsoft Identity login/logout endpoints
 app.MapControllers(); // API controllers
+app.MapHub<QueueHub>("/hubs/queue");
+app.MapHub<RunnerStatusHub>("/hubs/runner-status");
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

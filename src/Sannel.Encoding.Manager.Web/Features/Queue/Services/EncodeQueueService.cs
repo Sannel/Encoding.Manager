@@ -1,8 +1,10 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
 using Sannel.Encoding.Manager.Web.Features.Data;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
+using Sannel.Encoding.Manager.Web.Features.Queue.Hubs;
 using Sannel.Encoding.Manager.Web.Features.Shared.Services;
 
 namespace Sannel.Encoding.Manager.Web.Features.Queue.Services;
@@ -10,10 +12,12 @@ namespace Sannel.Encoding.Manager.Web.Features.Queue.Services;
 public class EncodeQueueService : IEncodeQueueService
 {
 	private readonly IDbContextFactory<AppDbContext> _dbFactory;
+	private readonly IHubContext<QueueHub> _hubContext;
 
-	public EncodeQueueService(IDbContextFactory<AppDbContext> dbFactory)
+	public EncodeQueueService(IDbContextFactory<AppDbContext> dbFactory, IHubContext<QueueHub> hubContext)
 	{
 		_dbFactory = dbFactory;
+		_hubContext = hubContext;
 	}
 
 	/// <inheritdoc />
@@ -23,6 +27,7 @@ public class EncodeQueueService : IEncodeQueueService
 		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
 		ctx.EncodeQueueItems.Add(item);
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
+		await NotifyQueueItemUpsertedAsync(item, ct).ConfigureAwait(false);
 	}
 
 	/// <inheritdoc />
@@ -39,10 +44,15 @@ public class EncodeQueueService : IEncodeQueueService
 	public async Task DeleteItemAsync(Guid id, CancellationToken ct = default)
 	{
 		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
-		await ctx.EncodeQueueItems
+		var deletedCount = await ctx.EncodeQueueItems
 			.Where(i => i.Id == id)
 			.ExecuteDeleteAsync(ct)
 			.ConfigureAwait(false);
+
+		if (deletedCount > 0)
+		{
+			await NotifyQueueItemDeletedAsync(id, ct).ConfigureAwait(false);
+		}
 	}
 
 	/// <inheritdoc />
@@ -57,6 +67,7 @@ public class EncodeQueueService : IEncodeQueueService
 
 		item.TracksJson = JsonSerializer.Serialize(tracks);
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
+		await NotifyQueueItemUpsertedAsync(item, ct).ConfigureAwait(false);
 	}
 
 	/// <inheritdoc />
@@ -83,6 +94,15 @@ public class EncodeQueueService : IEncodeQueueService
 		item.ProgressPercent = null;
 
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
+		await NotifyQueueItemUpsertedAsync(item, ct).ConfigureAwait(false);
 		return true;
 	}
+
+	private Task NotifyQueueItemUpsertedAsync(EncodeQueueItem item, CancellationToken ct) =>
+		_hubContext.Clients.All.SendAsync("QueueItemUpserted", item, ct);
+
+	private Task NotifyQueueItemDeletedAsync(Guid id, CancellationToken ct) =>
+		id == Guid.Empty
+			? Task.CompletedTask
+			: _hubContext.Clients.All.SendAsync("QueueItemDeleted", id, ct);
 }
