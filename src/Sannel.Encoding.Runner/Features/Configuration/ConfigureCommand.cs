@@ -33,10 +33,10 @@ public static class ConfigureCommand
 		var root = LoadOrCreate();
 
 		// ── Azure AD ──────────────────────────────────────────────────────────
-		Console.WriteLine("[Azure AD — OAuth2 Username/Password]");
+		Console.WriteLine("[Azure AD — OAuth2 Client Credentials]");
 		PromptPlaintext(root, "AzureAd:TenantId",     "  Tenant ID    ");
-		PromptSecret(root,    "AzureAd:Username",      "  Username     ");
-		PromptSecret(root,    "AzureAd:Password",      "  Password     ");
+		PromptPlaintext(root, "AzureAd:ClientId",      "  Client ID    ");
+		PromptSecret(root,    "AzureAd:ClientSecret",  "  Client Secret");
 		PromptPlaintext(root, "AzureAd:Scope",         "  Scope        ");
 		Console.WriteLine();
 

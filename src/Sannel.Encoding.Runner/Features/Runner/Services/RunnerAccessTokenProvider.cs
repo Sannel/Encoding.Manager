@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Client;
-using System.Security;
 
 namespace Sannel.Encoding.Runner.Features.Runner.Services;
 
@@ -37,8 +36,7 @@ public class RunnerAccessTokenProvider : IRunnerAccessTokenProvider
 			var tenantId = GetRequired("AzureAd:TenantId");
 			var clientId = GetOptional("AzureAd:ClientId")
 				?? throw new InvalidOperationException("Missing required configuration value 'AzureAd:ClientId'.");
-			var username = GetRequired("AzureAd:Username");
-			var password = GetRequired("AzureAd:Password");
+			var clientSecret = GetRequired("AzureAd:ClientSecret");
 			var instance = _configuration["AzureAd:Instance"]?.Trim();
 			if (string.IsNullOrWhiteSpace(instance))
 			{
@@ -48,15 +46,14 @@ public class RunnerAccessTokenProvider : IRunnerAccessTokenProvider
 			var scope = ResolveScope(clientId);
 			var authority = BuildAuthority(instance, tenantId);
 
-			var app = PublicClientApplicationBuilder
+			var app = ConfidentialClientApplicationBuilder
 				.Create(clientId)
+				.WithClientSecret(clientSecret)
 				.WithAuthority(authority)
 				.Build();
 
-			using var securePassword = ToSecureString(password);
-
 			var result = await app
-				.AcquireTokenByUsernamePassword([scope], username, securePassword)
+				.AcquireTokenForClient([scope])
 				.ExecuteAsync(ct);
 
 			_accessToken = result.AccessToken;
@@ -118,15 +115,4 @@ public class RunnerAccessTokenProvider : IRunnerAccessTokenProvider
 		return value;
 	}
 
-	private static SecureString ToSecureString(string value)
-	{
-		var secure = new SecureString();
-		foreach (var c in value)
-		{
-			secure.AppendChar(c);
-		}
-
-		secure.MakeReadOnly();
-		return secure;
-	}
 }

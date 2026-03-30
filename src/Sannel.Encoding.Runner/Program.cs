@@ -73,8 +73,7 @@ var configuration = host.Services.GetRequiredService<IConfiguration>();
 
 var tenantId = configuration["AzureAd:TenantId"]?.Trim();
 var clientId = configuration["AzureAd:ClientId"]?.Trim();
-var username = configuration["AzureAd:Username"]?.Trim();
-var password = configuration["AzureAd:Password"]?.Trim();
+var clientSecret = configuration["AzureAd:ClientSecret"]?.Trim();
 var configuredScope = configuration["AzureAd:Scope"]?.Trim();
 
 if (!IsConfigured(tenantId))
@@ -87,14 +86,9 @@ if (!IsConfigured(clientId))
 	startupLogger.LogWarning("AzureAd:ClientId is not configured. Token acquisition will fail.");
 }
 
-if (!IsConfigured(username))
+if (!IsConfigured(clientSecret))
 {
-	startupLogger.LogWarning("AzureAd:Username is not configured. Token acquisition will fail.");
-}
-
-if (!IsConfigured(password))
-{
-	startupLogger.LogWarning("AzureAd:Password is not configured. Token acquisition will fail.");
+	startupLogger.LogWarning("AzureAd:ClientSecret is not configured. Token acquisition will fail.");
 }
 
 if (string.IsNullOrWhiteSpace(configuredScope))
