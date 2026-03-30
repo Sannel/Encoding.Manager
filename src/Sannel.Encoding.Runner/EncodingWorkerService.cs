@@ -83,6 +83,32 @@ public class EncodingWorkerService : BackgroundService
 			var absDiscPath = ResolveDiscPath(job);
 			_logger.LogInformation("Resolved disc path: {Path}", absDiscPath);
 
+			if (!File.Exists(absDiscPath) && !Directory.Exists(absDiscPath))
+			{
+				var root = Path.GetPathRoot(absDiscPath) ?? string.Empty;
+				var rootExists = !string.IsNullOrWhiteSpace(root) && Directory.Exists(root);
+				var serviceIdentity = $"{Environment.UserDomainName}\\{Environment.UserName}";
+				var isDriveLetterPath = absDiscPath.Length >= 2
+					&& char.IsLetter(absDiscPath[0])
+					&& absDiscPath[1] == ':';
+
+				_logger.LogError(
+					"Input path is not accessible. Path={Path}, Root={Root}, RootExists={RootExists}, ServiceIdentity={ServiceIdentity}, ConfiguredRoots={ConfiguredRoots}",
+					absDiscPath,
+					root,
+					rootExists,
+					serviceIdentity,
+					string.Join(", ", _fsOptions.Roots.Select(r => $"{r.Label}={r.Path}")));
+
+				var hint = isDriveLetterPath
+					? " The path uses a mapped drive letter. Windows services often cannot access user-mapped drives; use a UNC path in Filesystem:Roots or run the service under an account that has access."
+					: string.Empty;
+
+				var error = $"Input path is not accessible: '{absDiscPath}'.{hint}";
+				await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
+				return;
+			}
+
 			// Scan disc once and reuse for all tracks.
 			var scanResult = await _handBrake.ScanAsync(absDiscPath, ct: ct);
 			if (!scanResult.IsSuccess)
