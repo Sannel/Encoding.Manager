@@ -58,4 +58,29 @@ public class EncodeQueueService : IEncodeQueueService
 		item.TracksJson = JsonSerializer.Serialize(tracks);
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
 	}
+
+	/// <inheritdoc />
+	public async Task<bool> ResetToQueuedAsync(Guid id, CancellationToken ct = default)
+	{
+		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
+		var item = await ctx.EncodeQueueItems.FirstOrDefaultAsync(i => i.Id == id, ct).ConfigureAwait(false);
+		if (item is null)
+		{
+			return false;
+		}
+
+		if (!string.Equals(item.Status, "Failed", StringComparison.OrdinalIgnoreCase))
+		{
+			return false;
+		}
+
+		item.Status = "Queued";
+		item.RunnerName = null;
+		item.StartedAt = null;
+		item.CompletedAt = null;
+		item.ProgressPercent = null;
+
+		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
+		return true;
+	}
 }

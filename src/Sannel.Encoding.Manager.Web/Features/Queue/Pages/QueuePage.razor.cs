@@ -38,6 +38,21 @@ public partial class QueuePage : ComponentBase
 		await this.LoadAsync();
 	}
 
+	private async Task RetryFailedItemAsync(Guid id)
+	{
+		var reset = await this.EncodeQueueService.ResetToQueuedAsync(id);
+		if (reset)
+		{
+			this.Snackbar.Add("Failed item reset to queued.", Severity.Success);
+		}
+		else
+		{
+			this.Snackbar.Add("Only failed items can be reset to queued.", Severity.Warning);
+		}
+
+		await this.LoadAsync();
+	}
+
 	private async Task OpenDetailDialogAsync(EncodeQueueItem item)
 	{
 		var parameters = new DialogParameters<QueueDetailDialog>

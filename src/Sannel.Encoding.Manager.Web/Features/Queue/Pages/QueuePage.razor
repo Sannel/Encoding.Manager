@@ -60,6 +60,10 @@ else
 				<MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Default"
 					Size="Size.Small" Title="View details"
 					OnClick="@(() => OpenDetailDialogAsync(context))" />
+				<MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Warning"
+					Size="Size.Small" Title="Reset failed item to queued"
+					Disabled="@(context.Status != "Failed")"
+					OnClick="@(() => RetryFailedItemAsync(context.Id))" />
 				<MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
 					Size="Size.Small" Title="Remove from queue"
 					OnClick="@(() => DeleteItemAsync(context.Id))" />
