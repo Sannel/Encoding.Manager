@@ -168,6 +168,10 @@ public abstract class NamingComponentBase : ComponentBase
 	{
 		var row = this.GetNamingRow(key);
 		row.Episode = ep;
+		if (ep is not null)
+		{
+			row.Name = ep.Name;
+		}
 	}
 
 	protected virtual string GetFallbackAutoName(int key) => string.Empty;
