@@ -43,11 +43,11 @@ public partial class QueuePage : ComponentBase
 		var reset = await this.EncodeQueueService.ResetToQueuedAsync(id);
 		if (reset)
 		{
-			this.Snackbar.Add("Failed item reset to queued.", Severity.Success);
+			this.Snackbar.Add("Item reset to queued.", Severity.Success);
 		}
 		else
 		{
-			this.Snackbar.Add("Only failed items can be reset to queued.", Severity.Warning);
+			this.Snackbar.Add("Only failed or finished items can be reset to queued.", Severity.Warning);
 		}
 
 		await this.LoadAsync();
@@ -87,6 +87,10 @@ public partial class QueuePage : ComponentBase
 		"Failed" => Color.Error,
 		_ => Color.Default,
 	};
+
+	private static bool CanResetToQueued(string status) =>
+		string.Equals(status, "Failed", StringComparison.OrdinalIgnoreCase)
+		|| string.Equals(status, "Finished", StringComparison.OrdinalIgnoreCase);
 
 	private static string DiscLabel(string discPath) =>
 		Path.GetFileName(discPath.TrimEnd(Path.DirectorySeparatorChar, '/'))

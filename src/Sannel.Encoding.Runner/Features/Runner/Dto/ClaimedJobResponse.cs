@@ -8,6 +8,7 @@ public class ClaimedJobResponse
 	public string? DiscRootLabel { get; set; }
 	public string Mode { get; set; } = string.Empty;
 	public string? TvdbShowName { get; set; }
+	public int? TvdbId { get; set; }
 	public string AudioDefault { get; set; } = string.Empty;
 	public string TracksJson { get; set; } = "[]";
 	public Dictionary<string, PresetLocation> PresetMap { get; set; } = [];

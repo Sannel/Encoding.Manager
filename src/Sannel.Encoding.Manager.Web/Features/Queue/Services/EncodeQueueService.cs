@@ -69,7 +69,9 @@ public class EncodeQueueService : IEncodeQueueService
 			return false;
 		}
 
-		if (!string.Equals(item.Status, "Failed", StringComparison.OrdinalIgnoreCase))
+		var isFailed = string.Equals(item.Status, "Failed", StringComparison.OrdinalIgnoreCase);
+		var isFinished = string.Equals(item.Status, "Finished", StringComparison.OrdinalIgnoreCase);
+		if (!isFailed && !isFinished)
 		{
 			return false;
 		}

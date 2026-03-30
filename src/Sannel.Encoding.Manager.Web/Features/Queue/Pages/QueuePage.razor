@@ -61,8 +61,8 @@ else
 					Size="Size.Small" Title="View details"
 					OnClick="@(() => OpenDetailDialogAsync(context))" />
 				<MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Warning"
-					Size="Size.Small" Title="Reset failed item to queued"
-					Disabled="@(context.Status != "Failed")"
+					Size="Size.Small" Title="Reset failed/finished item to queued"
+					Disabled="@(!CanResetToQueued(context.Status))"
 					OnClick="@(() => RetryFailedItemAsync(context.Id))" />
 				<MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
 					Size="Size.Small" Title="Remove from queue"

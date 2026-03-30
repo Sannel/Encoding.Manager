@@ -67,6 +67,9 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("TvdbId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("TvdbShowName")
                         .HasColumnType("text");
 

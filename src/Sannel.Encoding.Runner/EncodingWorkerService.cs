@@ -256,9 +256,17 @@ public class EncodingWorkerService : BackgroundService
 		EncodeTrackConfig track,
 		Dictionary<string, string> rootLookup)
 	{
+		var sourceDisk = Path.GetFileName(
+			job.DiscPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, '/'))
+			?? job.DiscPath;
+
 		var variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 		{
+			["{TVDBShow}"] = job.TvdbShowName ?? "Unknown",
 			["{ShowName}"] = job.TvdbShowName ?? "Unknown",
+			["{TVDBID}"] = job.TvdbId?.ToString() ?? string.Empty,
+			["{SourceDisk}"] = sourceDisk,
+			["{EpisodeName}"] = BuildEpisodeName(track),
 			["{OutputName}"] = track.OutputName,
 			["{SeasonNumber}"] = (track.SeasonNumber ?? 0).ToString("D2"),
 			["{EpisodeNumber}"] = (track.EpisodeNumber ?? 0).ToString("D2"),
@@ -272,6 +280,39 @@ public class EncodingWorkerService : BackgroundService
 			destRoot = root;
 		}
 
-		return _pathNormalizer.ExpandTemplate(job.TrackDestinationTemplate, variables, destRoot);
+		var expanded = _pathNormalizer.ExpandTemplate(job.TrackDestinationTemplate, variables, destRoot);
+
+		// Ensure the output path always ends with .mkv
+		if (!expanded.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase))
+		{
+			expanded += ".mkv";
+		}
+
+		return expanded;
+	}
+
+	private static string BuildEpisodeName(EncodeTrackConfig track)
+	{
+		var hasSeason = track.SeasonNumber.HasValue && track.SeasonNumber.Value > 0;
+		var hasEpisode = track.EpisodeNumber.HasValue && track.EpisodeNumber.Value > 0;
+		var hasName = !string.IsNullOrWhiteSpace(track.OutputName);
+
+		if (hasSeason && hasEpisode)
+		{
+			var prefix = $"s{track.SeasonNumber!.Value:D2}e{track.EpisodeNumber!.Value:D2}";
+			return hasName ? $"{prefix} - {track.OutputName}" : prefix;
+		}
+
+		if (hasName)
+		{
+			return track.OutputName;
+		}
+
+		if (track.StartChapter.HasValue && track.EndChapter.HasValue)
+		{
+			return $"Title {track.TitleNumber} Ch {track.StartChapter}-{track.EndChapter}";
+		}
+
+		return $"Title {track.TitleNumber}";
 	}
 }

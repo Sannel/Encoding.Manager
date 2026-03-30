@@ -92,11 +92,13 @@ public abstract class NamingComponentBase : ComponentBase
 		}
 
 		var settings = await this.SettingsService.GetSettingsAsync();
+		var tvdbId = int.TryParse(this._showId.Trim(), out var parsedId) ? parsedId : (int?)null;
 		var item = new EncodeQueueItem
 		{
 			DiscPath = discPath,
 			Mode = mode,
 			TvdbShowName = this._seriesName,
+			TvdbId = tvdbId,
 			TracksJson = JsonSerializer.Serialize(toAdd),
 			AudioDefault = settings.AudioDefault,
 		};

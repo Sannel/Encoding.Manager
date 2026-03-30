@@ -13,6 +13,9 @@ public class EncodeQueueItem
 
 	public string? TvdbShowName { get; set; }
 
+	/// <summary>TVDB series ID used for template variable expansion.</summary>
+	public int? TvdbId { get; set; }
+
 	/// <summary>"Opus" or "Aac".</summary>
 	public string AudioDefault { get; set; } = "Opus";
 

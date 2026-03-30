@@ -108,6 +108,7 @@ public class RunnerJobService : IRunnerJobService
 			DiscRootLabel = nextItem.DiscRootLabel,
 			Mode = nextItem.Mode,
 			TvdbShowName = nextItem.TvdbShowName,
+			TvdbId = nextItem.TvdbId,
 			AudioDefault = nextItem.AudioDefault,
 			TracksJson = nextItem.TracksJson,
 			PresetMap = presetMap,

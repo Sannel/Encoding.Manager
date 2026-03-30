@@ -11,16 +11,17 @@ public record SelectedAudioTrack(int TrackNumber, string Encoder, string Mixdown
 public static class AudioTrackSelector
 {
 	/// <summary>
-	/// Selects audio tracks from the given title's audio tracks.
-	/// The first track matching any configured language gets a stereo downmix with the specified codec.
-	/// All remaining tracks are copied as-is.
+	/// Selects audio tracks whose language matches any of the configured languages.
+	/// The first matching track gets a stereo downmix with the specified codec.
+	/// All remaining matching tracks are copied as-is.
+	/// Tracks whose language does not match are excluded entirely.
 	/// </summary>
 	public static IReadOnlyList<SelectedAudioTrack> SelectTracks(
 		IReadOnlyList<AudioTrackInfo> audioTracks,
 		string[] configuredLanguages,
 		string audioDefaultCodec)
 	{
-		if (audioTracks.Count == 0)
+		if (audioTracks.Count == 0 || configuredLanguages.Length == 0)
 		{
 			return [];
 		}
@@ -31,10 +32,14 @@ public static class AudioTrackSelector
 
 		foreach (var track in audioTracks)
 		{
-			if (!firstMatchFound && languageSet.Contains(track.Language))
+			if (!languageSet.Contains(track.Language))
+			{
+				continue;
+			}
+
+			if (!firstMatchFound)
 			{
 				firstMatchFound = true;
-				// Use AudioDefault codec from server settings; preserve source sample rate and bitrate.
 				results.Add(new SelectedAudioTrack(
 					track.TrackNumber,
 					audioDefaultCodec,
