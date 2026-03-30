@@ -13,11 +13,13 @@ public class EncodeQueueService : IEncodeQueueService
 {
 	private readonly IDbContextFactory<AppDbContext> _dbFactory;
 	private readonly IHubContext<QueueHub> _hubContext;
+	private readonly QueueChangeNotifier _notifier;
 
-	public EncodeQueueService(IDbContextFactory<AppDbContext> dbFactory, IHubContext<QueueHub> hubContext)
+	public EncodeQueueService(IDbContextFactory<AppDbContext> dbFactory, IHubContext<QueueHub> hubContext, QueueChangeNotifier notifier)
 	{
 		_dbFactory = dbFactory;
 		_hubContext = hubContext;
+		_notifier = notifier;
 	}
 
 	/// <inheritdoc />
@@ -98,11 +100,20 @@ public class EncodeQueueService : IEncodeQueueService
 		return true;
 	}
 
-	private Task NotifyQueueItemUpsertedAsync(EncodeQueueItem item, CancellationToken ct) =>
-		_hubContext.Clients.All.SendAsync("QueueItemUpserted", item, ct);
+	private Task NotifyQueueItemUpsertedAsync(EncodeQueueItem item, CancellationToken ct)
+	{
+		_notifier.NotifyItemUpserted(item);
+		return _hubContext.Clients.All.SendAsync("QueueItemUpserted", item, ct);
+	}
 
-	private Task NotifyQueueItemDeletedAsync(Guid id, CancellationToken ct) =>
-		id == Guid.Empty
-			? Task.CompletedTask
-			: _hubContext.Clients.All.SendAsync("QueueItemDeleted", id, ct);
+	private Task NotifyQueueItemDeletedAsync(Guid id, CancellationToken ct)
+	{
+		if (id == Guid.Empty)
+		{
+			return Task.CompletedTask;
+		}
+
+		_notifier.NotifyItemDeleted(id);
+		return _hubContext.Clients.All.SendAsync("QueueItemDeleted", id, ct);
+	}
 }

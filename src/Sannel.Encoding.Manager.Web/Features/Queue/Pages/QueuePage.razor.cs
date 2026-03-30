@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.SignalR.Client;
 using MudBlazor;
 using Sannel.Encoding.Manager.Web.Features.Queue.Components;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
@@ -9,7 +8,7 @@ using Sannel.Encoding.Manager.Web.Features.Queue.Services;
 
 namespace Sannel.Encoding.Manager.Web.Features.Queue.Pages;
 
-public partial class QueuePage : ComponentBase, IAsyncDisposable
+public partial class QueuePage : ComponentBase, IDisposable
 {
 	[Inject]
 	private IEncodeQueueService EncodeQueueService { get; set; } = default!;
@@ -21,92 +20,56 @@ public partial class QueuePage : ComponentBase, IAsyncDisposable
 	private IDialogService DialogService { get; set; } = default!;
 
 	[Inject]
-	private NavigationManager Navigation { get; set; } = default!;
+	private QueueChangeNotifier Notifier { get; set; } = default!;
 
 	private IReadOnlyList<EncodeQueueItem> _items = [];
 	private bool _isLoading = true;
-	private readonly SemaphoreSlim _loadLock = new(1, 1);
-	private HubConnection? _hubConnection;
 
 	protected override async Task OnInitializedAsync()
 	{
 		await this.LoadAsync(showLoadingIndicator: true);
-		await this.InitializeSignalRAsync();
+		this.Notifier.ItemUpserted += this.OnItemUpserted;
+		this.Notifier.ItemDeleted += this.OnItemDeleted;
 	}
 
 	private async Task LoadAsync(bool showLoadingIndicator = false)
 	{
-		await this._loadLock.WaitAsync();
-		try
+		if (showLoadingIndicator)
 		{
-			if (showLoadingIndicator)
-			{
-				this._isLoading = true;
-			}
-
-			this._items = await this.EncodeQueueService.GetItemsAsync();
-
-			if (showLoadingIndicator)
-			{
-				this._isLoading = false;
-			}
+			this._isLoading = true;
 		}
-		finally
+
+		this._items = await this.EncodeQueueService.GetItemsAsync();
+
+		if (showLoadingIndicator)
 		{
-			this._loadLock.Release();
+			this._isLoading = false;
 		}
 	}
 
-	private async Task InitializeSignalRAsync()
+	private async void OnItemUpserted(EncodeQueueItem item)
 	{
-		this._hubConnection = new HubConnectionBuilder()
-			.WithUrl(this.Navigation.ToAbsoluteUri("/hubs/queue"))
-			.WithAutomaticReconnect()
-			.Build();
-
-		this._hubConnection.On<EncodeQueueItem>("QueueItemUpserted", async item =>
+		await this.InvokeAsync(() =>
 		{
-			await this.InvokeAsync(async () =>
-			{
-				await this.ApplyItemUpsertAsync(item);
-				this.StateHasChanged();
-			});
+			this.ApplyItemUpsert(item);
+			this.StateHasChanged();
 		});
-
-		this._hubConnection.On<Guid>("QueueItemDeleted", async id =>
-		{
-			await this.InvokeAsync(() =>
-			{
-				this.ApplyItemDeleted(id);
-				this.StateHasChanged();
-				return Task.CompletedTask;
-			});
-		});
-
-		this._hubConnection.Reconnected += async _ =>
-		{
-			await this.InvokeAsync(async () =>
-			{
-				await this.LoadAsync();
-				this.StateHasChanged();
-			});
-		};
-
-		try
-		{
-			await this._hubConnection.StartAsync();
-		}
-		catch
-		{
-			// Non-fatal: page still works with manual actions if hub connection fails.
-		}
 	}
 
-	private Task ApplyItemUpsertAsync(EncodeQueueItem item)
+	private async void OnItemDeleted(Guid id)
+	{
+		await this.InvokeAsync(() =>
+		{
+			this.ApplyItemDeleted(id);
+			this.StateHasChanged();
+		});
+	}
+
+	private void ApplyItemUpsert(EncodeQueueItem item)
 	{
 		if (item.Id == Guid.Empty)
 		{
-			return Task.CompletedTask;
+			return;
 		}
 
 		var updated = this._items.ToList();
@@ -123,8 +86,6 @@ public partial class QueuePage : ComponentBase, IAsyncDisposable
 		this._items = updated
 			.OrderBy(i => i.CreatedAt)
 			.ToList();
-
-		return Task.CompletedTask;
 	}
 
 	private void ApplyItemDeleted(Guid id)
@@ -201,22 +162,9 @@ public partial class QueuePage : ComponentBase, IAsyncDisposable
 		Path.GetFileName(discPath.TrimEnd(Path.DirectorySeparatorChar, '/'))
 		?? discPath;
 
-	public async ValueTask DisposeAsync()
+	public void Dispose()
 	{
-		if (this._hubConnection is not null)
-		{
-			try
-			{
-				await this._hubConnection.StopAsync();
-			}
-			catch
-			{
-				// Ignore connection shutdown errors during disposal.
-			}
-
-			await this._hubConnection.DisposeAsync();
-		}
-
-		this._loadLock.Dispose();
+		this.Notifier.ItemUpserted -= this.OnItemUpserted;
+		this.Notifier.ItemDeleted -= this.OnItemDeleted;
 	}
 }

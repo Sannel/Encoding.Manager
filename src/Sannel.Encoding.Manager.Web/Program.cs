@@ -146,6 +146,7 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 
 // Encoding queue
+builder.Services.AddSingleton<QueueChangeNotifier>();
 builder.Services.AddScoped<IEncodeQueueService, EncodeQueueService>();
 builder.Services.AddScoped<IPresetService, PresetService>();
 

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Sannel.Encoding.Manager.Web.Features.Data;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
 using Sannel.Encoding.Manager.Web.Features.Queue.Hubs;
+using Sannel.Encoding.Manager.Web.Features.Queue.Services;
 using Sannel.Encoding.Manager.Web.Features.Runner.Dto;
 using RunnerEntity = Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner;
 
@@ -15,15 +16,18 @@ public class RunnerJobService : IRunnerJobService
 	private readonly IDbContextFactory<AppDbContext> _dbFactory;
 	private readonly ILogger<RunnerJobService> _logger;
 	private readonly IHubContext<QueueHub> _hubContext;
+	private readonly QueueChangeNotifier _notifier;
 
 	public RunnerJobService(
 		IDbContextFactory<AppDbContext> dbFactory,
 		ILogger<RunnerJobService> logger,
-		IHubContext<QueueHub> hubContext)
+		IHubContext<QueueHub> hubContext,
+		QueueChangeNotifier notifier)
 	{
 		_dbFactory = dbFactory;
 		_logger = logger;
 		_hubContext = hubContext;
+		_notifier = notifier;
 	}
 
 	/// <inheritdoc />
@@ -176,8 +180,11 @@ public class RunnerJobService : IRunnerJobService
 		return true;
 	}
 
-	private Task NotifyQueueItemUpsertedAsync(Queue.Entities.EncodeQueueItem item, CancellationToken ct) =>
-		_hubContext.Clients.All.SendAsync("QueueItemUpserted", item, ct);
+	private Task NotifyQueueItemUpsertedAsync(Queue.Entities.EncodeQueueItem item, CancellationToken ct)
+	{
+		_notifier.NotifyItemUpserted(item);
+		return _hubContext.Clients.All.SendAsync("QueueItemUpserted", item, ct);
+	}
 
 	private static async Task ClearRunnerCurrentJobAsync(AppDbContext ctx, string? runnerName, CancellationToken ct)
 	{
