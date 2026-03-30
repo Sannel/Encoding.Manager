@@ -59,11 +59,11 @@ else
 
 		@if (_selectedMode == ScanMode.Titles)
 		{
-			<TitlesModeView ScanResult="_scanResult" />
+			<TitlesModeView ScanResult="_scanResult" DiscRootLabel="@Root" DiscRelativePath="@Path" />
 		}
 		else
 		{
-			<ChaptersModeView ScanResult="_scanResult" />
+			<ChaptersModeView ScanResult="_scanResult" DiscRootLabel="@Root" DiscRelativePath="@Path" />
 		}
 	}
 	else if (_scanResult is { IsSuccess: false })

@@ -233,7 +233,28 @@ public class EncodingWorkerService : BackgroundService
 			return _pathNormalizer.CombineWithRoot(root.Path, job.DiscPath);
 		}
 
-		return _pathNormalizer.ToNative(job.DiscPath);
+		// No root label — the server stored an absolute path (e.g. Windows drive "G:/Disks/...").
+		// Try to match the leading label portion against configured roots so cross-OS runners work.
+		// Pattern: "<label>:/" or "<label>:\" at the start of the path.
+		var discPath = job.DiscPath;
+		foreach (var root in _fsOptions.Roots)
+		{
+			var prefix = root.Label.TrimEnd('/', '\\') + ":/";
+			if (discPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+			{
+				var relative = discPath.Substring(prefix.Length).TrimStart('/', '\\');
+				return _pathNormalizer.CombineWithRoot(root.Path, relative);
+			}
+
+			var prefixBackslash = root.Label.TrimEnd('/', '\\') + ":\\";
+			if (discPath.StartsWith(prefixBackslash, StringComparison.OrdinalIgnoreCase))
+			{
+				var relative = discPath.Substring(prefixBackslash.Length).TrimStart('/', '\\');
+				return _pathNormalizer.CombineWithRoot(root.Path, relative);
+			}
+		}
+
+		return _pathNormalizer.ToNative(discPath);
 	}
 
 	private string ResolvePresetPath(

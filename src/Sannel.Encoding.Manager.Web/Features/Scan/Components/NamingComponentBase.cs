@@ -76,7 +76,7 @@ public abstract class NamingComponentBase : ComponentBase
 	/// Filters tracks with an empty OutputName, builds one disk-level queue item,
 	/// stamps AudioDefault from settings, persists, and shows a snackbar summary.
 	/// </summary>
-	protected async Task AddDiskToQueueAsync(string discPath, string mode, IReadOnlyList<EncodeTrackConfig> tracks)
+	protected async Task AddDiskToQueueAsync(string discPath, string? discRootLabel, string mode, IReadOnlyList<EncodeTrackConfig> tracks)
 	{
 		var toAdd = tracks.Where(t => !string.IsNullOrWhiteSpace(t.OutputName)).ToList();
 		if (toAdd.Count == 0)
@@ -96,6 +96,7 @@ public abstract class NamingComponentBase : ComponentBase
 		var item = new EncodeQueueItem
 		{
 			DiscPath = discPath,
+			DiscRootLabel = discRootLabel,
 			Mode = mode,
 			TvdbShowName = this._seriesName,
 			TvdbId = tvdbId,
