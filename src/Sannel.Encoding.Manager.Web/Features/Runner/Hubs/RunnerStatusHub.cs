@@ -14,9 +14,9 @@ public class RunnerStatusHub : Hub
 		_runnerJobService = runnerJobService;
 	}
 
-	public async Task UpdateJobStatus(Guid jobId, string status, int? progressPercent = null, string? error = null)
+	public async Task UpdateJobStatus(Guid jobId, string status, int? progressPercent = null, string? error = null, string? encodingCommand = null)
 	{
-		var updated = await _runnerJobService.UpdateJobStatusAsync(jobId, status, progressPercent, error, Context.ConnectionAborted);
+		var updated = await _runnerJobService.UpdateJobStatusAsync(jobId, status, progressPercent, error, encodingCommand, Context.ConnectionAborted);
 		if (!updated)
 		{
 			throw new HubException($"Queue item '{jobId}' was not found.");

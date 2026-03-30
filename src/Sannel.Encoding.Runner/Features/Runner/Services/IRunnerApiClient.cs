@@ -8,5 +8,5 @@ public interface IRunnerApiClient
 	Task SendHeartbeatAsync(string name, CancellationToken ct = default);
 	Task<bool> IsEnabledAsync(string name, CancellationToken ct = default);
 	Task<ClaimedJobResponse?> ClaimNextJobAsync(string name, CancellationToken ct = default);
-	Task UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent = null, string? error = null, CancellationToken ct = default);
+	Task UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent = null, string? error = null, string? encodingCommand = null, CancellationToken ct = default);
 }

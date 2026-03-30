@@ -46,6 +46,9 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                     b.Property<string>("DiscRootLabel")
                         .HasColumnType("text");
 
+                    b.Property<string>("EncodingCommandsJson")
+                        .HasColumnType("text");
+
                     b.Property<string>("Mode")
                         .IsRequired()
                         .HasColumnType("text");

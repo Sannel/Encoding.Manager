@@ -22,5 +22,5 @@ public interface IRunnerJobService
 	/// For "Encoding": updates ProgressPercent only.
 	/// For "Finished"/"Failed": sets Status, CompletedAt, clears ProgressPercent.
 	/// </summary>
-	Task<bool> UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent, string? error, CancellationToken ct = default);
+	Task<bool> UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent, string? error, string? encodingCommand = null, CancellationToken ct = default);
 }

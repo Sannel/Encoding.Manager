@@ -31,6 +31,7 @@ public partial class QueueDetailDialog : ComponentBase
 
 	private IReadOnlyList<EncodingPreset> _presets = [];
 	private List<EncodeTrackConfig> _tracks = [];
+	private List<string> _encodingCommands = [];
 	private string _discRootLabel = string.Empty;
 	private string _discRelativePath = string.Empty;
 	private string? _globalPresetLabel;
@@ -49,6 +50,18 @@ public partial class QueueDetailDialog : ComponentBase
 		}
 
 		this.ParseDiscPath(this.Item.DiscPath);
+
+		if (!string.IsNullOrEmpty(this.Item.EncodingCommandsJson))
+		{
+			try
+			{
+				this._encodingCommands = JsonSerializer.Deserialize<List<string>>(this.Item.EncodingCommandsJson) ?? [];
+			}
+			catch
+			{
+				this._encodingCommands = [];
+			}
+		}
 	}
 
 	private void ParseDiscPath(string discPath)

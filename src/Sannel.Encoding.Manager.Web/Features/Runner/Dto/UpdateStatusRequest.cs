@@ -11,4 +11,7 @@ public class UpdateStatusRequest
 
 	/// <summary>Encoding progress percentage (0-100).</summary>
 	public int? ProgressPercent { get; set; }
+
+	/// <summary>Sanitized HandBrake CLI command for the current track (set once when encoding starts for each track).</summary>
+	public string? EncodingCommand { get; set; }
 }

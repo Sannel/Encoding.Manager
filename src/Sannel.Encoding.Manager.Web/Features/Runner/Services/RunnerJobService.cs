@@ -134,7 +134,7 @@ public class RunnerJobService : IRunnerJobService
 	}
 
 	/// <inheritdoc />
-	public async Task<bool> UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent, string? error, CancellationToken ct = default)
+	public async Task<bool> UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent, string? error, string? encodingCommand = null, CancellationToken ct = default)
 	{
 		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
 
@@ -151,6 +151,10 @@ public class RunnerJobService : IRunnerJobService
 		{
 			case "Encoding":
 				item.ProgressPercent = progressPercent;
+				if (!string.IsNullOrEmpty(encodingCommand))
+				{
+					AppendEncodingCommand(item, encodingCommand);
+				}
 				break;
 
 			case "Finished":
@@ -184,6 +188,15 @@ public class RunnerJobService : IRunnerJobService
 	{
 		_notifier.NotifyItemUpserted(item);
 		return _hubContext.Clients.All.SendAsync("QueueItemUpserted", item, ct);
+	}
+
+	private static void AppendEncodingCommand(Queue.Entities.EncodeQueueItem item, string command)
+	{
+		var commands = !string.IsNullOrEmpty(item.EncodingCommandsJson)
+			? JsonSerializer.Deserialize<List<string>>(item.EncodingCommandsJson) ?? []
+			: [];
+		commands.Add(command);
+		item.EncodingCommandsJson = JsonSerializer.Serialize(commands);
 	}
 
 	private static async Task ClearRunnerCurrentJobAsync(AppDbContext ctx, string? runnerName, CancellationToken ct)

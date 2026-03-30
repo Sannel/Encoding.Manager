@@ -87,6 +87,18 @@
 				</RowTemplate>
 			</MudTable>
 		}
+		@if (_encodingCommands.Count > 0)
+		{
+			<MudExpansionPanels Class="mt-4" MultiExpansion="true">
+				<MudExpansionPanel Text="Encoding Commands">
+					@for (var i = 0; i < _encodingCommands.Count; i++)
+					{
+						<MudText Typo="Typo.caption" Class="mb-1" Style="opacity:.6;">Track @(i + 1)</MudText>
+						<MudText Typo="Typo.body2" Style="font-family:monospace; white-space:pre-wrap; word-break:break-all; background:var(--mud-palette-background-gray); padding:8px; border-radius:4px;" Class="mb-3">@_encodingCommands[i]</MudText>
+					}
+				</MudExpansionPanel>
+			</MudExpansionPanels>
+		}
 	</DialogContent>
 	<DialogActions>
 		<MudButton OnClick="Cancel" Variant="Variant.Text">Close</MudButton>

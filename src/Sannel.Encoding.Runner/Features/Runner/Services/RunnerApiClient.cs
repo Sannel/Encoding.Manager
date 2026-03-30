@@ -54,16 +54,16 @@ public class RunnerApiClient : IRunnerApiClient, IAsyncDisposable
 		return await ReadJsonAsync<ClaimedJobResponse>(response, "claim-next", ct);
 	}
 
-	public async Task UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent = null, string? error = null, CancellationToken ct = default)
+	public async Task UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent = null, string? error = null, string? encodingCommand = null, CancellationToken ct = default)
 	{
-		if (await TryUpdateJobStatusViaSignalRAsync(jobId, status, progressPercent, error, ct))
+		if (await TryUpdateJobStatusViaSignalRAsync(jobId, status, progressPercent, error, encodingCommand, ct))
 		{
 			return;
 		}
 
 		var response = await _http.PutAsJsonAsync(
 			$"api/runner/items/{jobId}/status",
-			new { Status = status, ProgressPercent = progressPercent, Error = error },
+			new { Status = status, ProgressPercent = progressPercent, Error = error, EncodingCommand = encodingCommand },
 			ct);
 		await EnsureSuccessAsync(response, "update-status", ct);
 	}
@@ -73,12 +73,13 @@ public class RunnerApiClient : IRunnerApiClient, IAsyncDisposable
 		string status,
 		int? progressPercent,
 		string? error,
+		string? encodingCommand,
 		CancellationToken ct)
 	{
 		try
 		{
 			var hubConnection = await GetOrCreateHubConnectionAsync(ct);
-			await hubConnection.InvokeAsync("UpdateJobStatus", jobId, status, progressPercent, error, ct);
+			await hubConnection.InvokeAsync("UpdateJobStatus", jobId, status, progressPercent, error, encodingCommand, ct);
 			return true;
 		}
 		catch (OperationCanceledException) when (ct.IsCancellationRequested)

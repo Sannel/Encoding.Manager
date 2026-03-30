@@ -175,6 +175,12 @@ public class EncodingWorkerService : BackgroundService
 					AdditionalArgs = additionalArgs
 				};
 
+				// Build sanitized command for logging (replace absolute root paths with labels).
+				var sanitizedCommand = BuildSanitizedCommand(handBrakeJob, rootLookup);
+
+				// Send the command with the first progress update for this track.
+				await _api.UpdateJobStatusAsync(job.JobId, "Encoding", 0, encodingCommand: sanitizedCommand, ct: ct);
+
 				// Progress callback: scale per-track progress across the whole job.
 				var trackIndex = i;
 				var trackCount = tracks.Count;
@@ -314,5 +320,32 @@ public class EncodingWorkerService : BackgroundService
 		}
 
 		return $"Title {track.TitleNumber}";
+	}
+
+	private static string BuildSanitizedCommand(HandBrakeJob job, Dictionary<string, string> rootLookup)
+	{
+		var command = $"HandBrakeCLI --input {job.InputPath} --output {job.OutputPath}";
+		if (!string.IsNullOrEmpty(job.PresetFilePath))
+		{
+			command += $" --preset-import-file {job.PresetFilePath}";
+		}
+
+		if (!string.IsNullOrEmpty(job.AdditionalArgs))
+		{
+			command += $" {job.AdditionalArgs}";
+		}
+
+		// Replace absolute root paths with [label] to avoid exposing full filesystem paths.
+		// Process longer paths first so a root like "/mnt/data" is replaced before "/mnt".
+		foreach (var root in rootLookup.OrderByDescending(r => r.Value.Length))
+		{
+			var nativePath = root.Value.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+			if (!string.IsNullOrEmpty(nativePath))
+			{
+				command = command.Replace(nativePath, $"[{root.Key}]", StringComparison.OrdinalIgnoreCase);
+			}
+		}
+
+		return command;
 	}
 }

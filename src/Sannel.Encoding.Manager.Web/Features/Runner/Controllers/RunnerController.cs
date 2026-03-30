@@ -95,7 +95,7 @@ public class RunnerController : ControllerBase
 			});
 		}
 
-		var updated = await _runnerJobService.UpdateJobStatusAsync(id, request.Status, request.ProgressPercent, request.Error, ct);
+		var updated = await _runnerJobService.UpdateJobStatusAsync(id, request.Status, request.ProgressPercent, request.Error, request.EncodingCommand, ct);
 		if (!updated)
 		{
 			return NotFound();
