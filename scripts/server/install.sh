@@ -4,6 +4,7 @@
 set -euo pipefail
 
 SERVICE_NAME="sannel-encoding-server"
+SERVICE_USER="encodemanager"
 UNIT_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 DEFAULT_PATH="/opt/sannel/encoding-manager/server"
 EXE_NAME="Sannel.Encoding.Manager.Web"
@@ -24,6 +25,12 @@ fi
 
 EXE_PATH="${INSTALL_PATH}/${EXE_NAME}"
 
+# Ensure the service account exists (system user, no login shell, no home directory).
+if ! id -u "$SERVICE_USER" &>/dev/null; then
+    echo "Creating system user '${SERVICE_USER}'..."
+    useradd --system --no-create-home --shell /usr/sbin/nologin "$SERVICE_USER"
+fi
+
 if systemctl list-unit-files "${SERVICE_NAME}.service" &>/dev/null && [ -f "$UNIT_FILE" ]; then
     echo "Existing service detected — updating..."
     echo "Stopping service..."
@@ -32,6 +39,7 @@ if systemctl list-unit-files "${SERVICE_NAME}.service" &>/dev/null && [ -f "$UNI
     echo "Copying files to ${INSTALL_PATH}..."
     cp -af "${SCRIPT_DIR}/." "$INSTALL_PATH/"
     chmod +x "$EXE_PATH"
+    chown -R "${SERVICE_USER}:${SERVICE_USER}" "$INSTALL_PATH"
 
     echo "Reloading systemd and starting service..."
     systemctl daemon-reload
@@ -45,6 +53,7 @@ else
     echo "Copying files to ${INSTALL_PATH}..."
     cp -af "${SCRIPT_DIR}/." "$INSTALL_PATH/"
     chmod +x "$EXE_PATH"
+    chown -R "${SERVICE_USER}:${SERVICE_USER}" "$INSTALL_PATH"
 
     echo "Creating systemd unit file..."
     cat > "$UNIT_FILE" <<EOF
@@ -54,6 +63,8 @@ After=network.target
 
 [Service]
 Type=notify
+User=${SERVICE_USER}
+Group=${SERVICE_USER}
 WorkingDirectory=${INSTALL_PATH}
 ExecStart=${EXE_PATH}
 Restart=on-failure
@@ -75,5 +86,6 @@ fi
 echo ""
 echo "Install path : ${INSTALL_PATH}"
 echo "Service name : ${SERVICE_NAME}"
+echo "Service user : ${SERVICE_USER}"
 echo "Executable   : ${EXE_PATH}"
 echo "Unit file    : ${UNIT_FILE}"
