@@ -105,7 +105,8 @@ public abstract class NamingComponentBase : ComponentBase
 		};
 
 		await this.EncodeQueueService.AddItemAsync(item);
-		this.Snackbar.Add($"Disc added to queue with {toAdd.Count} track(s).", Severity.Success);
+		var subject = string.Equals(mode, "Files", StringComparison.OrdinalIgnoreCase) ? "Folder" : "Disc";
+		this.Snackbar.Add($"{subject} added to queue with {toAdd.Count} track(s).", Severity.Success);
 	}
 
 	protected IReadOnlyList<TvdbEpisode> EpisodesForSeason(int? season)

@@ -109,21 +109,26 @@ public class EncodingWorkerService : BackgroundService
 				return;
 			}
 
-			// Scan disc once and reuse for all tracks.
-			var scanResult = await _handBrake.ScanAsync(absDiscPath, ct: ct);
-			if (!scanResult.IsSuccess)
-			{
-				_logger.LogError("Scan failed for {Path}: {Error}", absDiscPath, scanResult.Error?.Message);
-				await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: $"Scan failed: {scanResult.Error?.Message}", ct: ct);
-				return;
-			}
-
 			var tracks = JsonSerializer.Deserialize<List<EncodeTrackConfig>>(job.TracksJson) ?? [];
 			if (tracks.Count == 0)
 			{
 				_logger.LogWarning("Job {JobId} has no tracks to encode.", job.JobId);
 				await _api.UpdateJobStatusAsync(job.JobId, "Finished", 100, ct: ct);
 				return;
+			}
+
+			var hasFileTracks = tracks.Any(track => !string.IsNullOrWhiteSpace(track.SourceRelativePath));
+			HandBrakeScanResult? discScanResult = null;
+			if (!hasFileTracks)
+			{
+				// Scan disc once and reuse for all tracks.
+				discScanResult = await _handBrake.ScanAsync(absDiscPath, ct: ct);
+				if (!discScanResult.IsSuccess)
+				{
+					_logger.LogError("Scan failed for {Path}: {Error}", absDiscPath, discScanResult.Error?.Message);
+					await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: $"Scan failed: {discScanResult.Error?.Message}", ct: ct);
+					return;
+				}
 			}
 
 			var rootLookup = _fsOptions.Roots.ToDictionary(r => r.Label, r => r.Path, StringComparer.OrdinalIgnoreCase);
@@ -137,10 +142,34 @@ public class EncodingWorkerService : BackgroundService
 					continue;
 				}
 
-				var titleInfo = scanResult.Titles.FirstOrDefault(t => t.TitleNumber == track.TitleNumber);
+				var inputPath = ResolveTrackInputPath(absDiscPath, track);
+				var scanResult = discScanResult;
+				if (!string.IsNullOrWhiteSpace(track.SourceRelativePath))
+				{
+					if (!File.Exists(inputPath))
+					{
+						var error = $"Input file is not accessible: '{inputPath}'.";
+						_logger.LogError("{Error}", error);
+						await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
+						return;
+					}
+
+					scanResult = await _handBrake.ScanAsync(inputPath, ct: ct);
+					if (!scanResult.IsSuccess)
+					{
+						var error = $"Scan failed for file '{track.SourceRelativePath}': {scanResult.Error?.Message}";
+						_logger.LogError("{Error}", error);
+						await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
+						return;
+					}
+				}
+
+				var titleInfo = ResolveTitleInfo(scanResult!, track);
 				if (titleInfo is null)
 				{
-					var error = $"Title {track.TitleNumber} not found in scan results.";
+					var error = string.IsNullOrWhiteSpace(track.SourceRelativePath)
+						? $"Title {track.TitleNumber} not found in scan results."
+						: $"Title {track.TitleNumber} not found in scan results for '{track.SourceRelativePath}'.";
 					_logger.LogError("{Error}", error);
 					await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
 					return;
@@ -164,12 +193,15 @@ public class EncodingWorkerService : BackgroundService
 				var outputPath = ResolveOutputPath(job, track, rootLookup);
 
 				_logger.LogInformation(
-					"Encoding title {Title} -> {Output} (preset: {Preset})",
-					track.TitleNumber, outputPath, presetFilePath);
+					"Encoding {Source} title {Title} -> {Output} (preset: {Preset})",
+					string.IsNullOrWhiteSpace(track.SourceRelativePath) ? absDiscPath : inputPath,
+					track.TitleNumber,
+					outputPath,
+					presetFilePath);
 
 				var handBrakeJob = new HandBrakeJob
 				{
-					InputPath = absDiscPath,
+					InputPath = inputPath,
 					OutputPath = outputPath,
 					PresetFilePath = presetFilePath,
 					AdditionalArgs = additionalArgs
@@ -216,6 +248,45 @@ public class EncodingWorkerService : BackgroundService
 			_logger.LogError(ex, "Unhandled error processing job {JobId}.", job.JobId);
 			await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: ex.Message, ct: ct);
 		}
+	}
+
+	private string ResolveTrackInputPath(string absDiscPath, EncodeTrackConfig track)
+	{
+		if (string.IsNullOrWhiteSpace(track.SourceRelativePath))
+		{
+			return absDiscPath;
+		}
+
+		var fullPath = Path.GetFullPath(
+			Path.Combine(absDiscPath, _pathNormalizer.ToNative(track.SourceRelativePath)));
+
+		var relative = Path.GetRelativePath(absDiscPath, fullPath);
+		if (Path.IsPathRooted(relative)
+			|| relative.Equals("..", StringComparison.Ordinal)
+			|| relative.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
+			|| relative.StartsWith($"..{Path.AltDirectorySeparatorChar}", StringComparison.Ordinal))
+		{
+			throw new InvalidOperationException(
+				$"Track source path '{track.SourceRelativePath}' escapes the selected folder.");
+		}
+
+		return fullPath;
+	}
+
+	private static TitleInfo? ResolveTitleInfo(HandBrakeScanResult scanResult, EncodeTrackConfig track)
+	{
+		var titleInfo = scanResult.Titles.FirstOrDefault(t => t.TitleNumber == track.TitleNumber);
+		if (titleInfo is not null)
+		{
+			return titleInfo;
+		}
+
+		if (!string.IsNullOrWhiteSpace(track.SourceRelativePath) && scanResult.Titles.Count == 1)
+		{
+			return scanResult.Titles[0];
+		}
+
+		return null;
 	}
 
 	private string ResolveDiscPath(ClaimedJobResponse job)

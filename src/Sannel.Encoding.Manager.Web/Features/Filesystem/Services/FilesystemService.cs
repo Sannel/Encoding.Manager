@@ -95,6 +95,7 @@ public class FilesystemService : IFilesystemService
 			.Select(fileInfo => new FileEntryResponse
 			{
 				Name = fileInfo.Name,
+				RelativePath = fileInfo.Name,
 				SizeBytes = fileInfo.Length
 			})
 			.OrderBy(f => f.Name)
@@ -138,6 +139,57 @@ public class FilesystemService : IFilesystemService
 
 		var normalized = relativePath.Replace('\\', '/').Trim('/');
 		return normalized.Length == 0 ? null : normalized;
+	}
+
+	/// <inheritdoc />
+	public Task<IReadOnlyList<FileEntryResponse>> GetMediaFilesRecursiveAsync(
+		string label,
+		string? relativePath = null,
+		CancellationToken cancellationToken = default)
+	{
+		var normalizedRelativePath = NormalizeRelativePath(relativePath);
+
+		var rootConfig = _options.Roots.FirstOrDefault(r => r.Label.Equals(label, StringComparison.OrdinalIgnoreCase));
+		if (rootConfig == null)
+		{
+			throw new ArgumentException($"Invalid label: '{label}'", nameof(label));
+		}
+
+		var canonicalRootPath = Path.GetFullPath(rootConfig.Path);
+		var targetPath = string.IsNullOrWhiteSpace(normalizedRelativePath)
+			? canonicalRootPath
+			: Path.Combine(canonicalRootPath, normalizedRelativePath);
+		var canonicalTargetPath = Path.GetFullPath(targetPath);
+
+		if (!IsPathWithinRoot(canonicalTargetPath, canonicalRootPath))
+		{
+			_logger.LogWarning(
+				"GetMediaFilesRecursiveAsync validation failed. Label={Label}, RelativePath={RelativePath}, CanonicalRoot={CanonicalRoot}, CanonicalTarget={CanonicalTarget}",
+				label,
+				normalizedRelativePath,
+				canonicalRootPath,
+				canonicalTargetPath);
+			throw new ArgumentException($"Path escapes root boundary: '{normalizedRelativePath}'", nameof(relativePath));
+		}
+
+		if (!Directory.Exists(canonicalTargetPath))
+		{
+			throw new DirectoryNotFoundException($"Directory not found: '{(string.IsNullOrWhiteSpace(normalizedRelativePath) ? "/" : normalizedRelativePath)}'");
+		}
+
+		IReadOnlyList<FileEntryResponse> files = Directory.GetFiles(canonicalTargetPath, "*", SearchOption.AllDirectories)
+			.Select(file => new FileInfo(file))
+			.Where(fileInfo => MediaExtensions.Contains(fileInfo.Extension))
+			.Select(fileInfo => new FileEntryResponse
+			{
+				Name = fileInfo.Name,
+				RelativePath = Path.GetRelativePath(canonicalTargetPath, fileInfo.FullName).Replace('\\', '/'),
+				SizeBytes = fileInfo.Length,
+			})
+			.OrderBy(file => file.RelativePath, StringComparer.OrdinalIgnoreCase)
+			.ToList();
+
+		return Task.FromResult(files);
 	}
 
 	/// <inheritdoc />
@@ -195,6 +247,7 @@ public class FilesystemService : IFilesystemService
 			.Select(fileInfo => new FileEntryResponse
 			{
 				Name = fileInfo.Name,
+				RelativePath = fileInfo.Name,
 				SizeBytes = fileInfo.Length,
 			})
 			.OrderBy(f => f.Name)
@@ -217,19 +270,17 @@ public class FilesystemService : IFilesystemService
 
 		var normalizedRelativePath = NormalizeRelativePath(relativePath);
 
-		if (string.IsNullOrWhiteSpace(normalizedRelativePath))
+		if (!string.IsNullOrWhiteSpace(normalizedRelativePath))
 		{
-			throw new ArgumentException("Relative path must not be empty.", nameof(relativePath));
-		}
-
-		// Reject path segments that attempt traversal
-		var segments = normalizedRelativePath.Split('/');
-		foreach (var segment in segments)
-		{
-			var trimmed = segment.Trim();
-			if (trimmed is ".." or "." || trimmed.Length == 0)
+			// Reject path segments that attempt traversal
+			var segments = normalizedRelativePath.Split('/');
+			foreach (var segment in segments)
 			{
-				throw new ArgumentException("Invalid path: the specified path is not allowed.", nameof(relativePath));
+				var trimmed = segment.Trim();
+				if (trimmed is ".." or "." || trimmed.Length == 0)
+				{
+					throw new ArgumentException("Invalid path: the specified path is not allowed.", nameof(relativePath));
+				}
 			}
 		}
 
@@ -237,7 +288,9 @@ public class FilesystemService : IFilesystemService
 			?? throw new ArgumentException($"Invalid label: '{label}'", nameof(label));
 
 		var canonicalRootPath = Path.GetFullPath(rootConfig.Path);
-		var combinedPath = Path.Combine(canonicalRootPath, normalizedRelativePath);
+		var combinedPath = string.IsNullOrWhiteSpace(normalizedRelativePath)
+			? canonicalRootPath
+			: Path.Combine(canonicalRootPath, normalizedRelativePath);
 		var canonicalPath = Path.GetFullPath(combinedPath);
 
 		if (!IsPathWithinRoot(canonicalPath, canonicalRootPath))

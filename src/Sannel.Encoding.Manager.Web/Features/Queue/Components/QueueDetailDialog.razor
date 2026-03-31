@@ -44,20 +44,36 @@
 			<MudTable Items="_tracks" Dense="true" Hover="true" Breakpoint="Breakpoint.Xs" FixedHeader="true"
 				Style="max-height:420px; overflow-y:auto;">
 				<HeaderContent>
-					<MudTh>Title #</MudTh>
+					@if (ShowTitleColumn)
+					{
+						<MudTh>Title #</MudTh>
+					}
 					@if (Item.Mode == "Chapters")
 					{
 						<MudTh>Chapters</MudTh>
+					}
+					@if (ShowSourcePath)
+					{
+						<MudTh>Source</MudTh>
 					}
 					<MudTh>Output Name</MudTh>
 					<MudTh>S / E</MudTh>
 					<MudTh Style="min-width:180px;">Preset</MudTh>
 				</HeaderContent>
 				<RowTemplate>
-					<MudTd DataLabel="Title #">@context.TitleNumber</MudTd>
+					@if (ShowTitleColumn)
+					{
+						<MudTd DataLabel="Title #">@context.TitleNumber</MudTd>
+					}
 					@if (Item.Mode == "Chapters")
 					{
 						<MudTd DataLabel="Chapters">@context.StartChapter&ndash;@context.EndChapter</MudTd>
+					}
+					@if (ShowSourcePath)
+					{
+						<MudTd DataLabel="Source">
+							<MudText Typo="Typo.body2">@context.SourceRelativePath</MudText>
+						</MudTd>
 					}
 					<MudTd DataLabel="Output Name">
 						<MudText Typo="Typo.body2">@context.OutputName</MudText>

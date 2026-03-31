@@ -6,6 +6,8 @@ public class EncodeTrackConfig
 	public int TitleNumber { get; set; }
 	public int? StartChapter { get; set; }
 	public int? EndChapter { get; set; }
+	/// <summary>Path to the source file relative to the selected folder for file-backed jobs.</summary>
+	public string? SourceRelativePath { get; set; }
 	/// <summary>User-facing output filename (without extension). Empty means skip this track.</summary>
 	public string OutputName { get; set; } = string.Empty;
 	public int? SeasonNumber { get; set; }

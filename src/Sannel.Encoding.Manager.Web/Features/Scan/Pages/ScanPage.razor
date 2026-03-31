@@ -3,9 +3,9 @@
 @using Sannel.Encoding.Manager.Web.Features.Scan.Dto
 @using Sannel.Encoding.Manager.Web.Features.Scan.Components
 
-<PageTitle>Scan Disc</PageTitle>
+<PageTitle>@PageTitleText</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Scan Disc</MudText>
+<MudText Typo="Typo.h3" GutterBottom="true">@PageHeading</MudText>
 
 @if (!string.IsNullOrEmpty(_errorMessage))
 {
@@ -31,14 +31,32 @@ else
 				<strong>Disc Type:</strong> @DiscType
 			</MudText>
 		}
+		@if (IsFolderSelection)
+		{
+			<MudText Typo="Typo.body1">
+				<strong>Selection:</strong> Folder
+			</MudText>
+		}
 	</MudCard>
 
 	@if (_isScanning)
 	{
 		<MudStack AlignItems="AlignItems.Center" Class="mt-8">
 			<MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-			<MudText Typo="Typo.body1" Class="mt-2">Scanning disc…</MudText>
+			<MudText Typo="Typo.body1" Class="mt-2">@LoadingMessage</MudText>
 		</MudStack>
+	}
+	else if (IsFolderSelection)
+	{
+		<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2">
+			<MudTooltip Text="Re-scan the selected folder for .mkv and .mp4 files">
+				<MudButton Variant="Variant.Outlined" Color="Color.Warning"
+					StartIcon="@Icons.Material.Filled.Refresh"
+					OnClick="ForceRescan">@RefreshButtonText</MudButton>
+			</MudTooltip>
+		</MudStack>
+
+		<FolderFilesModeView Files="_folderFiles" DiscRootLabel="@Root" DiscRelativePath="@Path" />
 	}
 	else if (_scanResult is { IsSuccess: true })
 	{
@@ -53,7 +71,7 @@ else
 			<MudTooltip Text="Bypass the 24-hour cache and re-scan the disc now">
 				<MudButton Variant="Variant.Outlined" Color="Color.Warning"
 					StartIcon="@Icons.Material.Filled.Refresh"
-					OnClick="ForceRescan">Rescan Disc</MudButton>
+					OnClick="ForceRescan">@RefreshButtonText</MudButton>
 			</MudTooltip>
 		</MudStack>
 
