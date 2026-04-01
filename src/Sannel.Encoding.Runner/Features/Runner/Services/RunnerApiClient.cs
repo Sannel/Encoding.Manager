@@ -25,7 +25,22 @@ public class RunnerApiClient : IRunnerApiClient, IAsyncDisposable
 		_http = http;
 		_tokenProvider = tokenProvider;
 		_logger = logger;
-		_serviceBaseUri = new Uri(options.Value.ServiceBaseUrl.TrimEnd('/') + "/");
+
+		var serviceBaseUrl = options.Value.ServiceBaseUrl?.Trim();
+		if (string.IsNullOrWhiteSpace(serviceBaseUrl))
+		{
+			throw new InvalidOperationException(
+				"Runner configuration value 'Runner:ServiceBaseUrl' is missing. Set it to the web app base URL, for example 'https://encoding.example.com'.");
+		}
+
+		if (!Uri.TryCreate(serviceBaseUrl, UriKind.Absolute, out var parsedBaseUri)
+			|| (parsedBaseUri.Scheme != Uri.UriSchemeHttp && parsedBaseUri.Scheme != Uri.UriSchemeHttps))
+		{
+			throw new InvalidOperationException(
+				$"Runner configuration value 'Runner:ServiceBaseUrl' is invalid: '{serviceBaseUrl}'. It must be an absolute http/https URL.");
+		}
+
+		_serviceBaseUri = new Uri(parsedBaseUri.ToString().TrimEnd('/') + "/");
 		_http.BaseAddress = _serviceBaseUri;
 	}
 

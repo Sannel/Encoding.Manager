@@ -48,7 +48,7 @@ public class EncodingWorkerService : BackgroundService
 				if (!enabled)
 				{
 					_logger.LogInformation("Runner '{Name}' is disabled, sleeping.", _runnerOptions.Name);
-					await Task.Delay(TimeSpan.FromSeconds(_runnerOptions.PollIntervalSeconds), stoppingToken);
+					await DelayForPollIntervalAsync(stoppingToken);
 					continue;
 				}
 
@@ -56,7 +56,7 @@ public class EncodingWorkerService : BackgroundService
 				if (job is null)
 				{
 					_logger.LogDebug("No jobs available, sleeping.");
-					await Task.Delay(TimeSpan.FromSeconds(_runnerOptions.PollIntervalSeconds), stoppingToken);
+					await DelayForPollIntervalAsync(stoppingToken);
 					continue;
 				}
 
@@ -70,11 +70,25 @@ public class EncodingWorkerService : BackgroundService
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error in encoding worker loop.");
-				await Task.Delay(TimeSpan.FromSeconds(_runnerOptions.PollIntervalSeconds), stoppingToken);
+				await DelayForPollIntervalAsync(stoppingToken);
 			}
 		}
 
 		_logger.LogInformation("Encoding worker '{Name}' stopping.", _runnerOptions.Name);
+	}
+
+	private async Task DelayForPollIntervalAsync(CancellationToken ct)
+	{
+		var pollSeconds = _runnerOptions.PollIntervalSeconds;
+		if (pollSeconds < 1)
+		{
+			_logger.LogWarning(
+				"Runner poll interval '{PollIntervalSeconds}' is invalid; using 1 second.",
+				pollSeconds);
+			pollSeconds = 1;
+		}
+
+		await Task.Delay(TimeSpan.FromSeconds(pollSeconds), ct);
 	}
 
 	private async Task ProcessJobAsync(ClaimedJobResponse job, CancellationToken ct)
