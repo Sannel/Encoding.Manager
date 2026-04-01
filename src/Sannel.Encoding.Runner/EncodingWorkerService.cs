@@ -393,6 +393,14 @@ public class EncodingWorkerService : BackgroundService
 
 		var expanded = _pathNormalizer.ExpandTemplate(job.TrackDestinationTemplate, variables, destRoot);
 
+		if (string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(expanded)))
+		{
+			var fallbackName = string.IsNullOrWhiteSpace(track.OutputName)
+				? $"Title {track.TitleNumber:D2}"
+				: _pathNormalizer.SanitizeSegment(track.OutputName);
+			expanded = Path.Combine(expanded.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), fallbackName);
+		}
+
 		// Ensure the output path always ends with .mkv
 		if (!expanded.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase))
 		{

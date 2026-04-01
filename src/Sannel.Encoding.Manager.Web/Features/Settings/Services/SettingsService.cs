@@ -31,12 +31,14 @@ public class SettingsService : ISettingsService
 		{
 			settings.Id = 1;
 			settings.TrackDestinationTemplate = PathHelper.ToForwardSlash(settings.TrackDestinationTemplate);
+			settings.MovieTrackDestinationTemplate = PathHelper.ToForwardSlash(settings.MovieTrackDestinationTemplate);
 			ctx.AppSettings.Add(settings);
 		}
 		else
 		{
 			existing.TrackDestinationRoot = settings.TrackDestinationRoot;
 			existing.TrackDestinationTemplate = PathHelper.ToForwardSlash(settings.TrackDestinationTemplate);
+			existing.MovieTrackDestinationTemplate = PathHelper.ToForwardSlash(settings.MovieTrackDestinationTemplate);
 			existing.AudioDefault = settings.AudioDefault;
 			existing.AudioLanguages = settings.AudioLanguages;
 			existing.SubtitleLanguages = settings.SubtitleLanguages;

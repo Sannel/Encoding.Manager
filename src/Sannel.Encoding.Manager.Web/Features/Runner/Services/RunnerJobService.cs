@@ -113,6 +113,18 @@ public class RunnerJobService : IRunnerJobService
 			.ConfigureAwait(false)
 			?? new Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings();
 
+		var isMovieJob = (nextItem.TvdbId ?? 0) == 0;
+		var selectedTemplate = isMovieJob
+			? settings.MovieTrackDestinationTemplate
+			: settings.TrackDestinationTemplate;
+
+		if (string.IsNullOrWhiteSpace(selectedTemplate))
+		{
+			selectedTemplate = isMovieJob
+				? "Movies/{MovieName} ({MovieYear})/{MovieName} - {Resolution}"
+				: "{TVDBShow}/Season {SeasonNumber}/{EpisodeName}";
+		}
+
 		return new ClaimedJobResponse
 		{
 			JobId = nextItem.Id,
@@ -124,7 +136,7 @@ public class RunnerJobService : IRunnerJobService
 			AudioDefault = nextItem.AudioDefault,
 			TracksJson = nextItem.TracksJson,
 			PresetMap = presetMap,
-			TrackDestinationTemplate = (nextItem.TvdbId ?? 0) == 0 ? settings.MovieTrackDestinationTemplate : settings.TrackDestinationTemplate,
+			TrackDestinationTemplate = selectedTemplate,
 			TrackDestinationRoot = settings.TrackDestinationRoot,
 			AudioLanguages = settings.AudioLanguages
 				.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
