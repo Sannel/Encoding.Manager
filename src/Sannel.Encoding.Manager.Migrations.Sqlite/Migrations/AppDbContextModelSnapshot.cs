@@ -44,6 +44,9 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                     b.Property<string>("EncodingCommandsJson")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Mode")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -83,6 +86,10 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Label")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PresetName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
