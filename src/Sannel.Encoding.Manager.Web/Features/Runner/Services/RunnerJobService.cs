@@ -124,7 +124,7 @@ public class RunnerJobService : IRunnerJobService
 			AudioDefault = nextItem.AudioDefault,
 			TracksJson = nextItem.TracksJson,
 			PresetMap = presetMap,
-			TrackDestinationTemplate = settings.TrackDestinationTemplate,
+			TrackDestinationTemplate = (nextItem.TvdbId ?? 0) == 0 ? settings.MovieTrackDestinationTemplate : settings.TrackDestinationTemplate,
 			TrackDestinationRoot = settings.TrackDestinationRoot,
 			AudioLanguages = settings.AudioLanguages
 				.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),

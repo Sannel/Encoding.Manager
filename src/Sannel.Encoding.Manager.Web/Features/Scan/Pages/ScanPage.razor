@@ -10,9 +10,14 @@
 @if (!_isScanning && (IsFolderSelection || IsFileSelection) && _folderFiles.Count > 0)
 {
 	<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-3">
+		<MudSelect T="string" Value="_selectedFormat" ValueChanged="@(v => { _selectedFormat = v; StateHasChanged(); })"
+			Label="Format" Variant="Variant.Outlined" Style="min-width: 120px;">
+			<MudSelectItem Value="@("TV")">TV Show</MudSelectItem>
+			<MudSelectItem Value="@("Movie")">Movie</MudSelectItem>
+		</MudSelect>
 		<MudButton Variant="Variant.Outlined" Color="Color.Warning"
 			StartIcon="@Icons.Material.Filled.ClearAll"
-			OnClick="ClearAllFolderTrackNames">
+			OnClick="ClearAllTrackNames">
 			Clear All Names
 		</MudButton>
 	</MudStack>
@@ -76,7 +81,14 @@ else
 			</MudStack>
 		}
 
-		<FolderFilesModeView @ref="_folderFilesModeView" Files="_folderFiles" DiscRootLabel="@Root" DiscRelativePath="@FolderFilesDiscRelativePath" />
+		@if (IsTvFormat)
+		{
+			<FolderFilesModeView @ref="_folderFilesModeView" Files="_folderFiles" DiscRootLabel="@Root" DiscRelativePath="@FolderFilesDiscRelativePath" />
+		}
+		else if (IsMovieFormat)
+		{
+			<MovieFilesModeView @ref="_movieFilesModeView" Files="_folderFiles" DiscRootLabel="@Root" DiscRelativePath="@FolderFilesDiscRelativePath" />
+		}
 	}
 	else if (_scanResult is { IsSuccess: true })
 	{

@@ -372,13 +372,16 @@ public class EncodingWorkerService : BackgroundService
 		{
 			["{TVDBShow}"] = job.TvdbShowName ?? "Unknown",
 			["{ShowName}"] = job.TvdbShowName ?? "Unknown",
+			["{MovieName}"] = track.OutputName ?? "Unknown",
 			["{TVDBID}"] = job.TvdbId?.ToString() ?? string.Empty,
 			["{SourceDisk}"] = sourceDisk,
 			["{EpisodeName}"] = BuildEpisodeName(track),
 			["{OutputName}"] = track.OutputName,
 			["{SeasonNumber}"] = (track.SeasonNumber ?? 0).ToString("D2"),
 			["{EpisodeNumber}"] = (track.EpisodeNumber ?? 0).ToString("D2"),
-			["{TitleNumber}"] = track.TitleNumber.ToString("D2")
+			["{TitleNumber}"] = track.TitleNumber.ToString("D2"),
+			["{MovieYear}"] = string.Empty,
+			["{Resolution}"] = track.Resolution ?? string.Empty
 		};
 
 		var destRoot = string.Empty;

@@ -36,15 +36,15 @@ else
 				</MudText>
 				<MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mb-3">
 					<MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
-						OnClick="@(() => AppendVariable("{SourceDisk}"))">{SourceDisk}</MudChip>
+						OnClick="@(() => AppendToTvTemplate("{SourceDisk}"))">{SourceDisk}</MudChip>
 					<MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
-						OnClick="@(() => AppendVariable("{TVDBShow}"))">{TVDBShow}</MudChip>
+						OnClick="@(() => AppendToTvTemplate("{TVDBShow}"))">{TVDBShow}</MudChip>
 					<MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
-						OnClick="@(() => AppendVariable("{TVDBID}"))">{TVDBID}</MudChip>
+						OnClick="@(() => AppendToTvTemplate("{TVDBID}"))">{TVDBID}</MudChip>
 					<MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
-						OnClick="@(() => AppendVariable("{SeasonNumber}"))">{SeasonNumber}</MudChip>
+						OnClick="@(() => AppendToTvTemplate("{SeasonNumber}"))">{SeasonNumber}</MudChip>
 					<MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
-						OnClick="@(() => AppendVariable("{EpisodeName}"))">{EpisodeName}</MudChip>
+						OnClick="@(() => AppendToTvTemplate("{EpisodeName}"))">{EpisodeName}</MudChip>
 				</MudStack>
 				<MudAlert Severity="Severity.Info" Dense="true" Class="mb-3" NoIcon="false">
 					<MudText Typo="Typo.caption">
@@ -57,6 +57,38 @@ else
 					Variant="Variant.Outlined"
 					FullWidth="true"
 					Placeholder=@("{TVDBShow}\\Season {SeasonNumber}\\{EpisodeName}") />
+			</MudCardContent>
+		</MudCard>
+
+		<MudCard>
+			<MudCardContent>
+				<MudText Typo="Typo.h6" Class="mb-2">Movie Track Destination</MudText>
+
+				<MudText Typo="Typo.body2" Class="mb-3">
+					Sub-path template for movie files. Supported variables:
+				</MudText>
+				<MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mb-3">
+					<MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
+						OnClick="@(() => AppendToMovieTemplate("{SourceDisk}"))">{SourceDisk}</MudChip>
+					<MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
+						OnClick="@(() => AppendToMovieTemplate("{MovieName}"))">{MovieName}</MudChip>
+					<MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
+						OnClick="@(() => AppendToMovieTemplate("{MovieYear}"))">{MovieYear}</MudChip>
+					<MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
+						OnClick="@(() => AppendToMovieTemplate("{Resolution}"))">{Resolution}</MudChip>
+				</MudStack>
+				<MudAlert Severity="Severity.Info" Dense="true" Class="mb-3" NoIcon="false">
+					<MudText Typo="Typo.caption">
+						<strong>{MovieName}</strong> &rarr; <em>The Matrix</em> &nbsp;|&nbsp;
+						<strong>{MovieYear}</strong> &rarr; <em>1999</em> &nbsp;|&nbsp;
+						<strong>{Resolution}</strong> &rarr; <em>1080p</em> or <em>720p</em> (auto-detected or manually selected)
+					</MudText>
+				</MudAlert>
+				<MudTextField @bind-Value="_movieTrackDestinationTemplate"
+					Label="Template"
+					Variant="Variant.Outlined"
+					FullWidth="true"
+					Placeholder=@("Movies\\{MovieName} ({MovieYear})\\{Resolution}") />
 			</MudCardContent>
 		</MudCard>
 

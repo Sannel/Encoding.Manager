@@ -34,6 +34,7 @@ public partial class SettingsPage : ComponentBase
 	private IReadOnlyList<LanguageDefinition> _allLanguages = LanguageList.Languages;
 	private string? _trackDestinationRoot;
 	private string _trackDestinationTemplate = string.Empty;
+	private string _movieTrackDestinationTemplate = string.Empty;
 	private AudioDefault _audioDefault = AudioDefault.Opus;
 	private IReadOnlyCollection<string> _selectedAudioLanguages = new HashSet<string> { "eng" };
 	private IReadOnlyCollection<string> _selectedSubtitleLanguages = new HashSet<string> { "eng" };
@@ -46,6 +47,7 @@ public partial class SettingsPage : ComponentBase
 		var settings = await this.SettingsService.GetSettingsAsync();
 		this._trackDestinationRoot = settings.TrackDestinationRoot;
 		this._trackDestinationTemplate = settings.TrackDestinationTemplate;
+		this._movieTrackDestinationTemplate = settings.MovieTrackDestinationTemplate;
 		this._audioDefault = Enum.TryParse<AudioDefault>(settings.AudioDefault, ignoreCase: true, out var parsed)
 			? parsed
 			: AudioDefault.Opus;
@@ -59,9 +61,14 @@ public partial class SettingsPage : ComponentBase
 		this._isLoading = false;
 	}
 
-	private void AppendVariable(string variable)
+	private void AppendToTvTemplate(string variable)
 	{
 		this._trackDestinationTemplate = this._trackDestinationTemplate + variable;
+	}
+
+	private void AppendToMovieTemplate(string variable)
+	{
+		this._movieTrackDestinationTemplate = this._movieTrackDestinationTemplate + variable;
 	}
 
 	private async Task SaveAsync()
@@ -73,6 +80,7 @@ public partial class SettingsPage : ComponentBase
 			{
 				TrackDestinationRoot = this._trackDestinationRoot,
 				TrackDestinationTemplate = this._trackDestinationTemplate,
+				MovieTrackDestinationTemplate = this._movieTrackDestinationTemplate,
 				AudioDefault = this._audioDefault.ToString(),
 				AudioLanguages = string.Join(",", this._selectedAudioLanguages),
 				SubtitleLanguages = string.Join(",", this._selectedSubtitleLanguages),

@@ -1,9 +1,11 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using Sannel.Encoding.Manager.Web.Features.Omdb.Services;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
 using Sannel.Encoding.Manager.Web.Features.Queue.Services;
+using Sannel.Encoding.Manager.Web.Features.Scan.Utilities;
 using Sannel.Encoding.Manager.Web.Features.Settings.Services;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Dto;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Services;
@@ -18,6 +20,9 @@ public abstract class NamingComponentBase : ComponentBase
 {
 	[Inject]
 	private ITvdbService TvdbService { get; set; } = default!;
+
+	[Inject]
+	private IOmdbService OmdbService { get; set; } = default!;
 
 	[Inject]
 	private ISnackbar Snackbar { get; set; } = default!;
@@ -36,6 +41,7 @@ public abstract class NamingComponentBase : ComponentBase
 		public string Name { get; set; } = string.Empty;
 		public int? Season { get; set; }
 		public TvdbEpisode? Episode { get; set; }
+		public string? Resolution { get; set; }
 	}
 
 	protected string _showId = string.Empty;
@@ -47,8 +53,19 @@ public abstract class NamingComponentBase : ComponentBase
 	protected IReadOnlyList<int> _seasons = [];
 	protected readonly Dictionary<int, NamingRowData> _namingRows = [];
 
+	/// <summary>Movie search/lookup fields (used in Movie mode).</summary>
+	protected string _movieTitle = string.Empty;
+	protected bool _isOmdbLoading;
+	protected string? _omdbErrorMessage;
+	protected string? _movieName;
+	protected string? _movieYear;
+	protected string? _movieGenres;
+
 	/// <summary>Available HandBrake presets loaded from the database.</summary>
 	protected IReadOnlyList<EncodingPreset> _presets = [];
+
+	/// <summary>Available video resolutions for dropdown selection.</summary>
+	protected IReadOnlyList<string> _availableResolutions = ResolutionDetector.GetAvailableResolutions();
 
 	/// <summary>The preset label selected on the scan page (applied to all tracks when queuing).</summary>
 	protected string? _selectedPresetLabel;
@@ -210,7 +227,14 @@ public abstract class NamingComponentBase : ComponentBase
 			row.Name = string.Empty;
 			row.Season = null;
 			row.Episode = null;
+			row.Resolution = null;
 		}
+	}
+
+	protected void OnResolutionChanged(int key, string? resolution)
+	{
+		var row = this.GetNamingRow(key);
+		row.Resolution = resolution;
 	}
 
 	protected void OnEpisodeOrderTypeChanged(TvdbEpisodeOrderType type)
@@ -220,6 +244,88 @@ public abstract class NamingComponentBase : ComponentBase
 		this._allEpisodes = [];
 		this._seasons = [];
 		this._tvdbErrorMessage = null;
+	}
+
+	protected async Task OnLoadFromOmdbClicked()
+	{
+		if (string.IsNullOrWhiteSpace(this._movieTitle))
+		{
+			this._omdbErrorMessage = "Enter a movie title to search.";
+			return;
+		}
+
+		this._isOmdbLoading = true;
+		this._omdbErrorMessage = null;
+
+		try
+		{
+			var movie = await this.OmdbService.SearchMovieAsync(this._movieTitle);
+			if (movie is null)
+			{
+				this._omdbErrorMessage = "No movie found with that title.";
+				this._movieName = null;
+				this._movieYear = null;
+				this._movieGenres = null;
+				return;
+			}
+
+			this._movieName = movie.Title;
+			this._movieYear = movie.Year;
+			this._movieGenres = movie.Genres;
+
+			this.Snackbar.Add($"Loaded '{movie.Title}' ({movie.Year}) from OMDb.", Severity.Success);
+		}
+		catch (Exception ex)
+		{
+			this._omdbErrorMessage = $"Failed to load from OMDb: {ex.Message}";
+			this._movieName = null;
+			this._movieYear = null;
+			this._movieGenres = null;
+		}
+		finally
+		{
+			this._isOmdbLoading = false;
+		}
+	}
+
+	protected void ApplyMovieName(int key)
+	{
+		var row = this.GetNamingRow(key);
+		if (!string.IsNullOrEmpty(this._movieName))
+		{
+			row.Name = this._movieName;
+		}
+		else
+		{
+			var fallback = this.GetFallbackAutoName(key);
+			if (!string.IsNullOrEmpty(fallback))
+			{
+				row.Name = fallback;
+			}
+		}
+	}
+
+	protected void ApplyAllMovieNames()
+	{
+		foreach (var key in this._namingRows.Keys)
+		{
+			this.ApplyMovieName(key);
+		}
+	}
+
+	protected void ApplyDetectedResolution(int key, int width, int height)
+	{
+		var resolution = ResolutionDetector.DetectResolution(width, height);
+		this.OnResolutionChanged(key, resolution);
+	}
+
+	protected void ApplyAllDetectedResolutions(int width, int height)
+	{
+		var resolution = ResolutionDetector.DetectResolution(width, height);
+		foreach (var key in this._namingRows.Keys)
+		{
+			this.OnResolutionChanged(key, resolution);
+		}
 	}
 
 	protected void CascadeRows(IReadOnlyList<int> orderedKeys)

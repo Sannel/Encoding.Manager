@@ -8,7 +8,7 @@ public class AppSettings
 	public int Id { get; set; } = 1;
 
 	/// <summary>
-	/// Output file path template. Supported variables:
+	/// Output file path template for TV shows. Supported variables:
 	/// {SourceDisk}, {TVDBShow}, {TVDBID}, {SeasonNumber}, {EpisodeName}.
 	///
 	/// {SeasonNumber} expands to "Season 01" / "Season 12".
@@ -17,6 +17,18 @@ public class AppSettings
 	/// </summary>
 	public string TrackDestinationTemplate { get; set; } =
 		@"{TVDBShow}\Season {SeasonNumber}\{EpisodeName}";
+
+	/// <summary>
+	/// Output file path template for movies. Supported variables:
+	/// {SourceDisk}, {MovieName}, {MovieYear}, {Resolution}.
+	///
+	/// {MovieName} expands to the movie title from OMDb.
+	/// {MovieYear} expands to the release year from OMDb.
+	/// {Resolution} expands to "1080p", "720p", "480p", "4k", etc. (auto-detected or manually selected).
+	/// </summary>
+	public string MovieTrackDestinationTemplate { get; set; } =
+		@"Movies\{MovieName} ({MovieYear})\{MovieName} - {Resolution}";
+
 
 	/// <summary>
 	/// The label of the configured filesystem root to use as the base output directory.

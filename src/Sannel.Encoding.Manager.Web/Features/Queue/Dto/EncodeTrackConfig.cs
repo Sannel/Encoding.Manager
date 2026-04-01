@@ -12,6 +12,8 @@ public class EncodeTrackConfig
 	public string OutputName { get; set; } = string.Empty;
 	public int? SeasonNumber { get; set; }
 	public int? EpisodeNumber { get; set; }
+	/// <summary>Video resolution for movies (e.g., "1080p", "720p", "480p", "4k"). Empty or null means no resolution specified.</summary>
+	public string? Resolution { get; set; }
 
 	/// <summary>Label of the HandBrake preset to use. Null means no preset selected.</summary>
 	public string? PresetLabel { get; set; }

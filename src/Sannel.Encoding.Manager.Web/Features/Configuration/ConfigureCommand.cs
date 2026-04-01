@@ -44,6 +44,11 @@ public static class ConfigureCommand
 		PromptSecret(root, "Tvdb:ApiKey", "  API Key     ");
 		Console.WriteLine();
 
+		// ── OMDb ─────────────────────────────────────────────────────────────
+		Console.WriteLine("[OMDb]");
+		PromptSecret(root, "Omdb:ApiKey", "  API Key     ");
+		Console.WriteLine();
+
 		// ── Database ──────────────────────────────────────────────────────────
 		Console.WriteLine("[Database]");
 		PromptSecret(root,    "Database:ConnectionString",  "  Connection String          ");

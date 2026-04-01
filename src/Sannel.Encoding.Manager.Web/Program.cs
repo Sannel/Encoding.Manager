@@ -22,6 +22,8 @@ using Sannel.Encoding.Manager.Web.Features.Runners.Services;
 using Sannel.Encoding.Manager.Web.Features.Settings.Services;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Options;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Services;
+using Sannel.Encoding.Manager.Web.Features.Omdb.Options;
+using Sannel.Encoding.Manager.Web.Features.Omdb.Services;
 using Sannel.Encoding.Manager.HandBrake;
 using Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
 using Sannel.Encoding.Manager.Web.Features.Configuration;
@@ -163,6 +165,19 @@ builder.Services.AddHttpClient<ITvdbService, TvdbService>((sp, client) =>
     var options = sp.GetRequiredService<IOptions<TvdbOptions>>().Value;
     client.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
 });
+
+// OMDb integration for movies. Fall back to legacy "Imdb" config if present.
+builder.Services.AddOptions<OmdbOptions>()
+    .Configure<IConfiguration>((options, configuration) =>
+    {
+        configuration.GetSection("Omdb").Bind(options);
+
+        if (string.IsNullOrWhiteSpace(options.ApiKey) && string.IsNullOrWhiteSpace(options.BaseUrl))
+        {
+            configuration.GetSection("Imdb").Bind(options);
+        }
+    });
+builder.Services.AddHttpClient<IOmdbService, OmdbService>();
 
 // MVC Controllers for API endpoints
 builder.Services.AddControllers();

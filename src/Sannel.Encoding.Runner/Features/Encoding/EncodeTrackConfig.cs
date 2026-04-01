@@ -9,5 +9,6 @@ public class EncodeTrackConfig
 	public string OutputName { get; set; } = string.Empty;
 	public int? SeasonNumber { get; set; }
 	public int? EpisodeNumber { get; set; }
+	public string? Resolution { get; set; }
 	public string? PresetLabel { get; set; }
 }

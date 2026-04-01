@@ -36,13 +36,19 @@ public partial class ScanPage : ComponentBase
 	private HandBrakeScanResult? _scanResult;
 	private IReadOnlyList<FileEntryResponse> _folderFiles = [];
 	private ScanMode _selectedMode = ScanMode.Titles;
+	private string _selectedFormat = "TV";
 	private FolderFilesModeView? _folderFilesModeView;
+	private MovieFilesModeView? _movieFilesModeView;
 
 	private bool IsFolderSelection =>
 		string.Equals(this.SelectionType, "folder", StringComparison.OrdinalIgnoreCase);
 
 	private bool IsFileSelection =>
 		string.Equals(this.SelectionType, "file", StringComparison.OrdinalIgnoreCase);
+
+	private bool IsTvFormat => string.Equals(this._selectedFormat, "TV", StringComparison.OrdinalIgnoreCase);
+
+	private bool IsMovieFormat => string.Equals(this._selectedFormat, "Movie", StringComparison.OrdinalIgnoreCase);
 
 	/// <summary>
 	/// For folder mode: the folder path itself.
@@ -139,9 +145,16 @@ public partial class ScanPage : ComponentBase
 		this._selectedMode = mode;
 	}
 
-	private void ClearAllFolderTrackNames()
+	private void ClearAllTrackNames()
 	{
-		this._folderFilesModeView?.ClearAllTrackNames();
+		if (this.IsTvFormat)
+		{
+			this._folderFilesModeView?.ClearAllTrackNames();
+		}
+		else if (this.IsMovieFormat)
+		{
+			this._movieFilesModeView?.ClearAllTrackNames();
+		}
 	}
 
 	private async Task ForceRescan() => await this.RunScan(forceRescan: true);

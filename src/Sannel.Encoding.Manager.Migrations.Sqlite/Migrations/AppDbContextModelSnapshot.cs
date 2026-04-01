@@ -165,6 +165,10 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("MovieTrackDestinationTemplate")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("SubtitleLanguages")
                         .IsRequired()
                         .HasColumnType("TEXT");
