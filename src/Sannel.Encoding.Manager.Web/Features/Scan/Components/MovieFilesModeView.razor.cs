@@ -58,6 +58,7 @@ public partial class MovieFilesModeView : NamingComponentBase
 							: row.Name.Trim(),
 						SeasonNumber = null,
 						EpisodeNumber = null,
+						MovieYear = string.IsNullOrWhiteSpace(this._movieYear) ? null : this._movieYear.Trim(),
 						Resolution = row.Resolution,
 					};
 				})

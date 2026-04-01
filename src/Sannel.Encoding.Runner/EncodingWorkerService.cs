@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using Sannel.Encoding.Manager.HandBrake;
 using Sannel.Encoding.Runner.Features.Encoding;
@@ -380,7 +381,7 @@ public class EncodingWorkerService : BackgroundService
 			["{SeasonNumber}"] = (track.SeasonNumber ?? 0).ToString("D2"),
 			["{EpisodeNumber}"] = (track.EpisodeNumber ?? 0).ToString("D2"),
 			["{TitleNumber}"] = track.TitleNumber.ToString("D2"),
-			["{MovieYear}"] = string.Empty,
+			["{MovieYear}"] = ResolveMovieYear(track),
 			["{Resolution}"] = track.Resolution ?? string.Empty
 		};
 
@@ -408,6 +409,31 @@ public class EncodingWorkerService : BackgroundService
 		}
 
 		return expanded;
+	}
+
+	private static string ResolveMovieYear(EncodeTrackConfig track)
+	{
+		if (!string.IsNullOrWhiteSpace(track.MovieYear))
+		{
+			return track.MovieYear.Trim();
+		}
+
+		var candidates = new[] { track.OutputName, track.SourceRelativePath };
+		foreach (var candidate in candidates)
+		{
+			if (string.IsNullOrWhiteSpace(candidate))
+			{
+				continue;
+			}
+
+			var match = Regex.Match(candidate, @"(?<!\d)(19\d{2}|20\d{2})(?!\d)");
+			if (match.Success)
+			{
+				return match.Value;
+			}
+		}
+
+		return "Unknown";
 	}
 
 	private static string BuildEpisodeName(EncodeTrackConfig track)

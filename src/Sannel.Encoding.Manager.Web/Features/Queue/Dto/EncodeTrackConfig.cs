@@ -12,6 +12,8 @@ public class EncodeTrackConfig
 	public string OutputName { get; set; } = string.Empty;
 	public int? SeasonNumber { get; set; }
 	public int? EpisodeNumber { get; set; }
+	/// <summary>Movie release year (e.g., "2017"). Used by movie output path templates.</summary>
+	public string? MovieYear { get; set; }
 	/// <summary>Video resolution for movies (e.g., "1080p", "720p", "480p", "4k"). Empty or null means no resolution specified.</summary>
 	public string? Resolution { get; set; }
 
