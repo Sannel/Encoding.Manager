@@ -248,6 +248,7 @@ public class RunnerJobService : IRunnerJobService
 		{
 			presetMap[preset.Label] = new PresetLocation
 			{
+				PresetName = preset.PresetName,
 				RootLabel = preset.RootLabel,
 				RelativePath = preset.RelativePath
 			};

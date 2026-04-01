@@ -186,32 +186,42 @@ public class EncodingWorkerService : BackgroundService
 					HandBrakeArgBuilder.BuildAudioArgs(selectedAudio),
 					HandBrakeArgBuilder.BuildSubtitleArgs(selectedSubtitles));
 
-				// Resolve preset path.
-				var presetFilePath = ResolvePresetPath(job, track, rootLookup);
-
-				// Resolve output path.
-				var outputPath = ResolveOutputPath(job, track, rootLookup);
-
-				_logger.LogInformation(
-					"Encoding {Source} title {Title} -> {Output} (preset: {Preset})",
-					string.IsNullOrWhiteSpace(track.SourceRelativePath) ? absDiscPath : inputPath,
-					track.TitleNumber,
-					outputPath,
-					presetFilePath);
-
-				var handBrakeJob = new HandBrakeJob
+			// Resolve preset path and name.
+			string? presetFilePath = null;
+			string? presetName = null;
+			if (!string.IsNullOrWhiteSpace(track.PresetLabel))
+			{
+				presetFilePath = ResolvePresetPath(job, track, rootLookup);
+				if (job.PresetMap.TryGetValue(track.PresetLabel, out var preset))
 				{
-					InputPath = inputPath,
-					OutputPath = outputPath,
-					PresetFilePath = presetFilePath,
-					AdditionalArgs = additionalArgs
-				};
+					presetName = preset.PresetName;
+				}
+			}
 
-				// Build sanitized command for logging (replace absolute root paths with labels).
-				var sanitizedCommand = BuildSanitizedCommand(handBrakeJob, rootLookup);
+			// Resolve output path.
+			var outputPath = ResolveOutputPath(job, track, rootLookup);
 
-				// Send the command with the first progress update for this track.
-				await _api.UpdateJobStatusAsync(job.JobId, "Encoding", 0, encodingCommand: sanitizedCommand, ct: ct);
+			_logger.LogInformation(
+				"Encoding {Source} title {Title} -> {Output} (preset: {Preset})",
+				string.IsNullOrWhiteSpace(track.SourceRelativePath) ? absDiscPath : inputPath,
+				track.TitleNumber,
+				outputPath,
+				!string.IsNullOrWhiteSpace(presetName) ? $"{presetName} ({presetFilePath})" : "(no preset)");
+
+			var handBrakeJob = new HandBrakeJob
+			{
+				InputPath = inputPath,
+				OutputPath = outputPath,
+				PresetFilePath = presetFilePath,
+				PresetName = presetName,
+				AdditionalArgs = additionalArgs
+			};
+
+			// Build sanitized command for logging (replace absolute root paths with labels).
+			var sanitizedCommand = BuildSanitizedCommand(handBrakeJob, rootLookup);
+
+			// Send the command with the first progress update for this track.
+			await _api.UpdateJobStatusAsync(job.JobId, "Encoding", 0, encodingCommand: sanitizedCommand, ct: ct);
 
 				// Progress callback: scale per-track progress across the whole job.
 				var trackIndex = i;
