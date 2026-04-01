@@ -24,6 +24,7 @@ public partial class QueuePage : ComponentBase, IDisposable
 
 	private IReadOnlyList<EncodeQueueItem> _items = [];
 	private bool _isLoading = true;
+	private bool _showCleared;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -39,7 +40,7 @@ public partial class QueuePage : ComponentBase, IDisposable
 			this._isLoading = true;
 		}
 
-		this._items = await this.EncodeQueueService.GetItemsAsync();
+		this._items = await this.EncodeQueueService.GetItemsAsync(this._showCleared);
 
 		if (showLoadingIndicator)
 		{
@@ -51,7 +52,15 @@ public partial class QueuePage : ComponentBase, IDisposable
 	{
 		await this.InvokeAsync(() =>
 		{
-			this.ApplyItemUpsert(item);
+			if (!this._showCleared && item.IsArchived)
+			{
+				this.ApplyItemDeleted(item.Id);
+			}
+			else
+			{
+				this.ApplyItemUpsert(item);
+			}
+
 			this.StateHasChanged();
 		});
 	}
@@ -117,6 +126,24 @@ public partial class QueuePage : ComponentBase, IDisposable
 		{
 			this.Snackbar.Add("Only failed or finished items can be reset to queued.", Severity.Warning);
 		}
+	}
+
+	private async Task ClearFinishedAsync()
+	{
+		var count = await this.EncodeQueueService.ClearFinishedAsync();
+		if (count == 0)
+		{
+			this.Snackbar.Add("No finished items to clear.", Severity.Info);
+			return;
+		}
+
+		this.Snackbar.Add($"Cleared {count} finished item(s) from the default view.", Severity.Success);
+	}
+
+	private async Task OnShowClearedChanged(bool value)
+	{
+		this._showCleared = value;
+		await this.LoadAsync(showLoadingIndicator: true);
 	}
 
 	private async Task OpenDetailDialogAsync(EncodeQueueItem item)

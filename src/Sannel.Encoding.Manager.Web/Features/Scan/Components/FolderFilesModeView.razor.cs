@@ -26,13 +26,18 @@ public partial class FolderFilesModeView : NamingComponentBase
 
 	private NamingRowData GetFolderNamingRow(FolderTrackItem item)
 	{
-		var row = this.GetNamingRow(item.Key);
-		if (string.IsNullOrWhiteSpace(row.Name))
+		return this.GetNamingRow(item.Key);
+	}
+
+	public void ClearAllTrackNames()
+	{
+		foreach (var item in this.TrackItems)
 		{
-			row.Name = Path.GetFileNameWithoutExtension(item.File.Name);
+			var row = this.GetNamingRow(item.Key);
+			row.Name = string.Empty;
 		}
 
-		return row;
+		this.StateHasChanged();
 	}
 
 	private void OnCascadeClicked() =>
@@ -52,8 +57,8 @@ public partial class FolderFilesModeView : NamingComponentBase
 						TitleNumber = 1,
 						SourceRelativePath = item.File.RelativePath,
 						OutputName = string.IsNullOrWhiteSpace(row.Name)
-							? Path.GetFileNameWithoutExtension(item.File.Name)
-							: row.Name,
+							? string.Empty
+							: row.Name.Trim(),
 						SeasonNumber = row.Season,
 						EpisodeNumber = row.Episode?.EpisodeNumber,
 					};

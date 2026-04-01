@@ -51,4 +51,9 @@ public class EncodeQueueItem
 	/// JSON-serialized list of per-track encoding commands (sanitized with label paths).
 	/// </summary>
 	public string? EncodingCommandsJson { get; set; }
+
+	/// <summary>
+	/// True when this item has been cleared from default queue view.
+	/// </summary>
+	public bool IsArchived { get; set; }
 }

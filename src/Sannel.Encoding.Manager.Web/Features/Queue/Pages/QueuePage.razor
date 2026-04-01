@@ -5,6 +5,16 @@
 
 <MudText Typo="Typo.h3" GutterBottom="true">Encoding Queue</MudText>
 
+<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-3" Wrap="Wrap.Wrap">
+	<MudButton Variant="Variant.Outlined" Color="Color.Warning"
+		StartIcon="@Icons.Material.Filled.DoneAll"
+		OnClick="ClearFinishedAsync">
+		Clear Finished
+	</MudButton>
+	<MudSwitch T="bool" Value="_showCleared" ValueChanged="OnShowClearedChanged"
+		Color="Color.Primary" Label="Show Cleared" />
+</MudStack>
+
 @if (_isLoading)
 {
 	<MudProgressCircular Indeterminate="true" Color="Color.Primary" />

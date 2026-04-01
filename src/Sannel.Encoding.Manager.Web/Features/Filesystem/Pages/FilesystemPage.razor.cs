@@ -101,9 +101,7 @@ public partial class FilesystemPage : ComponentBase
 			? file.Name
 			: $"{this._currentRelativePath}/{file.Name}";
 
-		this._selectedItem = $"{this._selectedRootLabel}:{relativePath}";
-		this._selectedItemType = "File";
-		this.Snackbar.Add($"Selected file: {file.Name}", Severity.Success);
+		this.NavigateToScan(relativePath, null, "file");
 	}
 
 	private void SelectDiscFolder(DirectoryEntryResponse folder)

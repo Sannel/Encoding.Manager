@@ -7,6 +7,17 @@
 
 <MudText Typo="Typo.h3" GutterBottom="true">@PageHeading</MudText>
 
+@if (!_isScanning && (IsFolderSelection || IsFileSelection) && _folderFiles.Count > 0)
+{
+	<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-3">
+		<MudButton Variant="Variant.Outlined" Color="Color.Warning"
+			StartIcon="@Icons.Material.Filled.ClearAll"
+			OnClick="ClearAllFolderTrackNames">
+			Clear All Names
+		</MudButton>
+	</MudStack>
+}
+
 @if (!string.IsNullOrEmpty(_errorMessage))
 {
 	<MudAlert Severity="Severity.Error" Class="mb-4">
@@ -37,6 +48,12 @@ else
 				<strong>Selection:</strong> Folder
 			</MudText>
 		}
+		@if (IsFileSelection)
+		{
+			<MudText Typo="Typo.body1">
+				<strong>Selection:</strong> Single File
+			</MudText>
+		}
 	</MudCard>
 
 	@if (_isScanning)
@@ -46,17 +63,20 @@ else
 			<MudText Typo="Typo.body1" Class="mt-2">@LoadingMessage</MudText>
 		</MudStack>
 	}
-	else if (IsFolderSelection)
+	else if (IsFolderSelection || IsFileSelection)
 	{
-		<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2">
-			<MudTooltip Text="Re-scan the selected folder for .mkv and .mp4 files">
-				<MudButton Variant="Variant.Outlined" Color="Color.Warning"
-					StartIcon="@Icons.Material.Filled.Refresh"
-					OnClick="ForceRescan">@RefreshButtonText</MudButton>
-			</MudTooltip>
-		</MudStack>
+		@if (!IsFileSelection)
+		{
+			<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2">
+				<MudTooltip Text="Re-scan the selected folder for .mkv and .mp4 files">
+					<MudButton Variant="Variant.Outlined" Color="Color.Warning"
+						StartIcon="@Icons.Material.Filled.Refresh"
+						OnClick="ForceRescan">@RefreshButtonText</MudButton>
+				</MudTooltip>
+			</MudStack>
+		}
 
-		<FolderFilesModeView Files="_folderFiles" DiscRootLabel="@Root" DiscRelativePath="@Path" />
+		<FolderFilesModeView @ref="_folderFilesModeView" Files="_folderFiles" DiscRootLabel="@Root" DiscRelativePath="@FolderFilesDiscRelativePath" />
 	}
 	else if (_scanResult is { IsSuccess: true })
 	{

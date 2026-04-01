@@ -26,6 +26,7 @@ public class EncodeQueueService : IEncodeQueueService
 	public async Task AddItemAsync(EncodeQueueItem item, CancellationToken ct = default)
 	{
 		item.DiscPath = PathHelper.ToForwardSlash(item.DiscPath);
+		item.IsArchived = false;
 		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
 		ctx.EncodeQueueItems.Add(item);
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
@@ -33,10 +34,16 @@ public class EncodeQueueService : IEncodeQueueService
 	}
 
 	/// <inheritdoc />
-	public async Task<IReadOnlyList<EncodeQueueItem>> GetItemsAsync(CancellationToken ct = default)
+	public async Task<IReadOnlyList<EncodeQueueItem>> GetItemsAsync(bool includeCleared = false, CancellationToken ct = default)
 	{
 		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
-		return await ctx.EncodeQueueItems
+		var query = ctx.EncodeQueueItems.AsQueryable();
+		if (!includeCleared)
+		{
+			query = query.Where(i => !i.IsArchived);
+		}
+
+		return await query
 			.OrderBy(i => i.CreatedAt)
 			.ToListAsync(ct)
 			.ConfigureAwait(false);
@@ -94,10 +101,40 @@ public class EncodeQueueService : IEncodeQueueService
 		item.StartedAt = null;
 		item.CompletedAt = null;
 		item.ProgressPercent = null;
+		item.IsArchived = false;
 
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
 		await NotifyQueueItemUpsertedAsync(item, ct).ConfigureAwait(false);
 		return true;
+	}
+
+	/// <inheritdoc />
+	public async Task<int> ClearFinishedAsync(CancellationToken ct = default)
+	{
+		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
+		var finishedItems = await ctx.EncodeQueueItems
+			.Where(i => i.Status == "Finished" && !i.IsArchived)
+			.ToListAsync(ct)
+			.ConfigureAwait(false);
+
+		if (finishedItems.Count == 0)
+		{
+			return 0;
+		}
+
+		foreach (var item in finishedItems)
+		{
+			item.IsArchived = true;
+		}
+
+		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
+
+		foreach (var item in finishedItems)
+		{
+			await NotifyQueueItemUpsertedAsync(item, ct).ConfigureAwait(false);
+		}
+
+		return finishedItems.Count;
 	}
 
 	private Task NotifyQueueItemUpsertedAsync(EncodeQueueItem item, CancellationToken ct)
