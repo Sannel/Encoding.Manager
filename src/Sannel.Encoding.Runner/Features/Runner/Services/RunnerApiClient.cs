@@ -200,13 +200,20 @@ public class RunnerApiClient : IRunnerApiClient, IAsyncDisposable
 			return default;
 		}
 
+		var contentType = response.Content.Headers.ContentType?.MediaType ?? "unknown";
+		if (body.TrimStart().StartsWith("<", StringComparison.Ordinal))
+		{
+			var snippet = BuildSnippet(body);
+			throw new InvalidOperationException(
+				$"Runner API '{operation}' returned HTML instead of JSON. Content-Type: {contentType}. This usually means the ServiceBaseUrl is wrong or the request was redirected to interactive sign-in instead of the runner API. Body: {snippet}");
+		}
+
 		try
 		{
 			return JsonSerializer.Deserialize<T>(body, new JsonSerializerOptions(JsonSerializerDefaults.Web));
 		}
 		catch (JsonException ex)
 		{
-			var contentType = response.Content.Headers.ContentType?.MediaType ?? "unknown";
 			var snippet = BuildSnippet(body);
 			_logger.LogError(
 				ex,
