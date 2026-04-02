@@ -39,6 +39,9 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                         .IsRequired()
                         .HasColumnType("character varying(48)");
 
+                    b.Property<int?>("CurrentTrackProgressPercent")
+                        .HasColumnType("integer");
+
                     b.Property<string>("DiscPath")
                         .IsRequired()
                         .HasColumnType("text");

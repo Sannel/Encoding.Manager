@@ -7,5 +7,6 @@ public interface IRunnerManagementService
 {
 	Task<IReadOnlyList<RunnerDto>> GetRunnersAsync(CancellationToken ct = default);
 	Task SetEnabledAsync(Guid id, bool enabled, CancellationToken ct = default);
+	Task<bool> ResetRunnerAsync(Guid id, CancellationToken ct = default);
 	Task DeleteRunnerAsync(Guid id, CancellationToken ct = default);
 }

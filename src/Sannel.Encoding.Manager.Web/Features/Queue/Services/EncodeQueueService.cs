@@ -109,6 +109,28 @@ public class EncodeQueueService : IEncodeQueueService
 	}
 
 	/// <inheritdoc />
+	public async Task<bool> CancelEncodingAsync(Guid id, CancellationToken ct = default)
+	{
+		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
+		var item = await ctx.EncodeQueueItems.FirstOrDefaultAsync(i => i.Id == id, ct).ConfigureAwait(false);
+		if (item is null)
+		{
+			return false;
+		}
+
+		var isEncoding = string.Equals(item.Status, "Encoding", StringComparison.OrdinalIgnoreCase);
+		if (!isEncoding)
+		{
+			return false;
+		}
+
+		item.Status = "CancelRequested";
+		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
+		await NotifyQueueItemUpsertedAsync(item, ct).ConfigureAwait(false);
+		return true;
+	}
+
+	/// <inheritdoc />
 	public async Task<int> ClearFinishedAsync(CancellationToken ct = default)
 	{
 		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);

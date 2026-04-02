@@ -10,5 +10,6 @@ public interface IEncodeQueueService
 	Task DeleteItemAsync(Guid id, CancellationToken ct = default);
 	Task UpdateTracksAsync(Guid id, List<EncodeTrackConfig> tracks, CancellationToken ct = default);
 	Task<bool> ResetToQueuedAsync(Guid id, CancellationToken ct = default);
+	Task<bool> CancelEncodingAsync(Guid id, CancellationToken ct = default);
 	Task<int> ClearFinishedAsync(CancellationToken ct = default);
 }

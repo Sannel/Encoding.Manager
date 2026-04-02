@@ -47,6 +47,9 @@ public class EncodeQueueItem
 	/// <summary>Encoding progress percentage (0-100) reported by the runner.</summary>
 	public int? ProgressPercent { get; set; }
 
+	/// <summary>Current file/track progress percentage (0-100) reported by the runner.</summary>
+	public int? CurrentTrackProgressPercent { get; set; }
+
 	/// <summary>
 	/// JSON-serialized list of per-track encoding commands (sanitized with label paths).
 	/// </summary>

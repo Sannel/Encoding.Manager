@@ -12,6 +12,11 @@ public interface IRunnerJobService
 	Task<bool> IsEnabledAsync(string name, CancellationToken ct = default);
 
 	/// <summary>
+	/// Returns whether cancellation has been requested for the specified active runner job.
+	/// </summary>
+	Task<bool> IsCancelRequestedAsync(string runnerName, Guid jobId, CancellationToken ct = default);
+
+	/// <summary>
 	/// Atomically claim the next "Queued" item for the given runner.
 	/// Returns a populated <see cref="ClaimedJobResponse"/> or null if nothing is queued.
 	/// </summary>
@@ -20,7 +25,7 @@ public interface IRunnerJobService
 	/// <summary>
 	/// Update job status and/or progress.
 	/// For "Encoding": updates ProgressPercent only.
-	/// For "Finished"/"Failed": sets Status, CompletedAt, clears ProgressPercent.
+	/// For terminal states ("Finished"/"Failed"/"Canceled"): sets Status, CompletedAt, clears ProgressPercent.
 	/// </summary>
-	Task<bool> UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent, string? error, string? encodingCommand = null, CancellationToken ct = default);
+	Task<bool> UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent, int? currentTrackProgressPercent, string? error, string? encodingCommand = null, CancellationToken ct = default);
 }

@@ -50,6 +50,15 @@ public class RunnerController : ControllerBase
 		return Ok(new RunnerStatusResponse { IsEnabled = isEnabled });
 	}
 
+	/// <summary>Returns whether cancel was requested for the runner's current job.</summary>
+	[HttpGet("{name}/jobs/{jobId:guid}/cancel-requested")]
+	[ProducesResponseType(typeof(CancelRequestResponse), StatusCodes.Status200OK)]
+	public async Task<ActionResult<CancelRequestResponse>> GetCancelRequested(string name, Guid jobId, CancellationToken ct)
+	{
+		var cancelRequested = await _runnerJobService.IsCancelRequestedAsync(name, jobId, ct);
+		return Ok(new CancelRequestResponse { CancelRequested = cancelRequested });
+	}
+
 	/// <summary>
 	/// Atomically claim the next queued job for the given runner.
 	/// Returns 204 if nothing is available.
@@ -95,7 +104,7 @@ public class RunnerController : ControllerBase
 			});
 		}
 
-		var updated = await _runnerJobService.UpdateJobStatusAsync(id, request.Status, request.ProgressPercent, request.Error, request.EncodingCommand, ct);
+		var updated = await _runnerJobService.UpdateJobStatusAsync(id, request.Status, request.ProgressPercent, request.CurrentTrackProgressPercent, request.Error, request.EncodingCommand, ct);
 		if (!updated)
 		{
 			return NotFound();

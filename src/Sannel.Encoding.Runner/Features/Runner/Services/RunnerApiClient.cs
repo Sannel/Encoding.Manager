@@ -69,16 +69,23 @@ public class RunnerApiClient : IRunnerApiClient, IAsyncDisposable
 		return await ReadJsonAsync<ClaimedJobResponse>(response, "claim-next", ct);
 	}
 
-	public async Task UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent = null, string? error = null, string? encodingCommand = null, CancellationToken ct = default)
+	public async Task<bool> IsCancelRequestedAsync(string name, Guid jobId, CancellationToken ct = default)
 	{
-		if (await TryUpdateJobStatusViaSignalRAsync(jobId, status, progressPercent, error, encodingCommand, ct))
+		var responseMessage = await _http.GetAsync($"api/runner/{Uri.EscapeDataString(name)}/jobs/{jobId}/cancel-requested", ct);
+		var response = await ReadJsonAsync<CancelRequestResponse>(responseMessage, "is-cancel-requested", ct);
+		return response?.CancelRequested ?? false;
+	}
+
+	public async Task UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent = null, int? currentTrackProgressPercent = null, string? error = null, string? encodingCommand = null, CancellationToken ct = default)
+	{
+		if (await TryUpdateJobStatusViaSignalRAsync(jobId, status, progressPercent, currentTrackProgressPercent, error, encodingCommand, ct))
 		{
 			return;
 		}
 
 		var response = await _http.PutAsJsonAsync(
 			$"api/runner/items/{jobId}/status",
-			new { Status = status, ProgressPercent = progressPercent, Error = error, EncodingCommand = encodingCommand },
+			new { Status = status, ProgressPercent = progressPercent, CurrentTrackProgressPercent = currentTrackProgressPercent, Error = error, EncodingCommand = encodingCommand },
 			ct);
 		await EnsureSuccessAsync(response, "update-status", ct);
 	}
@@ -87,6 +94,7 @@ public class RunnerApiClient : IRunnerApiClient, IAsyncDisposable
 		Guid jobId,
 		string status,
 		int? progressPercent,
+		int? currentTrackProgressPercent,
 		string? error,
 		string? encodingCommand,
 		CancellationToken ct)
@@ -94,7 +102,7 @@ public class RunnerApiClient : IRunnerApiClient, IAsyncDisposable
 		try
 		{
 			var hubConnection = await GetOrCreateHubConnectionAsync(ct);
-			await hubConnection.InvokeAsync("UpdateJobStatus", jobId, status, progressPercent, error, encodingCommand, ct);
+			await hubConnection.InvokeAsync("UpdateJobStatus", jobId, status, progressPercent, currentTrackProgressPercent, error, encodingCommand, ct);
 			return true;
 		}
 		catch (OperationCanceledException) when (ct.IsCancellationRequested)

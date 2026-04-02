@@ -128,6 +128,19 @@ public partial class QueuePage : ComponentBase, IDisposable
 		}
 	}
 
+	private async Task CancelEncodingAsync(Guid id)
+	{
+		var canceled = await this.EncodeQueueService.CancelEncodingAsync(id);
+		if (canceled)
+		{
+			this.Snackbar.Add("Cancellation requested for the active encode.", Severity.Info);
+		}
+		else
+		{
+			this.Snackbar.Add("Only actively encoding items can be canceled.", Severity.Warning);
+		}
+	}
+
 	private async Task ClearFinishedAsync()
 	{
 		var count = await this.EncodeQueueService.ClearFinishedAsync();
@@ -173,9 +186,13 @@ public partial class QueuePage : ComponentBase, IDisposable
 		}
 	}
 
+	private static int FormatPercent(int? value) => Math.Clamp(value ?? 0, 0, 100);
+
 	private static Color GetStatusColor(string status) => status switch
 	{
 		"Encoding" => Color.Warning,
+		"CancelRequested" => Color.Secondary,
+		"Canceled" => Color.Secondary,
 		"Finished" => Color.Success,
 		"Failed" => Color.Error,
 		_ => Color.Default,
@@ -184,6 +201,9 @@ public partial class QueuePage : ComponentBase, IDisposable
 	private static bool CanResetToQueued(string status) =>
 		string.Equals(status, "Failed", StringComparison.OrdinalIgnoreCase)
 		|| string.Equals(status, "Finished", StringComparison.OrdinalIgnoreCase);
+
+	private static bool CanCancelEncoding(string status) =>
+		string.Equals(status, "Encoding", StringComparison.OrdinalIgnoreCase);
 
 	private static string DiscLabel(string discPath) =>
 		Path.GetFileName(discPath.TrimEnd(Path.DirectorySeparatorChar, '/'))

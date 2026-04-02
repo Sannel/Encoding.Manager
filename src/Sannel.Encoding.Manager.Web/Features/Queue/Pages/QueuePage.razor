@@ -59,8 +59,17 @@ else
 				</MudChip>
 				@if (context.Status == "Encoding" && context.ProgressPercent.HasValue)
 				{
-					<MudProgressLinear Value="@context.ProgressPercent.Value" Color="Color.Primary"
-						Size="Size.Small" Class="mt-1" Style="max-width: 120px;" />
+					<MudStack Spacing="1" Class="mt-1" Style="min-width: 190px; max-width: 220px;">
+						<MudText Typo="Typo.caption">Overall: @FormatPercent(context.ProgressPercent)%</MudText>
+						<MudProgressLinear Value="@context.ProgressPercent.Value" Color="Color.Primary"
+							Size="Size.Small" />
+						@if (context.CurrentTrackProgressPercent.HasValue)
+						{
+							<MudText Typo="Typo.caption">Current track: @FormatPercent(context.CurrentTrackProgressPercent)%</MudText>
+							<MudProgressLinear Value="@context.CurrentTrackProgressPercent.Value" Color="Color.Secondary"
+								Size="Size.Small" />
+						}
+					</MudStack>
 				}
 			</MudTd>
 			<MudTd DataLabel="Queued">
@@ -70,6 +79,10 @@ else
 				<MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Default"
 					Size="Size.Small" Title="View details"
 					OnClick="@(() => OpenDetailDialogAsync(context))" />
+				<MudIconButton Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info"
+					Size="Size.Small" Title="Cancel active encode"
+					Disabled="@(!CanCancelEncoding(context.Status))"
+					OnClick="@(() => CancelEncodingAsync(context.Id))" />
 				<MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Warning"
 					Size="Size.Small" Title="Reset failed/finished item to queued"
 					Disabled="@(!CanResetToQueued(context.Status))"

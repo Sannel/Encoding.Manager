@@ -69,6 +69,35 @@ public class RunnerJobService : IRunnerJobService
 	}
 
 	/// <inheritdoc />
+	public async Task<bool> IsCancelRequestedAsync(string runnerName, Guid jobId, CancellationToken ct = default)
+	{
+		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
+
+		var runner = await ctx.Runners
+			.AsNoTracking()
+			.FirstOrDefaultAsync(r => r.Name == runnerName, ct)
+			.ConfigureAwait(false);
+
+		if (runner is null || runner.CurrentJobId != jobId)
+		{
+			return false;
+		}
+
+		var item = await ctx.EncodeQueueItems
+			.AsNoTracking()
+			.FirstOrDefaultAsync(i => i.Id == jobId && i.RunnerName == runnerName, ct)
+			.ConfigureAwait(false);
+
+		if (item is null)
+		{
+			return false;
+		}
+
+		return string.Equals(item.Status, "CancelRequested", StringComparison.OrdinalIgnoreCase)
+			|| string.Equals(item.Status, "Canceled", StringComparison.OrdinalIgnoreCase);
+	}
+
+	/// <inheritdoc />
 	public async Task<ClaimedJobResponse?> ClaimNextJobAsync(string runnerName, CancellationToken ct = default)
 	{
 		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
@@ -146,7 +175,7 @@ public class RunnerJobService : IRunnerJobService
 	}
 
 	/// <inheritdoc />
-	public async Task<bool> UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent, string? error, string? encodingCommand = null, CancellationToken ct = default)
+	public async Task<bool> UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent, int? currentTrackProgressPercent, string? error, string? encodingCommand = null, CancellationToken ct = default)
 	{
 		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
 
@@ -163,6 +192,7 @@ public class RunnerJobService : IRunnerJobService
 		{
 			case "Encoding":
 				item.ProgressPercent = progressPercent;
+				item.CurrentTrackProgressPercent = currentTrackProgressPercent;
 				if (!string.IsNullOrEmpty(encodingCommand))
 				{
 					AppendEncodingCommand(item, encodingCommand);
@@ -173,6 +203,7 @@ public class RunnerJobService : IRunnerJobService
 				item.Status = "Finished";
 				item.CompletedAt = DateTimeOffset.UtcNow;
 				item.ProgressPercent = null;
+				item.CurrentTrackProgressPercent = null;
 				// Clear runner's current job
 				await ClearRunnerCurrentJobAsync(ctx, item.RunnerName, ct).ConfigureAwait(false);
 				break;
@@ -181,8 +212,18 @@ public class RunnerJobService : IRunnerJobService
 				item.Status = "Failed";
 				item.CompletedAt = DateTimeOffset.UtcNow;
 				item.ProgressPercent = null;
+				item.CurrentTrackProgressPercent = null;
 				_logger.LogError("Job {JobId} failed: {Error}", jobId, error);
 				// Clear runner's current job
+				await ClearRunnerCurrentJobAsync(ctx, item.RunnerName, ct).ConfigureAwait(false);
+				break;
+
+			case "Canceled":
+				item.Status = "Canceled";
+				item.CompletedAt = DateTimeOffset.UtcNow;
+				item.ProgressPercent = null;
+				item.CurrentTrackProgressPercent = null;
+				_logger.LogInformation("Job {JobId} canceled.", jobId);
 				await ClearRunnerCurrentJobAsync(ctx, item.RunnerName, ct).ConfigureAwait(false);
 				break;
 

@@ -17,6 +17,7 @@ public class EncodingWorkerService : BackgroundService
 	private readonly RunnerOptions _runnerOptions;
 	private readonly FilesystemOptions _fsOptions;
 	private readonly ILogger<EncodingWorkerService> _logger;
+	private static readonly TimeSpan CancelPollInterval = TimeSpan.FromSeconds(2);
 
 	public EncodingWorkerService(
 		IRunnerApiClient api,
@@ -201,42 +202,42 @@ public class EncodingWorkerService : BackgroundService
 					HandBrakeArgBuilder.BuildAudioArgs(selectedAudio),
 					HandBrakeArgBuilder.BuildSubtitleArgs(selectedSubtitles));
 
-			// Resolve preset path and name.
-			string? presetFilePath = null;
-			string? presetName = null;
-			if (!string.IsNullOrWhiteSpace(track.PresetLabel))
-			{
-				presetFilePath = ResolvePresetPath(job, track, rootLookup);
-				if (job.PresetMap.TryGetValue(track.PresetLabel, out var preset))
+				// Resolve preset path and name.
+				string? presetFilePath = null;
+				string? presetName = null;
+				if (!string.IsNullOrWhiteSpace(track.PresetLabel))
 				{
-					presetName = preset.PresetName;
+					presetFilePath = ResolvePresetPath(job, track, rootLookup);
+					if (job.PresetMap.TryGetValue(track.PresetLabel, out var preset))
+					{
+						presetName = preset.PresetName;
+					}
 				}
-			}
 
-			// Resolve output path.
-			var outputPath = ResolveOutputPath(job, track, rootLookup);
+				// Resolve output path.
+				var outputPath = ResolveOutputPath(job, track, rootLookup);
 
-			_logger.LogInformation(
-				"Encoding {Source} title {Title} -> {Output} (preset: {Preset})",
-				string.IsNullOrWhiteSpace(track.SourceRelativePath) ? absDiscPath : inputPath,
-				track.TitleNumber,
-				outputPath,
-				!string.IsNullOrWhiteSpace(presetName) ? $"{presetName} ({presetFilePath})" : "(no preset)");
+				_logger.LogInformation(
+					"Encoding {Source} title {Title} -> {Output} (preset: {Preset})",
+					string.IsNullOrWhiteSpace(track.SourceRelativePath) ? absDiscPath : inputPath,
+					track.TitleNumber,
+					outputPath,
+					!string.IsNullOrWhiteSpace(presetName) ? $"{presetName} ({presetFilePath})" : "(no preset)");
 
-			var handBrakeJob = new HandBrakeJob
-			{
-				InputPath = inputPath,
-				OutputPath = outputPath,
-				PresetFilePath = presetFilePath,
-				PresetName = presetName,
-				AdditionalArgs = additionalArgs
-			};
+				var handBrakeJob = new HandBrakeJob
+				{
+					InputPath = inputPath,
+					OutputPath = outputPath,
+					PresetFilePath = presetFilePath,
+					PresetName = presetName,
+					AdditionalArgs = additionalArgs
+				};
 
-			// Build sanitized command for logging (replace absolute root paths with labels).
-			var sanitizedCommand = BuildSanitizedCommand(handBrakeJob, rootLookup);
+				// Build sanitized command for logging (replace absolute root paths with labels).
+				var sanitizedCommand = BuildSanitizedCommand(handBrakeJob, rootLookup);
 
-			// Send the command with the first progress update for this track.
-			await _api.UpdateJobStatusAsync(job.JobId, "Encoding", 0, encodingCommand: sanitizedCommand, ct: ct);
+				// Send the command with the first progress update for this track.
+				await _api.UpdateJobStatusAsync(job.JobId, "Encoding", 0, 0, encodingCommand: sanitizedCommand, ct: ct);
 
 				// Progress callback: scale per-track progress across the whole job.
 				var trackIndex = i;
@@ -244,21 +245,46 @@ public class EncodingWorkerService : BackgroundService
 				var progress = new Progress<ProgressInfo>(p =>
 				{
 					var overallPercent = (int)(((trackIndex + p.Percent / 100.0) / trackCount) * 100);
-					_ = _api.UpdateJobStatusAsync(job.JobId, "Encoding", overallPercent, ct: ct);
+					var currentTrackPercent = (int)Math.Clamp(Math.Round(p.Percent), 0, 100);
+					_ = _api.UpdateJobStatusAsync(job.JobId, "Encoding", overallPercent, currentTrackPercent, ct: ct);
 				});
 
-				var encodeResult = await _handBrake.EncodeAsync(handBrakeJob, progress, ct);
-				if (!encodeResult.IsSuccess)
+				using var encodeCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+				var cancelMonitorTask = MonitorCancelRequestAsync(job.JobId, encodeCts, ct);
+
+				try
 				{
-					var error = $"Encode failed for title {track.TitleNumber}: {encodeResult.Error?.Message}";
-					_logger.LogError("{Error}", error);
-					await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
+					var encodeResult = await _handBrake.EncodeAsync(handBrakeJob, progress, encodeCts.Token);
+					if (!encodeResult.IsSuccess)
+					{
+						if (await _api.IsCancelRequestedAsync(_runnerOptions.Name, job.JobId, ct))
+						{
+							await _api.UpdateJobStatusAsync(job.JobId, "Canceled", error: "Encoding canceled by request.", ct: ct);
+							_logger.LogInformation("Job {JobId} canceled during encode.", job.JobId);
+							return;
+						}
+
+						var error = $"Encode failed for title {track.TitleNumber}: {encodeResult.Error?.Message}";
+						_logger.LogError("{Error}", error);
+						await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
+						return;
+					}
+
+					_logger.LogInformation(
+						"Title {Title} encoded in {Elapsed} (avg {Fps:F1} fps).",
+						track.TitleNumber, encodeResult.ElapsedTime, encodeResult.AverageFps);
+				}
+				catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+				{
+					await _api.UpdateJobStatusAsync(job.JobId, "Canceled", error: "Encoding canceled by request.", ct: ct);
+					_logger.LogInformation("Job {JobId} canceled during encode.", job.JobId);
 					return;
 				}
-
-				_logger.LogInformation(
-					"Title {Title} encoded in {Elapsed} (avg {Fps:F1} fps).",
-					track.TitleNumber, encodeResult.ElapsedTime, encodeResult.AverageFps);
+				finally
+				{
+					encodeCts.Cancel();
+					await WaitForCancelMonitorAsync(cancelMonitorTask);
+				}
 			}
 
 			await _api.UpdateJobStatusAsync(job.JobId, "Finished", 100, ct: ct);
@@ -272,6 +298,45 @@ public class EncodingWorkerService : BackgroundService
 		{
 			_logger.LogError(ex, "Unhandled error processing job {JobId}.", job.JobId);
 			await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: ex.Message, ct: ct);
+		}
+	}
+
+	private async Task MonitorCancelRequestAsync(Guid jobId, CancellationTokenSource encodeCts, CancellationToken ct)
+	{
+		while (!encodeCts.IsCancellationRequested && !ct.IsCancellationRequested)
+		{
+			try
+			{
+				var cancelRequested = await _api.IsCancelRequestedAsync(_runnerOptions.Name, jobId, ct);
+				if (cancelRequested)
+				{
+					encodeCts.Cancel();
+					return;
+				}
+
+				await Task.Delay(CancelPollInterval, ct);
+			}
+			catch (OperationCanceledException) when (ct.IsCancellationRequested || encodeCts.IsCancellationRequested)
+			{
+				return;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogDebug(ex, "Failed to poll cancel state for job {JobId}; will retry.", jobId);
+				await Task.Delay(CancelPollInterval, ct);
+			}
+		}
+	}
+
+	private static async Task WaitForCancelMonitorAsync(Task cancelMonitorTask)
+	{
+		try
+		{
+			await cancelMonitorTask;
+		}
+		catch
+		{
+			// Ignore monitor shutdown errors.
 		}
 	}
 
@@ -391,7 +456,7 @@ public class EncodingWorkerService : BackgroundService
 			["{TVDBID}"] = job.TvdbId?.ToString() ?? string.Empty,
 			["{SourceDisk}"] = sourceDisk,
 			["{EpisodeName}"] = BuildEpisodeName(track),
-			["{OutputName}"] = track.OutputName,
+			["{OutputName}"] = track.OutputName ?? string.Empty,
 			["{SeasonNumber}"] = (track.SeasonNumber ?? 0).ToString("D2"),
 			["{EpisodeNumber}"] = (track.EpisodeNumber ?? 0).ToString("D2"),
 			["{TitleNumber}"] = track.TitleNumber.ToString("D2"),

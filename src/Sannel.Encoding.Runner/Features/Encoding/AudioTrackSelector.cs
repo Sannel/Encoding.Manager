@@ -12,7 +12,9 @@ public static class AudioTrackSelector
 {
 	/// <summary>
 	/// Selects audio tracks whose language matches any of the configured languages.
-	/// The first matching track gets a stereo downmix with the specified codec.
+	/// The first matching track is always preserved as a copy.
+	/// If that first matching track is not already AAC stereo, an additional stereo
+	/// encode is added using the specified codec.
 	/// All remaining matching tracks are copied as-is.
 	/// Tracks whose language does not match are excluded entirely.
 	/// </summary>
@@ -40,12 +42,17 @@ public static class AudioTrackSelector
 			if (!firstMatchFound)
 			{
 				firstMatchFound = true;
-				results.Add(new SelectedAudioTrack(
-					track.TrackNumber,
-					audioDefaultCodec,
-					"stereo",
-					track.SampleRate,
-					track.Bitrate));
+				if (!IsAacStereo(track))
+				{
+					results.Add(new SelectedAudioTrack(
+						track.TrackNumber,
+						audioDefaultCodec,
+						"stereo",
+						track.SampleRate,
+						track.Bitrate));
+				}
+
+				results.Add(new SelectedAudioTrack(track.TrackNumber, "copy", "auto"));
 			}
 			else
 			{
@@ -55,4 +62,8 @@ public static class AudioTrackSelector
 
 		return results;
 	}
+
+	private static bool IsAacStereo(AudioTrackInfo track) =>
+		track.Codec.Contains("aac", StringComparison.OrdinalIgnoreCase)
+		&& track.ChannelLayout.Contains("stereo", StringComparison.OrdinalIgnoreCase);
 }
