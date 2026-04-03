@@ -44,4 +44,10 @@ public class AppSettings
 
 	/// <summary>Comma-separated ISO 639-2 subtitle language codes (e.g. "eng").</summary>
 	public string SubtitleLanguages { get; set; } = "eng";
+
+	/// <summary>
+	/// ISO 639-2 language code for preferred TVDB metadata language (e.g. "eng").
+	/// When a series' original language differs from this value, translated names are fetched.
+	/// </summary>
+	public string TvdbLanguage { get; set; } = "eng";
 }

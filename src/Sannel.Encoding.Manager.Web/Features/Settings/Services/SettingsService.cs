@@ -42,6 +42,7 @@ public class SettingsService : ISettingsService
 			existing.AudioDefault = settings.AudioDefault;
 			existing.AudioLanguages = settings.AudioLanguages;
 			existing.SubtitleLanguages = settings.SubtitleLanguages;
+			existing.TvdbLanguage = settings.TvdbLanguage;
 		}
 
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);

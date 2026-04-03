@@ -134,6 +134,23 @@ else
 
 		<MudCard>
 			<MudCardContent>
+				<MudText Typo="Typo.h6" Class="mb-3">TVDB Language</MudText>
+				<MudSelect T="string" @bind-Value="_tvdbLanguage"
+					Label="Preferred Metadata Language"
+					Variant="Variant.Outlined"
+					AnchorOrigin="Origin.BottomCenter"
+					Style="max-width: 300px;"
+					HelperText="When a series is not in this language, translated names will be fetched from TVDB">
+					@foreach (var lang in _allLanguages)
+					{
+						<MudSelectItem T="string" Value="@lang.Code">@lang.Name (@lang.Code)</MudSelectItem>
+					}
+				</MudSelect>
+			</MudCardContent>
+		</MudCard>
+
+		<MudCard>
+			<MudCardContent>
 				<MudText Typo="Typo.h6" Class="mb-3">HandBrake Presets</MudText>
 				@if (_presets.Count == 0)
 				{

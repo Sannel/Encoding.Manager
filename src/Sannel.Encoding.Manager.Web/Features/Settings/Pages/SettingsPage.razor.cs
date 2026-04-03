@@ -38,6 +38,7 @@ public partial class SettingsPage : ComponentBase
 	private AudioDefault _audioDefault = AudioDefault.Opus;
 	private IReadOnlyCollection<string> _selectedAudioLanguages = new HashSet<string> { "eng" };
 	private IReadOnlyCollection<string> _selectedSubtitleLanguages = new HashSet<string> { "eng" };
+	private string _tvdbLanguage = "eng";
 	private bool _isSaving;
 	private bool _isLoading = true;
 
@@ -57,6 +58,7 @@ public partial class SettingsPage : ComponentBase
 		this._selectedSubtitleLanguages = settings.SubtitleLanguages
 			.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
 			.ToHashSet();
+		this._tvdbLanguage = settings.TvdbLanguage;
 		this._presets = await this.PresetService.GetPresetsAsync();
 		this._isLoading = false;
 	}
@@ -84,6 +86,7 @@ public partial class SettingsPage : ComponentBase
 				AudioDefault = this._audioDefault.ToString(),
 				AudioLanguages = string.Join(",", this._selectedAudioLanguages),
 				SubtitleLanguages = string.Join(",", this._selectedSubtitleLanguages),
+				TvdbLanguage = this._tvdbLanguage,
 			});
 			this.Snackbar.Add("Settings saved.", Severity.Success);
 		}
