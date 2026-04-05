@@ -1,7 +1,10 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Sannel.Encoding.Manager.Web.Features.Data;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
+using Sannel.Encoding.Manager.Web.Features.Queue.Hubs;
+using Sannel.Encoding.Manager.Web.Features.Queue.Services;
 using Sannel.Encoding.Manager.Web.Features.Runner.Dto;
 using RunnerEntity = Sannel.Encoding.Manager.Web.Features.Runner.Entities.Runner;
 
@@ -12,11 +15,19 @@ public class RunnerJobService : IRunnerJobService
 {
 	private readonly IDbContextFactory<AppDbContext> _dbFactory;
 	private readonly ILogger<RunnerJobService> _logger;
+	private readonly IHubContext<QueueHub> _hubContext;
+	private readonly QueueChangeNotifier _notifier;
 
-	public RunnerJobService(IDbContextFactory<AppDbContext> dbFactory, ILogger<RunnerJobService> logger)
+	public RunnerJobService(
+		IDbContextFactory<AppDbContext> dbFactory,
+		ILogger<RunnerJobService> logger,
+		IHubContext<QueueHub> hubContext,
+		QueueChangeNotifier notifier)
 	{
 		_dbFactory = dbFactory;
 		_logger = logger;
+		_hubContext = hubContext;
+		_notifier = notifier;
 	}
 
 	/// <inheritdoc />
@@ -58,6 +69,35 @@ public class RunnerJobService : IRunnerJobService
 	}
 
 	/// <inheritdoc />
+	public async Task<bool> IsCancelRequestedAsync(string runnerName, Guid jobId, CancellationToken ct = default)
+	{
+		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
+
+		var runner = await ctx.Runners
+			.AsNoTracking()
+			.FirstOrDefaultAsync(r => r.Name == runnerName, ct)
+			.ConfigureAwait(false);
+
+		if (runner is null || runner.CurrentJobId != jobId)
+		{
+			return false;
+		}
+
+		var item = await ctx.EncodeQueueItems
+			.AsNoTracking()
+			.FirstOrDefaultAsync(i => i.Id == jobId && i.RunnerName == runnerName, ct)
+			.ConfigureAwait(false);
+
+		if (item is null)
+		{
+			return false;
+		}
+
+		return string.Equals(item.Status, "CancelRequested", StringComparison.OrdinalIgnoreCase)
+			|| string.Equals(item.Status, "Canceled", StringComparison.OrdinalIgnoreCase);
+	}
+
+	/// <inheritdoc />
 	public async Task<ClaimedJobResponse?> ClaimNextJobAsync(string runnerName, CancellationToken ct = default)
 	{
 		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
@@ -91,6 +131,7 @@ public class RunnerJobService : IRunnerJobService
 		}
 
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
+		await NotifyQueueItemUpsertedAsync(nextItem, ct).ConfigureAwait(false);
 
 		// Build preset map from tracks
 		var presetMap = await BuildPresetMapAsync(ctx, nextItem.TracksJson, ct).ConfigureAwait(false);
@@ -101,6 +142,18 @@ public class RunnerJobService : IRunnerJobService
 			.ConfigureAwait(false)
 			?? new Sannel.Encoding.Manager.Web.Features.Settings.Entities.AppSettings();
 
+		var isMovieJob = (nextItem.TvdbId ?? 0) == 0;
+		var selectedTemplate = isMovieJob
+			? settings.MovieTrackDestinationTemplate
+			: settings.TrackDestinationTemplate;
+
+		if (string.IsNullOrWhiteSpace(selectedTemplate))
+		{
+			selectedTemplate = isMovieJob
+				? "Movies/{MovieName} ({MovieYear})/{MovieName} - {Resolution}"
+				: "{TVDBShow}/Season {SeasonNumber}/{EpisodeName}";
+		}
+
 		return new ClaimedJobResponse
 		{
 			JobId = nextItem.Id,
@@ -108,10 +161,11 @@ public class RunnerJobService : IRunnerJobService
 			DiscRootLabel = nextItem.DiscRootLabel,
 			Mode = nextItem.Mode,
 			TvdbShowName = nextItem.TvdbShowName,
+			TvdbId = nextItem.TvdbId,
 			AudioDefault = nextItem.AudioDefault,
 			TracksJson = nextItem.TracksJson,
 			PresetMap = presetMap,
-			TrackDestinationTemplate = settings.TrackDestinationTemplate,
+			TrackDestinationTemplate = selectedTemplate,
 			TrackDestinationRoot = settings.TrackDestinationRoot,
 			AudioLanguages = settings.AudioLanguages
 				.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
@@ -121,7 +175,7 @@ public class RunnerJobService : IRunnerJobService
 	}
 
 	/// <inheritdoc />
-	public async Task<bool> UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent, string? error, CancellationToken ct = default)
+	public async Task<bool> UpdateJobStatusAsync(Guid jobId, string status, int? progressPercent, int? currentTrackProgressPercent, string? error, string? encodingCommand = null, CancellationToken ct = default)
 	{
 		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
 
@@ -138,12 +192,18 @@ public class RunnerJobService : IRunnerJobService
 		{
 			case "Encoding":
 				item.ProgressPercent = progressPercent;
+				item.CurrentTrackProgressPercent = currentTrackProgressPercent;
+				if (!string.IsNullOrEmpty(encodingCommand))
+				{
+					AppendEncodingCommand(item, encodingCommand);
+				}
 				break;
 
 			case "Finished":
 				item.Status = "Finished";
 				item.CompletedAt = DateTimeOffset.UtcNow;
 				item.ProgressPercent = null;
+				item.CurrentTrackProgressPercent = null;
 				// Clear runner's current job
 				await ClearRunnerCurrentJobAsync(ctx, item.RunnerName, ct).ConfigureAwait(false);
 				break;
@@ -152,8 +212,18 @@ public class RunnerJobService : IRunnerJobService
 				item.Status = "Failed";
 				item.CompletedAt = DateTimeOffset.UtcNow;
 				item.ProgressPercent = null;
+				item.CurrentTrackProgressPercent = null;
 				_logger.LogError("Job {JobId} failed: {Error}", jobId, error);
 				// Clear runner's current job
+				await ClearRunnerCurrentJobAsync(ctx, item.RunnerName, ct).ConfigureAwait(false);
+				break;
+
+			case "Canceled":
+				item.Status = "Canceled";
+				item.CompletedAt = DateTimeOffset.UtcNow;
+				item.ProgressPercent = null;
+				item.CurrentTrackProgressPercent = null;
+				_logger.LogInformation("Job {JobId} canceled.", jobId);
 				await ClearRunnerCurrentJobAsync(ctx, item.RunnerName, ct).ConfigureAwait(false);
 				break;
 
@@ -163,7 +233,23 @@ public class RunnerJobService : IRunnerJobService
 		}
 
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
+		await NotifyQueueItemUpsertedAsync(item, ct).ConfigureAwait(false);
 		return true;
+	}
+
+	private Task NotifyQueueItemUpsertedAsync(Queue.Entities.EncodeQueueItem item, CancellationToken ct)
+	{
+		_notifier.NotifyItemUpserted(item);
+		return _hubContext.Clients.All.SendAsync("QueueItemUpserted", item, ct);
+	}
+
+	private static void AppendEncodingCommand(Queue.Entities.EncodeQueueItem item, string command)
+	{
+		var commands = !string.IsNullOrEmpty(item.EncodingCommandsJson)
+			? JsonSerializer.Deserialize<List<string>>(item.EncodingCommandsJson) ?? []
+			: [];
+		commands.Add(command);
+		item.EncodingCommandsJson = JsonSerializer.Serialize(commands);
 	}
 
 	private static async Task ClearRunnerCurrentJobAsync(AppDbContext ctx, string? runnerName, CancellationToken ct)
@@ -215,6 +301,7 @@ public class RunnerJobService : IRunnerJobService
 		{
 			presetMap[preset.Label] = new PresetLocation
 			{
+				PresetName = preset.PresetName,
 				RootLabel = preset.RootLabel,
 				RelativePath = preset.RelativePath
 			};

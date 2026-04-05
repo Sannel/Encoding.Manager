@@ -1,0 +1,117 @@
+@using Sannel.Encoding.Manager.Web.Features.Filesystem.Dto
+@using Sannel.Encoding.Manager.Web.Features.Tvdb.Dto
+@inherits NamingComponentBase
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap" Spacing="2">
+	<MudTextField @bind-Value="_showId" Label="Show ID" Variant="Variant.Outlined"
+		Placeholder="e.g. 73739" Style="max-width: 220px;" />
+	@if (!string.IsNullOrEmpty(_seriesName))
+	{
+		<MudText Typo="Typo.subtitle1"><strong>@_seriesName</strong></MudText>
+	}
+	<MudSelect T="TvdbEpisodeOrderType" Value="_episodeOrderType" ValueChanged="OnEpisodeOrderTypeChanged"
+		Label="Episode Order" Variant="Variant.Outlined" Margin="Margin.Dense"
+		AnchorOrigin="Origin.BottomCenter" Style="max-width: 160px;">
+		<MudSelectItem Value="TvdbEpisodeOrderType.Default">Default</MudSelectItem>
+		<MudSelectItem Value="TvdbEpisodeOrderType.Dvd">DVD</MudSelectItem>
+		<MudSelectItem Value="TvdbEpisodeOrderType.Bluray">Blu-ray</MudSelectItem>
+		<MudSelectItem Value="TvdbEpisodeOrderType.Streaming">Streaming</MudSelectItem>
+	</MudSelect>
+	<MudButton Variant="Variant.Filled" Color="Color.Primary"
+		OnClick="OnLoadFromTvdbClicked" Disabled="_isTvdbLoading">
+		@if (_isTvdbLoading)
+		{
+			<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+		}
+		Load from TVDB
+	</MudButton>
+	<MudButton Variant="Variant.Filled" Color="Color.Secondary"
+		OnClick="OnCascadeClicked" Disabled="@(!CanCascade)">
+		Cascade
+	</MudButton>
+	<MudButton Variant="Variant.Filled" Color="Color.Info"
+		StartIcon="@Icons.Material.Filled.AutoFixHigh"
+		OnClick="ApplyAllEpisodeNames">
+		Auto Names
+	</MudButton>
+</MudStack>
+
+@if (!string.IsNullOrEmpty(_tvdbErrorMessage))
+{
+	<MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">@_tvdbErrorMessage</MudAlert>
+}
+
+@if (TrackItems.Count == 0)
+{
+	<MudAlert Severity="Severity.Info">No .mkv or .mp4 files were found in this folder.</MudAlert>
+}
+else
+{
+	@foreach (var item in TrackItems)
+	{
+		var nr = GetFolderNamingRow(item);
+		<MudPaper Class="mb-2 pa-3" Elevation="2">
+			<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Wrap="Wrap.Wrap">
+				<MudText><strong>@item.File.Name</strong></MudText>
+				<MudText Typo="Typo.body2" Style="opacity:.7;">@item.File.RelativePath</MudText>
+				<MudText Typo="Typo.body2">@FormatBytes(item.File.SizeBytes)</MudText>
+				<MudSpacer />
+				<MudIconButton Icon="@Icons.Material.Filled.AutoFixHigh" Size="Size.Small"
+					OnClick="@(() => ApplyEpisodeName(item.Key))" Title="Auto name" />
+				<MudIconButton Icon="@Icons.Material.Filled.ClearAll" Size="Size.Small"
+					OnClick="@(() => ClearNamingRow(item.Key))" Title="Clear row" />
+			</MudStack>
+			<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mt-2" Wrap="Wrap.Wrap">
+				<MudTextField @bind-Value="nr.Name" Label="Name" Variant="Variant.Outlined"
+					Margin="Margin.Dense" Style="min-width: 220px;" />
+				<MudSelect T="int?" Value="nr.Season"
+					ValueChanged="@(v => OnSeasonChanged(item.Key, v))"
+					Label="Season" Variant="Variant.Outlined" Margin="Margin.Dense"
+					Placeholder="—" AnchorOrigin="Origin.BottomCenter" Style="min-width: 130px;"
+					Disabled="@(_allEpisodes.Count == 0)">
+					@foreach (var season in _seasons)
+					{
+						<MudSelectItem T="int?" Value="@((int?)season)">Season @season</MudSelectItem>
+					}
+				</MudSelect>
+				<MudSelect T="TvdbEpisode?" Value="nr.Episode"
+					ValueChanged="@(ep => OnEpisodeSelected(item.Key, ep))"
+					Label="Episode" Variant="Variant.Outlined" Margin="Margin.Dense"
+					Placeholder="—" AnchorOrigin="Origin.BottomCenter" Style="min-width: 220px;"
+					ToStringFunc="@(ep => ep is null ? string.Empty : $"E{ep.EpisodeNumber:D2} — {ep.Name}")"
+					Disabled="@(nr.Season is null || _allEpisodes.Count == 0)">
+					@foreach (var ep in EpisodesForSeason(nr.Season))
+					{
+						<MudSelectItem T="TvdbEpisode?" Value="@((TvdbEpisode?)ep)">
+							E@(ep.EpisodeNumber.ToString("D2")) — @ep.Name
+						</MudSelectItem>
+					}
+				</MudSelect>
+			</MudStack>
+		</MudPaper>
+	}
+
+	<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mt-3">
+		@if (_presets.Count > 0)
+		{
+			<MudSelect T="string?" @bind-Value="_selectedPresetLabel"
+				Label="Preset" Variant="Variant.Outlined" Margin="Margin.Dense"
+				Placeholder="None" AnchorOrigin="Origin.BottomCenter" Style="min-width: 200px;"
+				Clearable="true">
+				@foreach (var preset in _presets)
+				{
+					<MudSelectItem T="string?" Value="@preset.Label">@preset.Label</MudSelectItem>
+				}
+			</MudSelect>
+		}
+		<MudButton Variant="Variant.Filled" Color="Color.Success"
+			StartIcon="@Icons.Material.Filled.AddToQueue"
+			OnClick="OnAddToQueueClicked" Disabled="_isAddingToQueue">
+			@if (_isAddingToQueue)
+			{
+				<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+			}
+			Add to Queue
+		</MudButton>
+	</MudStack>
+}

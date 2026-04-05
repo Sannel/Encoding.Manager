@@ -185,7 +185,16 @@ public class HandBrakeService : IHandBrakeService
 		ArgumentException.ThrowIfNullOrWhiteSpace(job.InputPath);
 		ArgumentException.ThrowIfNullOrWhiteSpace(job.OutputPath);
 
-		if (string.IsNullOrWhiteSpace(job.PresetName) && string.IsNullOrWhiteSpace(job.PresetFilePath))
+		if (!string.IsNullOrWhiteSpace(job.PresetFilePath))
+		{
+			// When importing a preset file, PresetName must be specified (the name from inside the JSON)
+			if (string.IsNullOrWhiteSpace(job.PresetName))
+			{
+				throw new ArgumentException(
+					"PresetName must be set when PresetFilePath is specified (to tell HandBrake which preset to use from the imported file).");
+			}
+		}
+		else if (string.IsNullOrWhiteSpace(job.PresetName))
 		{
 			throw new ArgumentException(
 				"Either PresetName or PresetFilePath must be set on HandBrakeJob.");
@@ -272,11 +281,19 @@ public class HandBrakeService : IHandBrakeService
 
 		if (!string.IsNullOrWhiteSpace(job.PresetFilePath))
 		{
+			// Import preset file and then use the preset by name
 			args.Add("--preset-import-file");
 			args.Add(job.PresetFilePath);
+			
+			if (!string.IsNullOrWhiteSpace(job.PresetName))
+			{
+				args.Add("--preset");
+				args.Add(job.PresetName);
+			}
 		}
 		else if (!string.IsNullOrWhiteSpace(job.PresetName))
 		{
+			// Use a built-in preset by name
 			args.Add("--preset");
 			args.Add(job.PresetName);
 		}

@@ -1,6 +1,10 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting.Systemd;
+using Microsoft.Extensions.Hosting.WindowsServices;
+using Microsoft.Extensions.Logging.EventLog;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
@@ -11,16 +15,57 @@ using Sannel.Encoding.Manager.Web.Features.Data.Options;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Services;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Options;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
+using Sannel.Encoding.Manager.Web.Features.Queue.Hubs;
 using Sannel.Encoding.Manager.Web.Features.Queue.Services;
+using Sannel.Encoding.Manager.Web.Features.Runner.Hubs;
 using Sannel.Encoding.Manager.Web.Features.Runner.Services;
 using Sannel.Encoding.Manager.Web.Features.Runners.Services;
 using Sannel.Encoding.Manager.Web.Features.Settings.Services;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Options;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Services;
+using Sannel.Encoding.Manager.Web.Features.Omdb.Options;
+using Sannel.Encoding.Manager.Web.Features.Omdb.Services;
 using Sannel.Encoding.Manager.HandBrake;
 using Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
+using Sannel.Encoding.Manager.Web.Features.Configuration;
+
+// Handle the 'configure' subcommand before building the web host.
+if (args.Length > 0 && args[0].Equals("configure", StringComparison.OrdinalIgnoreCase))
+{
+	ConfigureCommand.Run();
+	return;
+}
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (OperatingSystem.IsWindows())
+{
+	// Configure for Windows Service hosting
+	builder.Host.UseWindowsService();
+}
+
+if (OperatingSystem.IsLinux())
+{
+	// Configure for systemd hosting (Linux)
+	builder.Host.UseSystemd();
+}
+
+// Configure Event Log logging on Windows (only logs errors and above)
+if (OperatingSystem.IsWindows())
+{
+	builder.Logging.AddEventLog(eventLogSettings =>
+	{
+		eventLogSettings.SourceName = "Sannel Encoding Manager";
+		eventLogSettings.LogName = "Application";
+	});
+	// Filter to only Error and Critical level messages for Event Log
+	builder.Logging.AddFilter("Microsoft.Extensions.Logging.EventLog.EventLogLoggerProvider", LogLevel.Warning);
+}
+
+// Encrypted config overlay — loaded after appsettings.json so it takes precedence.
+// Values prefixed with "enc:" are transparently decrypted at startup.
+// Add config/appsettings.json to .gitignore — it may contain secrets.
+builder.Configuration.AddEncryptedJsonFile(ConfigureCommand.ConfigFilePath, optional: true);
 
 // Microsoft Entra (Azure AD) authentication
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
@@ -47,6 +92,33 @@ builder.Services.AddAuthorization(options =>
 // Razor Pages are required for the Microsoft Identity login/logout UI
 builder.Services.AddRazorPages()
     .AddMicrosoftIdentityUI();
+
+builder.Services.Configure<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+{
+    options.Events.OnRedirectToLogin = context =>
+    {
+        if (context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/hubs"))
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        }
+
+        context.Response.Redirect(context.RedirectUri);
+        return Task.CompletedTask;
+    };
+
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        if (context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/hubs"))
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
+        }
+
+        context.Response.Redirect(context.RedirectUri);
+        return Task.CompletedTask;
+    };
+});
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -104,6 +176,7 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 
 // Encoding queue
+builder.Services.AddSingleton<QueueChangeNotifier>();
 builder.Services.AddScoped<IEncodeQueueService, EncodeQueueService>();
 builder.Services.AddScoped<IPresetService, PresetService>();
 
@@ -121,8 +194,22 @@ builder.Services.AddHttpClient<ITvdbService, TvdbService>((sp, client) =>
     client.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
 });
 
+// OMDb integration for movies. Fall back to legacy "Imdb" config if present.
+builder.Services.AddOptions<OmdbOptions>()
+    .Configure<IConfiguration>((options, configuration) =>
+    {
+        configuration.GetSection("Omdb").Bind(options);
+
+        if (string.IsNullOrWhiteSpace(options.ApiKey) && string.IsNullOrWhiteSpace(options.BaseUrl))
+        {
+            configuration.GetSection("Imdb").Bind(options);
+        }
+    });
+builder.Services.AddHttpClient<IOmdbService, OmdbService>();
+
 // MVC Controllers for API endpoints
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -140,7 +227,9 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+app.UseWhen(
+	context => !context.Request.Path.StartsWithSegments("/api") && !context.Request.Path.StartsWithSegments("/hubs"),
+	branch => branch.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true));
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
@@ -151,7 +240,9 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorPages(); // Microsoft Identity login/logout endpoints
 app.MapControllers(); // API controllers
+app.MapHub<QueueHub>("/hubs/queue");
+app.MapHub<RunnerStatusHub>("/hubs/runner-status");
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.Run();
+await app.RunAsync();

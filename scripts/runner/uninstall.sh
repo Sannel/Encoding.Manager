@@ -4,6 +4,7 @@
 set -euo pipefail
 
 SERVICE_NAME="sannel-encoding-runner"
+SERVICE_USER="encoderunner"
 UNIT_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 DEFAULT_PATH="/opt/sannel/encoding-manager/runner"
 
@@ -43,6 +44,17 @@ if [ -d "$INSTALL_PATH" ]; then
     fi
 else
     echo "Install directory '${INSTALL_PATH}' not found — nothing to remove."
+fi
+
+if id -u "$SERVICE_USER" &>/dev/null; then
+    printf "Delete service user '%s'? [y/N]: " "$SERVICE_USER"
+    read -r confirm
+    if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+        userdel "$SERVICE_USER"
+        echo "User '${SERVICE_USER}' removed."
+    else
+        echo "User kept."
+    fi
 fi
 
 echo "Uninstall complete."

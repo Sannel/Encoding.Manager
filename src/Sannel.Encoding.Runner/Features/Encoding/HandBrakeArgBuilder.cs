@@ -5,7 +5,7 @@ public static class HandBrakeArgBuilder
 {
 	/// <summary>
 	/// Builds the audio-related CLI arguments:
-	/// --audio 1,2,3 --aencoder opus,copy,copy --mixdown stereo,auto,auto [--arate 48,Auto,Auto] [--ab 640,0,0]
+	/// --audio 1,1,2 --aencoder opus,copy,copy --mixdown stereo,auto,auto [--arate 48,Auto,Auto] [--ab 640,0,0]
 	/// </summary>
 	public static string BuildAudioArgs(IReadOnlyList<SelectedAudioTrack> tracks)
 	{

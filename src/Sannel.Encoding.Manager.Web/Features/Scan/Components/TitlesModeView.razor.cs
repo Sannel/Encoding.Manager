@@ -9,6 +9,12 @@ public partial class TitlesModeView : NamingComponentBase
 	[Parameter]
 	public required HandBrakeScanResult ScanResult { get; set; }
 
+	[Parameter]
+	public string? DiscRootLabel { get; set; }
+
+	[Parameter]
+	public string? DiscRelativePath { get; set; }
+
 	private int _minimumMinutes = 0;
 	private int _minimumSeconds = 30;
 
@@ -54,7 +60,11 @@ public partial class TitlesModeView : NamingComponentBase
 					};
 				})
 				.ToList();
-			await this.AddDiskToQueueAsync(this.ScanResult.InputPath, "Titles", tracks);
+			await this.AddDiskToQueueAsync(
+			this.DiscRootLabel is not null ? this.DiscRelativePath ?? this.ScanResult.InputPath : this.ScanResult.InputPath,
+			this.DiscRootLabel,
+			"Titles",
+			tracks);
 		}
 		finally
 		{

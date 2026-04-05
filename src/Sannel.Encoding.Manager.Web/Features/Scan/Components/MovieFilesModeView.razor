@@ -1,0 +1,110 @@
+@using Sannel.Encoding.Manager.Web.Features.Filesystem.Dto
+@inherits NamingComponentBase
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap" Spacing="2">
+	<MudTextField @bind-Value="_movieTitle" Label="Movie Title" Variant="Variant.Outlined"
+		Placeholder="e.g. The Matrix" Style="max-width: 220px;" />
+	@if (!string.IsNullOrEmpty(_movieName))
+	{
+		<MudStack Spacing="0">
+			<MudText Typo="Typo.subtitle1"><strong>@_movieName</strong></MudText>
+			@if (!string.IsNullOrEmpty(_movieYear) || !string.IsNullOrEmpty(_movieGenres))
+			{
+				<MudText Typo="Typo.body2" Style="opacity:.7;">
+					@if (!string.IsNullOrEmpty(_movieYear))
+					{
+						@_movieYear
+						@if (!string.IsNullOrEmpty(_movieGenres))
+						{
+							@(" • ")
+						}
+					}
+					@if (!string.IsNullOrEmpty(_movieGenres))
+					{
+						@_movieGenres
+					}
+				</MudText>
+			}
+		</MudStack>
+	}
+	<MudButton Variant="Variant.Filled" Color="Color.Primary"
+		OnClick="OnLoadFromOmdbClicked" Disabled="_isOmdbLoading">
+		@if (_isOmdbLoading)
+		{
+			<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+		}
+		Load from OMDb
+	</MudButton>
+	<MudButton Variant="Variant.Filled" Color="Color.Info"
+		StartIcon="@Icons.Material.Filled.AutoFixHigh"
+		OnClick="ApplyAllMovieNames">
+		Auto Names
+	</MudButton>
+</MudStack>
+
+@if (!string.IsNullOrEmpty(_omdbErrorMessage))
+{
+	<MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">@_omdbErrorMessage</MudAlert>
+}
+
+@if (TrackItems.Count == 0)
+{
+	<MudAlert Severity="Severity.Info">No .mkv or .mp4 files were found in this folder.</MudAlert>
+}
+else
+{
+	@foreach (var item in TrackItems)
+	{
+		var nr = GetMovieNamingRow(item);
+		<MudPaper Class="mb-2 pa-3" Elevation="2">
+			<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Wrap="Wrap.Wrap">
+				<MudText><strong>@item.File.Name</strong></MudText>
+				<MudText Typo="Typo.body2" Style="opacity:.7;">@item.File.RelativePath</MudText>
+				<MudText Typo="Typo.body2">@FormatBytes(item.File.SizeBytes)</MudText>
+				<MudSpacer />
+				<MudIconButton Icon="@Icons.Material.Filled.AutoFixHigh" Size="Size.Small"
+					OnClick="@(() => ApplyMovieName(item.Key))" Title="Auto name" />
+				<MudIconButton Icon="@Icons.Material.Filled.ClearAll" Size="Size.Small"
+					OnClick="@(() => ClearNamingRow(item.Key))" Title="Clear row" />
+			</MudStack>
+			<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mt-2" Wrap="Wrap.Wrap">
+				<MudTextField @bind-Value="nr.Name" Label="Name" Variant="Variant.Outlined"
+					Margin="Margin.Dense" Style="min-width: 220px;" />
+				<MudSelect T="string?" Value="nr.Resolution"
+					ValueChanged="@(v => OnResolutionChanged(item.Key, v))"
+					Label="Resolution" Variant="Variant.Outlined" Margin="Margin.Dense"
+					Placeholder="—" AnchorOrigin="Origin.BottomCenter" Style="min-width: 110px;"
+					Clearable="true">
+					@foreach (var resolution in _availableResolutions)
+					{
+						<MudSelectItem T="string?" Value="@resolution">@resolution</MudSelectItem>
+					}
+				</MudSelect>
+			</MudStack>
+		</MudPaper>
+	}
+
+	<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mt-3">
+		@if (_presets.Count > 0)
+		{
+			<MudSelect T="string?" @bind-Value="_selectedPresetLabel"
+				Label="Preset" Variant="Variant.Outlined" Margin="Margin.Dense"
+				Placeholder="None" AnchorOrigin="Origin.BottomCenter" Style="min-width: 200px;"
+				Clearable="true">
+				@foreach (var preset in _presets)
+				{
+					<MudSelectItem T="string?" Value="@preset.Label">@preset.Label</MudSelectItem>
+				}
+			</MudSelect>
+		}
+		<MudButton Variant="Variant.Filled" Color="Color.Success"
+			StartIcon="@Icons.Material.Filled.AddToQueue"
+			OnClick="OnAddToQueueClicked" Disabled="_isAddingToQueue">
+			@if (_isAddingToQueue)
+			{
+				<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+			}
+			Add to Queue
+		</MudButton>
+	</MudStack>
+}

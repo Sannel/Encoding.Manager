@@ -39,12 +39,21 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                         .IsRequired()
                         .HasColumnType("character varying(48)");
 
+                    b.Property<int?>("CurrentTrackProgressPercent")
+                        .HasColumnType("integer");
+
                     b.Property<string>("DiscPath")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("DiscRootLabel")
                         .HasColumnType("text");
+
+                    b.Property<string>("EncodingCommandsJson")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Mode")
                         .IsRequired()
@@ -67,6 +76,9 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("TvdbId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("TvdbShowName")
                         .HasColumnType("text");
 
@@ -82,6 +94,10 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Label")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PresetName")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -159,6 +175,10 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("MovieTrackDestinationTemplate")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("SubtitleLanguages")
                         .IsRequired()
                         .HasColumnType("text");
@@ -167,6 +187,10 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("TrackDestinationTemplate")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TvdbLanguage")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -215,6 +239,9 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                         .HasColumnType("character varying(48)");
 
                     b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OriginalLanguage")
                         .HasColumnType("text");
 
                     b.HasKey("SeriesId");

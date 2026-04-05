@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using Sannel.Encoding.Manager.HandBrake;
 using Sannel.Encoding.Runner.Features.Encoding;
@@ -16,6 +17,7 @@ public class EncodingWorkerService : BackgroundService
 	private readonly RunnerOptions _runnerOptions;
 	private readonly FilesystemOptions _fsOptions;
 	private readonly ILogger<EncodingWorkerService> _logger;
+	private static readonly TimeSpan CancelPollInterval = TimeSpan.FromSeconds(2);
 
 	public EncodingWorkerService(
 		IRunnerApiClient api,
@@ -47,7 +49,7 @@ public class EncodingWorkerService : BackgroundService
 				if (!enabled)
 				{
 					_logger.LogInformation("Runner '{Name}' is disabled, sleeping.", _runnerOptions.Name);
-					await Task.Delay(TimeSpan.FromSeconds(_runnerOptions.PollIntervalSeconds), stoppingToken);
+					await DelayForPollIntervalAsync(stoppingToken);
 					continue;
 				}
 
@@ -55,7 +57,7 @@ public class EncodingWorkerService : BackgroundService
 				if (job is null)
 				{
 					_logger.LogDebug("No jobs available, sleeping.");
-					await Task.Delay(TimeSpan.FromSeconds(_runnerOptions.PollIntervalSeconds), stoppingToken);
+					await DelayForPollIntervalAsync(stoppingToken);
 					continue;
 				}
 
@@ -69,11 +71,25 @@ public class EncodingWorkerService : BackgroundService
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error in encoding worker loop.");
-				await Task.Delay(TimeSpan.FromSeconds(_runnerOptions.PollIntervalSeconds), stoppingToken);
+				await DelayForPollIntervalAsync(stoppingToken);
 			}
 		}
 
 		_logger.LogInformation("Encoding worker '{Name}' stopping.", _runnerOptions.Name);
+	}
+
+	private async Task DelayForPollIntervalAsync(CancellationToken ct)
+	{
+		var pollSeconds = _runnerOptions.PollIntervalSeconds;
+		if (pollSeconds < 1)
+		{
+			_logger.LogWarning(
+				"Runner poll interval '{PollIntervalSeconds}' is invalid; using 1 second.",
+				pollSeconds);
+			pollSeconds = 1;
+		}
+
+		await Task.Delay(TimeSpan.FromSeconds(pollSeconds), ct);
 	}
 
 	private async Task ProcessJobAsync(ClaimedJobResponse job, CancellationToken ct)
@@ -83,12 +99,29 @@ public class EncodingWorkerService : BackgroundService
 			var absDiscPath = ResolveDiscPath(job);
 			_logger.LogInformation("Resolved disc path: {Path}", absDiscPath);
 
-			// Scan disc once and reuse for all tracks.
-			var scanResult = await _handBrake.ScanAsync(absDiscPath, ct: ct);
-			if (!scanResult.IsSuccess)
+			if (!File.Exists(absDiscPath) && !Directory.Exists(absDiscPath))
 			{
-				_logger.LogError("Scan failed for {Path}: {Error}", absDiscPath, scanResult.Error?.Message);
-				await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: $"Scan failed: {scanResult.Error?.Message}", ct: ct);
+				var root = Path.GetPathRoot(absDiscPath) ?? string.Empty;
+				var rootExists = !string.IsNullOrWhiteSpace(root) && Directory.Exists(root);
+				var serviceIdentity = $"{Environment.UserDomainName}\\{Environment.UserName}";
+				var isDriveLetterPath = absDiscPath.Length >= 2
+					&& char.IsLetter(absDiscPath[0])
+					&& absDiscPath[1] == ':';
+
+				_logger.LogError(
+					"Input path is not accessible. Path={Path}, Root={Root}, RootExists={RootExists}, ServiceIdentity={ServiceIdentity}, ConfiguredRoots={ConfiguredRoots}",
+					absDiscPath,
+					root,
+					rootExists,
+					serviceIdentity,
+					string.Join(", ", _fsOptions.Roots.Select(r => $"{r.Label}={r.Path}")));
+
+				var hint = isDriveLetterPath
+					? " The path uses a mapped drive letter. Windows services often cannot access user-mapped drives; use a UNC path in Filesystem:Roots or run the service under an account that has access."
+					: string.Empty;
+
+				var error = $"Input path is not accessible: '{absDiscPath}'.{hint}";
+				await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
 				return;
 			}
 
@@ -98,6 +131,20 @@ public class EncodingWorkerService : BackgroundService
 				_logger.LogWarning("Job {JobId} has no tracks to encode.", job.JobId);
 				await _api.UpdateJobStatusAsync(job.JobId, "Finished", 100, ct: ct);
 				return;
+			}
+
+			var hasFileTracks = tracks.Any(track => !string.IsNullOrWhiteSpace(track.SourceRelativePath));
+			HandBrakeScanResult? discScanResult = null;
+			if (!hasFileTracks)
+			{
+				// Scan disc once and reuse for all tracks.
+				discScanResult = await _handBrake.ScanAsync(absDiscPath, ct: ct);
+				if (!discScanResult.IsSuccess)
+				{
+					_logger.LogError("Scan failed for {Path}: {Error}", absDiscPath, discScanResult.Error?.Message);
+					await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: $"Scan failed: {discScanResult.Error?.Message}", ct: ct);
+					return;
+				}
 			}
 
 			var rootLookup = _fsOptions.Roots.ToDictionary(r => r.Label, r => r.Path, StringComparer.OrdinalIgnoreCase);
@@ -111,10 +158,34 @@ public class EncodingWorkerService : BackgroundService
 					continue;
 				}
 
-				var titleInfo = scanResult.Titles.FirstOrDefault(t => t.TitleNumber == track.TitleNumber);
+				var inputPath = ResolveTrackInputPath(absDiscPath, track);
+				var scanResult = discScanResult;
+				if (!string.IsNullOrWhiteSpace(track.SourceRelativePath))
+				{
+					if (!File.Exists(inputPath))
+					{
+						var error = $"Input file is not accessible: '{inputPath}'.";
+						_logger.LogError("{Error}", error);
+						await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
+						return;
+					}
+
+					scanResult = await _handBrake.ScanAsync(inputPath, ct: ct);
+					if (!scanResult.IsSuccess)
+					{
+						var error = $"Scan failed for file '{track.SourceRelativePath}': {scanResult.Error?.Message}";
+						_logger.LogError("{Error}", error);
+						await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
+						return;
+					}
+				}
+
+				var titleInfo = ResolveTitleInfo(scanResult!, track);
 				if (titleInfo is null)
 				{
-					var error = $"Title {track.TitleNumber} not found in scan results.";
+					var error = string.IsNullOrWhiteSpace(track.SourceRelativePath)
+						? $"Title {track.TitleNumber} not found in scan results."
+						: $"Title {track.TitleNumber} not found in scan results for '{track.SourceRelativePath}'.";
 					_logger.LogError("{Error}", error);
 					await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
 					return;
@@ -131,23 +202,42 @@ public class EncodingWorkerService : BackgroundService
 					HandBrakeArgBuilder.BuildAudioArgs(selectedAudio),
 					HandBrakeArgBuilder.BuildSubtitleArgs(selectedSubtitles));
 
-				// Resolve preset path.
-				var presetFilePath = ResolvePresetPath(job, track, rootLookup);
+				// Resolve preset path and name.
+				string? presetFilePath = null;
+				string? presetName = null;
+				if (!string.IsNullOrWhiteSpace(track.PresetLabel))
+				{
+					presetFilePath = ResolvePresetPath(job, track, rootLookup);
+					if (job.PresetMap.TryGetValue(track.PresetLabel, out var preset))
+					{
+						presetName = preset.PresetName;
+					}
+				}
 
 				// Resolve output path.
 				var outputPath = ResolveOutputPath(job, track, rootLookup);
 
 				_logger.LogInformation(
-					"Encoding title {Title} -> {Output} (preset: {Preset})",
-					track.TitleNumber, outputPath, presetFilePath);
+					"Encoding {Source} title {Title} -> {Output} (preset: {Preset})",
+					string.IsNullOrWhiteSpace(track.SourceRelativePath) ? absDiscPath : inputPath,
+					track.TitleNumber,
+					outputPath,
+					!string.IsNullOrWhiteSpace(presetName) ? $"{presetName} ({presetFilePath})" : "(no preset)");
 
 				var handBrakeJob = new HandBrakeJob
 				{
-					InputPath = absDiscPath,
+					InputPath = inputPath,
 					OutputPath = outputPath,
 					PresetFilePath = presetFilePath,
+					PresetName = presetName,
 					AdditionalArgs = additionalArgs
 				};
+
+				// Build sanitized command for logging (replace absolute root paths with labels).
+				var sanitizedCommand = BuildSanitizedCommand(handBrakeJob, rootLookup);
+
+				// Send the command with the first progress update for this track.
+				await _api.UpdateJobStatusAsync(job.JobId, "Encoding", 0, 0, encodingCommand: sanitizedCommand, ct: ct);
 
 				// Progress callback: scale per-track progress across the whole job.
 				var trackIndex = i;
@@ -155,21 +245,46 @@ public class EncodingWorkerService : BackgroundService
 				var progress = new Progress<ProgressInfo>(p =>
 				{
 					var overallPercent = (int)(((trackIndex + p.Percent / 100.0) / trackCount) * 100);
-					_ = _api.UpdateJobStatusAsync(job.JobId, "Encoding", overallPercent, ct: ct);
+					var currentTrackPercent = (int)Math.Clamp(Math.Round(p.Percent), 0, 100);
+					_ = _api.UpdateJobStatusAsync(job.JobId, "Encoding", overallPercent, currentTrackPercent, ct: ct);
 				});
 
-				var encodeResult = await _handBrake.EncodeAsync(handBrakeJob, progress, ct);
-				if (!encodeResult.IsSuccess)
+				using var encodeCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+				var cancelMonitorTask = MonitorCancelRequestAsync(job.JobId, encodeCts, ct);
+
+				try
 				{
-					var error = $"Encode failed for title {track.TitleNumber}: {encodeResult.Error?.Message}";
-					_logger.LogError("{Error}", error);
-					await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
+					var encodeResult = await _handBrake.EncodeAsync(handBrakeJob, progress, encodeCts.Token);
+					if (!encodeResult.IsSuccess)
+					{
+						if (await _api.IsCancelRequestedAsync(_runnerOptions.Name, job.JobId, ct))
+						{
+							await _api.UpdateJobStatusAsync(job.JobId, "Canceled", error: "Encoding canceled by request.", ct: ct);
+							_logger.LogInformation("Job {JobId} canceled during encode.", job.JobId);
+							return;
+						}
+
+						var error = $"Encode failed for title {track.TitleNumber}: {encodeResult.Error?.Message}";
+						_logger.LogError("{Error}", error);
+						await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
+						return;
+					}
+
+					_logger.LogInformation(
+						"Title {Title} encoded in {Elapsed} (avg {Fps:F1} fps).",
+						track.TitleNumber, encodeResult.ElapsedTime, encodeResult.AverageFps);
+				}
+				catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+				{
+					await _api.UpdateJobStatusAsync(job.JobId, "Canceled", error: "Encoding canceled by request.", ct: ct);
+					_logger.LogInformation("Job {JobId} canceled during encode.", job.JobId);
 					return;
 				}
-
-				_logger.LogInformation(
-					"Title {Title} encoded in {Elapsed} (avg {Fps:F1} fps).",
-					track.TitleNumber, encodeResult.ElapsedTime, encodeResult.AverageFps);
+				finally
+				{
+					encodeCts.Cancel();
+					await WaitForCancelMonitorAsync(cancelMonitorTask);
+				}
 			}
 
 			await _api.UpdateJobStatusAsync(job.JobId, "Finished", 100, ct: ct);
@@ -184,6 +299,84 @@ public class EncodingWorkerService : BackgroundService
 			_logger.LogError(ex, "Unhandled error processing job {JobId}.", job.JobId);
 			await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: ex.Message, ct: ct);
 		}
+	}
+
+	private async Task MonitorCancelRequestAsync(Guid jobId, CancellationTokenSource encodeCts, CancellationToken ct)
+	{
+		while (!encodeCts.IsCancellationRequested && !ct.IsCancellationRequested)
+		{
+			try
+			{
+				var cancelRequested = await _api.IsCancelRequestedAsync(_runnerOptions.Name, jobId, ct);
+				if (cancelRequested)
+				{
+					encodeCts.Cancel();
+					return;
+				}
+
+				await Task.Delay(CancelPollInterval, ct);
+			}
+			catch (OperationCanceledException) when (ct.IsCancellationRequested || encodeCts.IsCancellationRequested)
+			{
+				return;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogDebug(ex, "Failed to poll cancel state for job {JobId}; will retry.", jobId);
+				await Task.Delay(CancelPollInterval, ct);
+			}
+		}
+	}
+
+	private static async Task WaitForCancelMonitorAsync(Task cancelMonitorTask)
+	{
+		try
+		{
+			await cancelMonitorTask;
+		}
+		catch
+		{
+			// Ignore monitor shutdown errors.
+		}
+	}
+
+	private string ResolveTrackInputPath(string absDiscPath, EncodeTrackConfig track)
+	{
+		if (string.IsNullOrWhiteSpace(track.SourceRelativePath))
+		{
+			return absDiscPath;
+		}
+
+		var fullPath = Path.GetFullPath(
+			Path.Combine(absDiscPath, _pathNormalizer.ToNative(track.SourceRelativePath)));
+
+		var relative = Path.GetRelativePath(absDiscPath, fullPath);
+		if (Path.IsPathRooted(relative)
+			|| relative.Equals("..", StringComparison.Ordinal)
+			|| relative.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
+			|| relative.StartsWith($"..{Path.AltDirectorySeparatorChar}", StringComparison.Ordinal))
+		{
+			throw new InvalidOperationException(
+				$"Track source path '{track.SourceRelativePath}' escapes the selected folder.");
+		}
+
+		return fullPath;
+	}
+
+	private static TitleInfo? ResolveTitleInfo(HandBrakeScanResult scanResult, EncodeTrackConfig track)
+	{
+		var titleInfo = scanResult.Titles.FirstOrDefault(t => t.TitleNumber == track.TitleNumber);
+		if (titleInfo is not null)
+		{
+			return titleInfo;
+		}
+
+		if (!string.IsNullOrWhiteSpace(track.SourceRelativePath) && scanResult.Titles.Count == 1)
+		{
+			return scanResult.Titles[0];
+		}
+
+		return null;
 	}
 
 	private string ResolveDiscPath(ClaimedJobResponse job)
@@ -201,7 +394,28 @@ public class EncodingWorkerService : BackgroundService
 			return _pathNormalizer.CombineWithRoot(root.Path, job.DiscPath);
 		}
 
-		return _pathNormalizer.ToNative(job.DiscPath);
+		// No root label — the server stored an absolute path (e.g. Windows drive "G:/Disks/...").
+		// Try to match the leading label portion against configured roots so cross-OS runners work.
+		// Pattern: "<label>:/" or "<label>:\" at the start of the path.
+		var discPath = job.DiscPath;
+		foreach (var root in _fsOptions.Roots)
+		{
+			var prefix = root.Label.TrimEnd('/', '\\') + ":/";
+			if (discPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+			{
+				var relative = discPath.Substring(prefix.Length).TrimStart('/', '\\');
+				return _pathNormalizer.CombineWithRoot(root.Path, relative);
+			}
+
+			var prefixBackslash = root.Label.TrimEnd('/', '\\') + ":\\";
+			if (discPath.StartsWith(prefixBackslash, StringComparison.OrdinalIgnoreCase))
+			{
+				var relative = discPath.Substring(prefixBackslash.Length).TrimStart('/', '\\');
+				return _pathNormalizer.CombineWithRoot(root.Path, relative);
+			}
+		}
+
+		return _pathNormalizer.ToNative(discPath);
 	}
 
 	private string ResolvePresetPath(
@@ -230,13 +444,24 @@ public class EncodingWorkerService : BackgroundService
 		EncodeTrackConfig track,
 		Dictionary<string, string> rootLookup)
 	{
+		var sourceDisk = Path.GetFileName(
+			job.DiscPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, '/'))
+			?? job.DiscPath;
+
 		var variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 		{
+			["{TVDBShow}"] = job.TvdbShowName ?? "Unknown",
 			["{ShowName}"] = job.TvdbShowName ?? "Unknown",
-			["{OutputName}"] = track.OutputName,
+			["{MovieName}"] = track.OutputName ?? "Unknown",
+			["{TVDBID}"] = job.TvdbId?.ToString() ?? string.Empty,
+			["{SourceDisk}"] = sourceDisk,
+			["{EpisodeName}"] = BuildEpisodeName(track),
+			["{OutputName}"] = track.OutputName ?? string.Empty,
 			["{SeasonNumber}"] = (track.SeasonNumber ?? 0).ToString("D2"),
 			["{EpisodeNumber}"] = (track.EpisodeNumber ?? 0).ToString("D2"),
-			["{TitleNumber}"] = track.TitleNumber.ToString("D2")
+			["{TitleNumber}"] = track.TitleNumber.ToString("D2"),
+			["{MovieYear}"] = ResolveMovieYear(track),
+			["{Resolution}"] = track.Resolution ?? string.Empty
 		};
 
 		var destRoot = string.Empty;
@@ -246,6 +471,99 @@ public class EncodingWorkerService : BackgroundService
 			destRoot = root;
 		}
 
-		return _pathNormalizer.ExpandTemplate(job.TrackDestinationTemplate, variables, destRoot);
+		var expanded = _pathNormalizer.ExpandTemplate(job.TrackDestinationTemplate, variables, destRoot);
+
+		if (string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(expanded)))
+		{
+			var fallbackName = string.IsNullOrWhiteSpace(track.OutputName)
+				? $"Title {track.TitleNumber:D2}"
+				: _pathNormalizer.SanitizeSegment(track.OutputName);
+			expanded = Path.Combine(expanded.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), fallbackName);
+		}
+
+		// Ensure the output path always ends with .mkv
+		if (!expanded.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase))
+		{
+			expanded += ".mkv";
+		}
+
+		return expanded;
+	}
+
+	private static string ResolveMovieYear(EncodeTrackConfig track)
+	{
+		if (!string.IsNullOrWhiteSpace(track.MovieYear))
+		{
+			return track.MovieYear.Trim();
+		}
+
+		var candidates = new[] { track.OutputName, track.SourceRelativePath };
+		foreach (var candidate in candidates)
+		{
+			if (string.IsNullOrWhiteSpace(candidate))
+			{
+				continue;
+			}
+
+			var match = Regex.Match(candidate, @"(?<!\d)(19\d{2}|20\d{2})(?!\d)");
+			if (match.Success)
+			{
+				return match.Value;
+			}
+		}
+
+		return "Unknown";
+	}
+
+	private static string BuildEpisodeName(EncodeTrackConfig track)
+	{
+		var hasSeason = track.SeasonNumber.HasValue && track.SeasonNumber.Value > 0;
+		var hasEpisode = track.EpisodeNumber.HasValue && track.EpisodeNumber.Value > 0;
+		var hasName = !string.IsNullOrWhiteSpace(track.OutputName);
+
+		if (hasSeason && hasEpisode)
+		{
+			var prefix = $"s{track.SeasonNumber!.Value:D2}e{track.EpisodeNumber!.Value:D2}";
+			return hasName ? $"{prefix} - {track.OutputName}" : prefix;
+		}
+
+		if (hasName)
+		{
+			return track.OutputName;
+		}
+
+		if (track.StartChapter.HasValue && track.EndChapter.HasValue)
+		{
+			return $"Title {track.TitleNumber} Ch {track.StartChapter}-{track.EndChapter}";
+		}
+
+		return $"Title {track.TitleNumber}";
+	}
+
+	private static string BuildSanitizedCommand(HandBrakeJob job, Dictionary<string, string> rootLookup)
+	{
+		var command = $"HandBrakeCLI --input {job.InputPath} --output {job.OutputPath}";
+		if (!string.IsNullOrEmpty(job.PresetFilePath))
+		{
+			command += $" --preset-import-file {job.PresetFilePath}";
+		}
+
+		if (!string.IsNullOrEmpty(job.AdditionalArgs))
+		{
+			command += $" {job.AdditionalArgs}";
+		}
+
+		// Replace absolute root paths with [label] to avoid exposing full filesystem paths.
+		// Process longer paths first so a root like "/mnt/data" is replaced before "/mnt".
+		foreach (var root in rootLookup.OrderByDescending(r => r.Value.Length))
+		{
+			var nativePath = root.Value.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+			if (!string.IsNullOrEmpty(nativePath))
+			{
+				command = command.Replace(nativePath, $"[{root.Key}]", StringComparison.OrdinalIgnoreCase);
+			}
+		}
+
+		return command;
 	}
 }
