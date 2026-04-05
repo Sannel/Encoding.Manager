@@ -4,3 +4,5 @@
   href: getting-started.md
 - name: Installation
   href: installation/
+- name: Configuration
+  href: configuration/
