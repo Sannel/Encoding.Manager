@@ -84,7 +84,7 @@ else
 					Disabled="@(!CanCancelEncoding(context.Status))"
 					OnClick="@(() => CancelEncodingAsync(context.Id))" />
 				<MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Warning"
-					Size="Size.Small" Title="Reset failed/finished item to queued"
+					Size="Size.Small" Title="Reset failed/finished/canceled item to queued"
 					Disabled="@(!CanResetToQueued(context.Status))"
 					OnClick="@(() => RetryFailedItemAsync(context.Id))" />
 				<MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"

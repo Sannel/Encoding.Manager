@@ -91,7 +91,8 @@ public class EncodeQueueService : IEncodeQueueService
 
 		var isFailed = string.Equals(item.Status, "Failed", StringComparison.OrdinalIgnoreCase);
 		var isFinished = string.Equals(item.Status, "Finished", StringComparison.OrdinalIgnoreCase);
-		if (!isFailed && !isFinished)
+		var isCanceled = string.Equals(item.Status, "Canceled", StringComparison.OrdinalIgnoreCase);
+		if (!isFailed && !isFinished && !isCanceled)
 		{
 			return false;
 		}
@@ -101,6 +102,7 @@ public class EncodeQueueService : IEncodeQueueService
 		item.StartedAt = null;
 		item.CompletedAt = null;
 		item.ProgressPercent = null;
+		item.CurrentTrackProgressPercent = null;
 		item.IsArchived = false;
 
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
