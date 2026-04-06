@@ -30,7 +30,7 @@ public class FilesystemService : IFilesystemService
 		var results = _options.Roots.Select(root => new ConfiguredDirectoryResponse
 		{
 			Label = root.Label,
-			Exists = Directory.Exists(root.Path)
+			Exists = IsDirectoryAccessible(root.Path)
 		});
 
 		return Task.FromResult(results);
@@ -72,7 +72,7 @@ public class FilesystemService : IFilesystemService
 		}
 
 		// Check if the directory exists
-		if (!Directory.Exists(canonicalTargetPath))
+		if (!IsDirectoryAccessible(canonicalTargetPath))
 		{
 			throw new DirectoryNotFoundException($"Directory not found: '{(string.IsNullOrWhiteSpace(normalizedRelativePath) ? "/" : normalizedRelativePath)}'");
 		}
@@ -172,7 +172,7 @@ public class FilesystemService : IFilesystemService
 			throw new ArgumentException($"Path escapes root boundary: '{normalizedRelativePath}'", nameof(relativePath));
 		}
 
-		if (!Directory.Exists(canonicalTargetPath))
+		if (!IsDirectoryAccessible(canonicalTargetPath))
 		{
 			throw new DirectoryNotFoundException($"Directory not found: '{(string.IsNullOrWhiteSpace(normalizedRelativePath) ? "/" : normalizedRelativePath)}'");
 		}
@@ -224,9 +224,9 @@ public class FilesystemService : IFilesystemService
 			throw new ArgumentException($"Path escapes root boundary: '{normalizedRelativePath}'", nameof(relativePath));
 		}
 
-		if (!Directory.Exists(canonicalTargetPath))
+		if (!IsDirectoryAccessible(canonicalTargetPath))
 		{
-			throw new DirectoryNotFoundException($"Directory not found: '{(string.IsNullOrWhiteSpace(normalizedRelativePath) ? "/" : normalizedRelativePath)}'" );
+			throw new DirectoryNotFoundException($"Directory not found: '{(string.IsNullOrWhiteSpace(normalizedRelativePath) ? "/" : normalizedRelativePath)}'");
 		}
 
 		var extSet = new HashSet<string>(fileExtensions, StringComparer.OrdinalIgnoreCase);
@@ -305,6 +305,35 @@ public class FilesystemService : IFilesystemService
 		}
 
 		return canonicalPath;
+	}
+
+	/// <summary>
+	/// Returns <see langword="true"/> if the directory exists and is accessible.
+	/// Unlike <see cref="Directory.Exists"/>, this method also returns <see langword="true"/>
+	/// for UNC share roots (e.g. <c>\\server\share</c>) and mounted network drives on Windows
+	/// where <see cref="Directory.Exists"/> may return <see langword="false"/> even though the
+	/// path is fully accessible.
+	/// </summary>
+	private static bool IsDirectoryAccessible(string path)
+	{
+		if (Directory.Exists(path))
+		{
+			return true;
+		}
+
+		// Directory.Exists can return false for UNC share roots and mounted network
+		// drives on Windows even when the path is accessible. Probe the directory
+		// directly to cover those cases. An empty directory is still accessible.
+		try
+		{
+			using var enumerator = Directory.EnumerateFileSystemEntries(path).GetEnumerator();
+			enumerator.MoveNext(); // Opens the directory handle; throws if inaccessible.
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
 	}
 
 	/// <summary>

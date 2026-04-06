@@ -99,10 +99,10 @@ public class EncodingWorkerService : BackgroundService
 			var absDiscPath = ResolveDiscPath(job);
 			_logger.LogInformation("Resolved disc path: {Path}", absDiscPath);
 
-			if (!File.Exists(absDiscPath) && !Directory.Exists(absDiscPath))
+			if (!File.Exists(absDiscPath) && !IsDirectoryAccessible(absDiscPath))
 			{
 				var root = Path.GetPathRoot(absDiscPath) ?? string.Empty;
-				var rootExists = !string.IsNullOrWhiteSpace(root) && Directory.Exists(root);
+				var rootExists = !string.IsNullOrWhiteSpace(root) && IsDirectoryAccessible(root);
 				var serviceIdentity = $"{Environment.UserDomainName}\\{Environment.UserName}";
 				var isDriveLetterPath = absDiscPath.Length >= 2
 					&& char.IsLetter(absDiscPath[0])
@@ -565,5 +565,34 @@ public class EncodingWorkerService : BackgroundService
 		}
 
 		return command;
+	}
+
+	/// <summary>
+	/// Returns <see langword="true"/> if <paramref name="path"/> exists and is accessible.
+	/// Unlike <see cref="Directory.Exists"/>, this method also returns <see langword="true"/>
+	/// for UNC share roots (e.g. <c>\\server\share</c>) and mounted network drives on Windows
+	/// where <see cref="Directory.Exists"/> may return <see langword="false"/> even though the
+	/// path is fully accessible.
+	/// </summary>
+	private static bool IsDirectoryAccessible(string path)
+	{
+		if (Directory.Exists(path))
+		{
+			return true;
+		}
+
+		// Directory.Exists can return false for UNC share roots and mounted network
+		// drives on Windows even when the path is accessible. Probe the directory
+		// directly to cover those cases. An empty directory is still accessible.
+		try
+		{
+			using var enumerator = Directory.EnumerateFileSystemEntries(path).GetEnumerator();
+			enumerator.MoveNext(); // Opens the directory handle; throws if inaccessible.
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
 	}
 }
