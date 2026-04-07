@@ -25,6 +25,7 @@ public partial class QueuePage : ComponentBase, IDisposable
 	private IReadOnlyList<EncodeQueueItem> _items = [];
 	private bool _isLoading = true;
 	private bool _showCleared;
+	private MudDropContainer<EncodeQueueItem>? _dropContainer;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -93,7 +94,7 @@ public partial class QueuePage : ComponentBase, IDisposable
 		}
 
 		this._items = updated
-			.OrderBy(i => i.CreatedAt)
+			.OrderBy(i => i.SortOrder)
 			.ToList();
 	}
 
@@ -107,6 +108,77 @@ public partial class QueuePage : ComponentBase, IDisposable
 		this._items = this._items
 			.Where(item => item.Id != id)
 			.ToList();
+	}
+
+	private async Task MoveItemAsync(Guid id, MoveDirection direction)
+	{
+		await this.EncodeQueueService.MoveItemAsync(id, direction);
+	}
+
+	private async Task OnItemDroppedAsync(MudItemDropInfo<EncodeQueueItem> info)
+	{
+		if (info.Item is null)
+		{
+			return;
+		}
+
+		await this.EncodeQueueService.MoveToIndexAsync(info.Item.Id, info.IndexInZone);
+	}
+
+	private bool CanMoveUp(EncodeQueueItem item)
+	{
+		if (!string.Equals(item.Status, "Queued", StringComparison.OrdinalIgnoreCase))
+		{
+			return false;
+		}
+
+		var currentIndex = -1;
+		for (var i = 0; i < this._items.Count; i++)
+		{
+			if (this._items[i].Id == item.Id)
+			{
+				currentIndex = i;
+				break;
+			}
+		}
+
+		for (var i = currentIndex - 1; i >= 0; i--)
+		{
+			if (string.Equals(this._items[i].Status, "Queued", StringComparison.OrdinalIgnoreCase))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private bool CanMoveDown(EncodeQueueItem item)
+	{
+		if (!string.Equals(item.Status, "Queued", StringComparison.OrdinalIgnoreCase))
+		{
+			return false;
+		}
+
+		var currentIndex = -1;
+		for (var i = 0; i < this._items.Count; i++)
+		{
+			if (this._items[i].Id == item.Id)
+			{
+				currentIndex = i;
+				break;
+			}
+		}
+
+		for (var i = currentIndex + 1; i < this._items.Count; i++)
+		{
+			if (string.Equals(this._items[i].Status, "Queued", StringComparison.OrdinalIgnoreCase))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private async Task DeleteItemAsync(Guid id)
@@ -197,6 +269,9 @@ public partial class QueuePage : ComponentBase, IDisposable
 		"Failed" => Color.Error,
 		_ => Color.Default,
 	};
+
+	private static bool IsItemDragDisabled(EncodeQueueItem item) =>
+		!string.Equals(item.Status, "Queued", StringComparison.OrdinalIgnoreCase);
 
 	private static bool CanResetToQueued(string status) =>
 		string.Equals(status, "Failed", StringComparison.OrdinalIgnoreCase)

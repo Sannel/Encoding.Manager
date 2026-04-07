@@ -59,4 +59,9 @@ public class EncodeQueueItem
 	/// True when this item has been cleared from default queue view.
 	/// </summary>
 	public bool IsArchived { get; set; }
+
+	/// <summary>
+	/// User-defined sort position. Lower value = higher priority. Assigned on add; swapped on reorder.
+	/// </summary>
+	public int SortOrder { get; set; }
 }

@@ -106,7 +106,7 @@ public class RunnerJobService : IRunnerJobService
 		var now = DateTimeOffset.UtcNow;
 		var nextItem = await ctx.EncodeQueueItems
 			.Where(i => i.Status == "Queued")
-			.OrderBy(i => i.CreatedAt)
+			.OrderBy(i => i.SortOrder)
 			.FirstOrDefaultAsync(ct)
 			.ConfigureAwait(false);
 

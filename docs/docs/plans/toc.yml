@@ -6,3 +6,5 @@
   href: scanning.md
 - name: 004 - TVDB Naming Panel with Cascade
   href: thetvdbintegration.md
+- name: 005 - Queue Reordering
+  href: 005 - Queue Reordering.md

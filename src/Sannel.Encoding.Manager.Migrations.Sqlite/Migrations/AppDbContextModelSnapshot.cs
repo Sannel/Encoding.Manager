@@ -60,6 +60,9 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                     b.Property<string>("RunnerName")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("StartedAt")
                         .HasColumnType("TEXT");
 
