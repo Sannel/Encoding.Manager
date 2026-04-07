@@ -63,6 +63,7 @@ public partial class QueuePage : ComponentBase, IDisposable
 			}
 
 			this.StateHasChanged();
+			this._dropContainer?.Refresh();
 		});
 	}
 
@@ -72,6 +73,7 @@ public partial class QueuePage : ComponentBase, IDisposable
 		{
 			this.ApplyItemDeleted(id);
 			this.StateHasChanged();
+			this._dropContainer?.Refresh();
 		});
 	}
 
@@ -122,7 +124,26 @@ public partial class QueuePage : ComponentBase, IDisposable
 			return;
 		}
 
-		await this.EncodeQueueService.MoveToIndexAsync(info.Item.Id, info.IndexInZone);
+		// info.IndexInZone is relative to the Queued-only drop zone.
+		// Walk _items (ordered by SortOrder) to find the absolute index
+		// corresponding to the info.IndexInZone-th Queued item.
+		var queuedCount = 0;
+		var absoluteIndex = this._items.Count - 1;
+		for (var i = 0; i < this._items.Count; i++)
+		{
+			if (string.Equals(this._items[i].Status, "Queued", StringComparison.OrdinalIgnoreCase))
+			{
+				if (queuedCount == info.IndexInZone)
+				{
+					absoluteIndex = i;
+					break;
+				}
+
+				queuedCount++;
+			}
+		}
+
+		await this.EncodeQueueService.MoveToIndexAsync(info.Item.Id, absoluteIndex);
 	}
 
 	private bool CanMoveUp(EncodeQueueItem item)
@@ -269,9 +290,6 @@ public partial class QueuePage : ComponentBase, IDisposable
 		"Failed" => Color.Error,
 		_ => Color.Default,
 	};
-
-	private static bool IsItemDragDisabled(EncodeQueueItem item) =>
-		!string.Equals(item.Status, "Queued", StringComparison.OrdinalIgnoreCase);
 
 	private static bool CanResetToQueued(string status) =>
 		string.Equals(status, "Failed", StringComparison.OrdinalIgnoreCase)

@@ -30,9 +30,8 @@ else
 	<MudPaper Elevation="1" Class="mt-2">
 		<MudDropContainer @ref="_dropContainer" T="EncodeQueueItem"
 			Items="_items"
-			ItemsSelector="@((item, _) => true)"
+			ItemsSelector="@((item, _) => string.Equals(item.Status, "Queued", StringComparison.OrdinalIgnoreCase))"
 			ItemDropped="OnItemDroppedAsync"
-			ItemDisabled="IsItemDragDisabled"
 			Class="d-block">
 			<ChildContent>
 				<div class="d-flex align-center px-4 py-2" style="font-size: 0.75rem; font-weight: 600; border-bottom: 1px solid rgba(0,0,0,0.12);">
@@ -45,6 +44,79 @@ else
 					<div style="flex: 1.5 1 0">Queued</div>
 					<div style="flex: 2.5 1 0"></div>
 				</div>
+				@foreach (var item in _items.Where(i => !string.Equals(i.Status, "Queued", StringComparison.OrdinalIgnoreCase)))
+				{
+					<div class="d-flex align-center px-4 py-1" style="min-height: 44px; border-bottom: 1px solid rgba(0,0,0,0.06);">
+						<div style="flex: 2 1 0">
+							<MudText Typo="Typo.body2">@DiscLabel(item.DiscPath)</MudText>
+						</div>
+						<div style="flex: 1 1 0">
+							<MudText Typo="Typo.body2">@item.Mode</MudText>
+						</div>
+						<div style="flex: 1 1 0">
+							<MudText Typo="Typo.body2">@GetTrackCount(item.TracksJson)</MudText>
+						</div>
+						<div style="flex: 2 1 0">
+							@if (!string.IsNullOrEmpty(item.TvdbShowName))
+							{
+								<MudText Typo="Typo.body2">@item.TvdbShowName</MudText>
+							}
+							else
+							{
+								<MudText Typo="Typo.caption" Style="opacity:.6">—</MudText>
+							}
+						</div>
+						<div style="flex: 1 1 0">
+							<MudText Typo="Typo.body2">@item.AudioDefault</MudText>
+						</div>
+						<div style="flex: 3 1 0">
+							<MudChip T="string" Size="Size.Small" Color="@GetStatusColor(item.Status)" Variant="Variant.Outlined">
+								@item.Status
+							</MudChip>
+							@if (item.Status == "Encoding" && item.ProgressPercent.HasValue)
+							{
+								<MudStack Spacing="1" Class="mt-1" Style="min-width: 160px; max-width: 200px;">
+									<MudText Typo="Typo.caption">Overall: @FormatPercent(item.ProgressPercent)%</MudText>
+									<MudProgressLinear Value="@item.ProgressPercent.Value" Color="Color.Primary"
+										Size="Size.Small" />
+									@if (item.CurrentTrackProgressPercent.HasValue)
+									{
+										<MudText Typo="Typo.caption">Current track: @FormatPercent(item.CurrentTrackProgressPercent)%</MudText>
+										<MudProgressLinear Value="@item.CurrentTrackProgressPercent.Value" Color="Color.Secondary"
+											Size="Size.Small" />
+									}
+								</MudStack>
+							}
+						</div>
+						<div style="flex: 1.5 1 0">
+							<MudText Typo="Typo.caption">@item.CreatedAt.ToLocalTime().ToString("g")</MudText>
+						</div>
+						<div style="flex: 2.5 1 0">
+							<MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Default"
+								Size="Size.Small" Title="View details"
+								OnClick="@(() => OpenDetailDialogAsync(item))" />
+							<MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Color="Color.Default"
+								Size="Size.Small" Title="Move up in queue"
+								Disabled="@(!CanMoveUp(item))"
+								OnClick="@(() => MoveItemAsync(item.Id, MoveDirection.Up))" />
+							<MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Color="Color.Default"
+								Size="Size.Small" Title="Move down in queue"
+								Disabled="@(!CanMoveDown(item))"
+								OnClick="@(() => MoveItemAsync(item.Id, MoveDirection.Down))" />
+							<MudIconButton Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info"
+								Size="Size.Small" Title="Cancel active encode"
+								Disabled="@(!CanCancelEncoding(item.Status))"
+								OnClick="@(() => CancelEncodingAsync(item.Id))" />
+							<MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Warning"
+								Size="Size.Small" Title="Reset failed/finished/canceled item to queued"
+								Disabled="@(!CanResetToQueued(item.Status))"
+								OnClick="@(() => RetryFailedItemAsync(item.Id))" />
+							<MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+								Size="Size.Small" Title="Remove from queue"
+								OnClick="@(() => DeleteItemAsync(item.Id))" />
+						</div>
+					</div>
+				}
 				<MudDropZone T="EncodeQueueItem" AllowReorder="true" Class="d-block" />
 			</ChildContent>
 			<ItemRenderer>
