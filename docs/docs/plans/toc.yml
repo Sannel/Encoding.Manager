@@ -1,0 +1,8 @@
+- name: 001 - Build and Release Plan
+  href: buildAndRelease.md
+- name: 002 - HandBrake Integration Plan
+  href: handbreakintegration.md
+- name: 003 - Scanning Feature Plan
+  href: scanning.md
+- name: 004 - TVDB Naming Panel with Cascade
+  href: thetvdbintegration.md
