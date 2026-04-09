@@ -13,5 +13,10 @@ public enum ScanMode
 	/// <summary>
 	/// Show chapters for a selected title.
 	/// </summary>
-	Chapters = 1
+	Chapters = 1,
+
+	/// <summary>
+	/// Show all titles on the disc and look up movie metadata from OMDb.
+	/// </summary>
+	Movie = 2
 }

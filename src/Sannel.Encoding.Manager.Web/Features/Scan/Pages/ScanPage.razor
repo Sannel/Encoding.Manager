@@ -98,6 +98,7 @@ else
 					Label="Mode" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
 					<MudSelectItem Value="ScanMode.Titles">Titles</MudSelectItem>
 					<MudSelectItem Value="ScanMode.Chapters">Chapters</MudSelectItem>
+					<MudSelectItem Value="ScanMode.Movie">Movie</MudSelectItem>
 				</MudSelect>
 			</MudCard>
 			<MudTooltip Text="Bypass the 24-hour cache and re-scan the disc now">
@@ -110,6 +111,10 @@ else
 		@if (_selectedMode == ScanMode.Titles)
 		{
 			<TitlesModeView ScanResult="_scanResult" DiscRootLabel="@Root" DiscRelativePath="@Path" />
+		}
+		else if (_selectedMode == ScanMode.Movie)
+		{
+			<MovieTitlesModeView ScanResult="_scanResult" DiscRootLabel="@Root" DiscRelativePath="@Path" />
 		}
 		else
 		{
