@@ -49,7 +49,7 @@ public class TvdbService : ITvdbService
 			.FirstOrDefaultAsync(ct)
 			.ConfigureAwait(false);
 
-		if (latestEntry is not null && latestEntry.CachedAt > DateTimeOffset.UtcNow.Add(-CacheDuration))
+		if (latestEntry is not null && latestEntry.CachedAt > DateTimeOffset.Now.Add(-CacheDuration))
 		{
 			return await ctx.TvdbEpisodeCache
 				.Where(e => e.SeriesId == seriesId && e.OrderType == orderTypeStr)
@@ -127,7 +127,7 @@ public class TvdbService : ITvdbService
 			.ToList();
 
 		// Persist to DB cache: replace old rows for this series+orderType
-		var now = DateTimeOffset.UtcNow;
+		var now = DateTimeOffset.Now;
 		await ctx.TvdbEpisodeCache
 			.Where(e => e.SeriesId == seriesId && e.OrderType == orderTypeStr)
 			.ExecuteDeleteAsync(ct)
@@ -166,8 +166,13 @@ public class TvdbService : ITvdbService
 			.FirstOrDefaultAsync(e => e.SeriesId == seriesId, ct)
 			.ConfigureAwait(false);
 
-		if (cached is not null && cached.CachedAt > DateTimeOffset.UtcNow.Add(-CacheDuration))
+		if (cached is not null && cached.CachedAt > DateTimeOffset.Now.Add(-CacheDuration))
 		{
+			// Stamp access time without reloading the full row
+			await ctx.TvdbSeriesCache
+				.Where(e => e.SeriesId == seriesId)
+				.ExecuteUpdateAsync(s => s.SetProperty(e => e.LastAccessedAt, DateTimeOffset.Now), ct)
+				.ConfigureAwait(false);
 			return cached.Name;
 		}
 
@@ -215,7 +220,8 @@ public class TvdbService : ITvdbService
 			SeriesId = seriesId,
 			Name = seriesName,
 			OriginalLanguage = originalLanguage,
-			CachedAt = DateTimeOffset.UtcNow,
+			CachedAt = DateTimeOffset.Now,
+			LastAccessedAt = DateTimeOffset.Now,
 		});
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
 
@@ -226,10 +232,19 @@ public class TvdbService : ITvdbService
 	public async Task<IReadOnlyList<TvdbCachedSeries>> GetCachedSeriesAsync(CancellationToken ct = default)
 	{
 		await using var ctx = await this._dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
+
+		var cutoff = DateTimeOffset.Now.AddDays(-2);
+
+		// Purge entries that have not been accessed in the last 2 days
+		await ctx.TvdbSeriesCache
+			.Where(s => (s.LastAccessedAt != null ? s.LastAccessedAt : s.CachedAt) < cutoff)
+			.ExecuteDeleteAsync(ct)
+			.ConfigureAwait(false);
+
 		return await ctx.TvdbSeriesCache
 			.AsNoTracking()
 			.Where(s => s.Name != null)
-			.OrderBy(s => s.Name)
+			.OrderByDescending(s => s.LastAccessedAt != null ? s.LastAccessedAt : s.CachedAt)
 			.Select(s => new TvdbCachedSeries { SeriesId = s.SeriesId, Name = s.Name! })
 			.ToListAsync(ct)
 			.ConfigureAwait(false);

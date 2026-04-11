@@ -241,6 +241,9 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                         .IsRequired()
                         .HasColumnType("character varying(48)");
 
+                    b.Property<string>("LastAccessedAt")
+                        .HasColumnType("character varying(48)");
+
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
