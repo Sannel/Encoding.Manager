@@ -70,9 +70,16 @@ public abstract class NamingComponentBase : ComponentBase
 	/// <summary>The preset label selected on the scan page (applied to all tracks when queuing).</summary>
 	protected string? _selectedPresetLabel;
 
+	/// <summary>Previously looked-up TVDB series from the local cache, for quick re-selection.</summary>
+	protected IReadOnlyList<TvdbCachedSeries> _cachedSeries = [];
+
+	/// <summary>The series currently selected in the cached-show dropdown.</summary>
+	protected TvdbCachedSeries? _selectedCachedShow;
+
 	protected override async Task OnInitializedAsync()
 	{
 		this._presets = await this.PresetService.GetPresetsAsync();
+		this._cachedSeries = await this.TvdbService.GetCachedSeriesAsync();
 	}
 
 	protected bool CanCascade =>
@@ -137,6 +144,18 @@ public abstract class NamingComponentBase : ComponentBase
 			.Where(e => e.SeasonNumber == season)
 			.OrderBy(e => e.EpisodeNumber)
 			.ToList();
+	}
+
+	protected async Task OnCachedShowSelected(TvdbCachedSeries? series)
+	{
+		this._selectedCachedShow = series;
+		if (series is null)
+		{
+			return;
+		}
+
+		this._showId = series.SeriesId.ToString();
+		await this.OnLoadFromTvdbClicked();
 	}
 
 	protected async Task OnLoadFromTvdbClicked()

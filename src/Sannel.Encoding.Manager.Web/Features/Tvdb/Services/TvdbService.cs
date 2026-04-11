@@ -222,6 +222,19 @@ public class TvdbService : ITvdbService
 		return seriesName;
 	}
 
+	/// <inheritdoc />
+	public async Task<IReadOnlyList<TvdbCachedSeries>> GetCachedSeriesAsync(CancellationToken ct = default)
+	{
+		await using var ctx = await this._dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
+		return await ctx.TvdbSeriesCache
+			.AsNoTracking()
+			.Where(s => s.Name != null)
+			.OrderBy(s => s.Name)
+			.Select(s => new TvdbCachedSeries { SeriesId = s.SeriesId, Name = s.Name! })
+			.ToListAsync(ct)
+			.ConfigureAwait(false);
+	}
+
 	/// <summary>
 	/// Fetches the translated series name from TVDB for the given language.
 	/// Returns null if the translation is not available.

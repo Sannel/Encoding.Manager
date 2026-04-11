@@ -3,6 +3,18 @@
 @inherits NamingComponentBase
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap" Spacing="2">
+	@if (_cachedSeries.Count > 0)
+	{
+		<MudSelect T="TvdbCachedSeries?" Value="@_selectedCachedShow" ValueChanged="OnCachedShowSelected"
+			Label="Saved Shows" Variant="Variant.Outlined" Margin="Margin.Dense"
+			Placeholder="— Select show —" AnchorOrigin="Origin.BottomCenter" Style="min-width: 220px;"
+			ToStringFunc="@(s => s?.Name ?? string.Empty)">
+			@foreach (var show in _cachedSeries)
+			{
+				<MudSelectItem T="TvdbCachedSeries?" Value="@((TvdbCachedSeries?)show)">@show.Name</MudSelectItem>
+			}
+		</MudSelect>
+	}
 	<MudTextField @bind-Value="_showId" Label="Show ID" Variant="Variant.Outlined"
 		Placeholder="e.g. 73739" Style="max-width: 220px;" />
 	@if (!string.IsNullOrEmpty(_seriesName))
