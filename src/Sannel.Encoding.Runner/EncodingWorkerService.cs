@@ -517,7 +517,7 @@ public class EncodingWorkerService : BackgroundService
 
 	private static string BuildEpisodeName(EncodeTrackConfig track)
 	{
-		var hasSeason = track.SeasonNumber.HasValue && track.SeasonNumber.Value > 0;
+		var hasSeason = track.SeasonNumber.HasValue;
 		var hasEpisode = track.EpisodeNumber.HasValue && track.EpisodeNumber.Value > 0;
 		var hasName = !string.IsNullOrWhiteSpace(track.OutputName);
 
