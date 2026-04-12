@@ -8,7 +8,7 @@ using Sannel.Encoding.Manager.Web.Features.Queue.Services;
 
 namespace Sannel.Encoding.Manager.Web.Features.Queue.Pages;
 
-public partial class QueuePage : ComponentBase
+public partial class QueuePage : ComponentBase, IDisposable
 {
 	[Inject]
 	private IEncodeQueueService EncodeQueueService { get; set; } = default!;
@@ -19,23 +19,237 @@ public partial class QueuePage : ComponentBase
 	[Inject]
 	private IDialogService DialogService { get; set; } = default!;
 
+	[Inject]
+	private QueueChangeNotifier Notifier { get; set; } = default!;
+
 	private IReadOnlyList<EncodeQueueItem> _items = [];
 	private bool _isLoading = true;
+	private bool _showCleared;
+	private MudDropContainer<EncodeQueueItem>? _dropContainer;
 
-	protected override async Task OnInitializedAsync() => await this.LoadAsync();
-
-	private async Task LoadAsync()
+	protected override async Task OnInitializedAsync()
 	{
-		this._isLoading = true;
-		this._items = await this.EncodeQueueService.GetItemsAsync();
-		this._isLoading = false;
+		await this.LoadAsync(showLoadingIndicator: true);
+		this.Notifier.ItemUpserted += this.OnItemUpserted;
+		this.Notifier.ItemDeleted += this.OnItemDeleted;
+	}
+
+	private async Task LoadAsync(bool showLoadingIndicator = false)
+	{
+		if (showLoadingIndicator)
+		{
+			this._isLoading = true;
+		}
+
+		this._items = await this.EncodeQueueService.GetItemsAsync(this._showCleared);
+
+		if (showLoadingIndicator)
+		{
+			this._isLoading = false;
+		}
+	}
+
+	private async void OnItemUpserted(EncodeQueueItem item)
+	{
+		await this.InvokeAsync(() =>
+		{
+			if (!this._showCleared && item.IsArchived)
+			{
+				this.ApplyItemDeleted(item.Id);
+			}
+			else
+			{
+				this.ApplyItemUpsert(item);
+			}
+
+			this.StateHasChanged();
+			this._dropContainer?.Refresh();
+		});
+	}
+
+	private async void OnItemDeleted(Guid id)
+	{
+		await this.InvokeAsync(() =>
+		{
+			this.ApplyItemDeleted(id);
+			this.StateHasChanged();
+			this._dropContainer?.Refresh();
+		});
+	}
+
+	private void ApplyItemUpsert(EncodeQueueItem item)
+	{
+		if (item.Id == Guid.Empty)
+		{
+			return;
+		}
+
+		var updated = this._items.ToList();
+		var existingIndex = updated.FindIndex(existing => existing.Id == item.Id);
+		if (existingIndex >= 0)
+		{
+			updated[existingIndex] = item;
+		}
+		else
+		{
+			updated.Add(item);
+		}
+
+		this._items = updated
+			.OrderBy(i => i.SortOrder)
+			.ToList();
+	}
+
+	private void ApplyItemDeleted(Guid id)
+	{
+		if (id == Guid.Empty)
+		{
+			return;
+		}
+
+		this._items = this._items
+			.Where(item => item.Id != id)
+			.ToList();
+	}
+
+	private async Task MoveItemAsync(Guid id, MoveDirection direction)
+	{
+		await this.EncodeQueueService.MoveItemAsync(id, direction);
+	}
+
+	private async Task OnItemDroppedAsync(MudItemDropInfo<EncodeQueueItem> info)
+	{
+		if (info.Item is null)
+		{
+			return;
+		}
+
+		// info.IndexInZone is relative to the Queued-only drop zone.
+		// Walk _items (ordered by SortOrder) to find the absolute index
+		// corresponding to the info.IndexInZone-th Queued item.
+		var queuedCount = 0;
+		var absoluteIndex = this._items.Count - 1;
+		for (var i = 0; i < this._items.Count; i++)
+		{
+			if (string.Equals(this._items[i].Status, "Queued", StringComparison.OrdinalIgnoreCase))
+			{
+				if (queuedCount == info.IndexInZone)
+				{
+					absoluteIndex = i;
+					break;
+				}
+
+				queuedCount++;
+			}
+		}
+
+		await this.EncodeQueueService.MoveToIndexAsync(info.Item.Id, absoluteIndex);
+	}
+
+	private bool CanMoveUp(EncodeQueueItem item)
+	{
+		if (!string.Equals(item.Status, "Queued", StringComparison.OrdinalIgnoreCase))
+		{
+			return false;
+		}
+
+		var currentIndex = -1;
+		for (var i = 0; i < this._items.Count; i++)
+		{
+			if (this._items[i].Id == item.Id)
+			{
+				currentIndex = i;
+				break;
+			}
+		}
+
+		for (var i = currentIndex - 1; i >= 0; i--)
+		{
+			if (string.Equals(this._items[i].Status, "Queued", StringComparison.OrdinalIgnoreCase))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private bool CanMoveDown(EncodeQueueItem item)
+	{
+		if (!string.Equals(item.Status, "Queued", StringComparison.OrdinalIgnoreCase))
+		{
+			return false;
+		}
+
+		var currentIndex = -1;
+		for (var i = 0; i < this._items.Count; i++)
+		{
+			if (this._items[i].Id == item.Id)
+			{
+				currentIndex = i;
+				break;
+			}
+		}
+
+		for (var i = currentIndex + 1; i < this._items.Count; i++)
+		{
+			if (string.Equals(this._items[i].Status, "Queued", StringComparison.OrdinalIgnoreCase))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private async Task DeleteItemAsync(Guid id)
 	{
 		await this.EncodeQueueService.DeleteItemAsync(id);
 		this.Snackbar.Add("Item removed from queue.", Severity.Success);
-		await this.LoadAsync();
+	}
+
+	private async Task RetryFailedItemAsync(Guid id)
+	{
+		var reset = await this.EncodeQueueService.ResetToQueuedAsync(id);
+		if (reset)
+		{
+			this.Snackbar.Add("Item reset to queued.", Severity.Success);
+		}
+		else
+		{
+			this.Snackbar.Add("Only failed, finished, or canceled items can be reset to queued.", Severity.Warning);
+		}
+	}
+
+	private async Task CancelEncodingAsync(Guid id)
+	{
+		var canceled = await this.EncodeQueueService.CancelEncodingAsync(id);
+		if (canceled)
+		{
+			this.Snackbar.Add("Cancellation requested for the active encode.", Severity.Info);
+		}
+		else
+		{
+			this.Snackbar.Add("Only actively encoding items can be canceled.", Severity.Warning);
+		}
+	}
+
+	private async Task ClearFinishedAsync()
+	{
+		var count = await this.EncodeQueueService.ClearFinishedAsync();
+		if (count == 0)
+		{
+			this.Snackbar.Add("No finished items to clear.", Severity.Info);
+			return;
+		}
+
+		this.Snackbar.Add($"Cleared {count} finished item(s) from the default view.", Severity.Success);
+	}
+
+	private async Task OnShowClearedChanged(bool value)
+	{
+		this._showCleared = value;
+		await this.LoadAsync(showLoadingIndicator: true);
 	}
 
 	private async Task OpenDetailDialogAsync(EncodeQueueItem item)
@@ -49,7 +263,7 @@ public partial class QueuePage : ComponentBase
 		var result = await dialog.Result;
 		if (result is { Canceled: false })
 		{
-			await this.LoadAsync();
+			this.StateHasChanged();
 		}
 	}
 
@@ -65,15 +279,33 @@ public partial class QueuePage : ComponentBase
 		}
 	}
 
+	private static int FormatPercent(int? value) => Math.Clamp(value ?? 0, 0, 100);
+
 	private static Color GetStatusColor(string status) => status switch
 	{
 		"Encoding" => Color.Warning,
+		"CancelRequested" => Color.Secondary,
+		"Canceled" => Color.Secondary,
 		"Finished" => Color.Success,
 		"Failed" => Color.Error,
 		_ => Color.Default,
 	};
 
+	private static bool CanResetToQueued(string status) =>
+		string.Equals(status, "Failed", StringComparison.OrdinalIgnoreCase)
+		|| string.Equals(status, "Finished", StringComparison.OrdinalIgnoreCase)
+		|| string.Equals(status, "Canceled", StringComparison.OrdinalIgnoreCase);
+
+	private static bool CanCancelEncoding(string status) =>
+		string.Equals(status, "Encoding", StringComparison.OrdinalIgnoreCase);
+
 	private static string DiscLabel(string discPath) =>
 		Path.GetFileName(discPath.TrimEnd(Path.DirectorySeparatorChar, '/'))
 		?? discPath;
+
+	public void Dispose()
+	{
+		this.Notifier.ItemUpserted -= this.OnItemUpserted;
+		this.Notifier.ItemDeleted -= this.OnItemDeleted;
+	}
 }

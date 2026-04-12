@@ -3,9 +3,25 @@
 @using Sannel.Encoding.Manager.Web.Features.Scan.Dto
 @using Sannel.Encoding.Manager.Web.Features.Scan.Components
 
-<PageTitle>Scan Disc</PageTitle>
+<PageTitle>@PageTitleText</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Scan Disc</MudText>
+<MudText Typo="Typo.h3" GutterBottom="true">@PageHeading</MudText>
+
+@if (!_isScanning && (IsFolderSelection || IsFileSelection) && _folderFiles.Count > 0)
+{
+	<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-3">
+		<MudSelect T="string" Value="_selectedFormat" ValueChanged="@(v => { _selectedFormat = v; StateHasChanged(); })"
+			Label="Format" Variant="Variant.Outlined" Style="min-width: 120px;">
+			<MudSelectItem Value="@("TV")">TV Show</MudSelectItem>
+			<MudSelectItem Value="@("Movie")">Movie</MudSelectItem>
+		</MudSelect>
+		<MudButton Variant="Variant.Outlined" Color="Color.Warning"
+			StartIcon="@Icons.Material.Filled.ClearAll"
+			OnClick="ClearAllTrackNames">
+			Clear All Names
+		</MudButton>
+	</MudStack>
+}
 
 @if (!string.IsNullOrEmpty(_errorMessage))
 {
@@ -31,14 +47,48 @@ else
 				<strong>Disc Type:</strong> @DiscType
 			</MudText>
 		}
+		@if (IsFolderSelection)
+		{
+			<MudText Typo="Typo.body1">
+				<strong>Selection:</strong> Folder
+			</MudText>
+		}
+		@if (IsFileSelection)
+		{
+			<MudText Typo="Typo.body1">
+				<strong>Selection:</strong> Single File
+			</MudText>
+		}
 	</MudCard>
 
 	@if (_isScanning)
 	{
 		<MudStack AlignItems="AlignItems.Center" Class="mt-8">
 			<MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-			<MudText Typo="Typo.body1" Class="mt-2">Scanning disc…</MudText>
+			<MudText Typo="Typo.body1" Class="mt-2">@LoadingMessage</MudText>
 		</MudStack>
+	}
+	else if (IsFolderSelection || IsFileSelection)
+	{
+		@if (!IsFileSelection)
+		{
+			<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2">
+				<MudTooltip Text="Re-scan the selected folder for .mkv and .mp4 files">
+					<MudButton Variant="Variant.Outlined" Color="Color.Warning"
+						StartIcon="@Icons.Material.Filled.Refresh"
+						OnClick="ForceRescan">@RefreshButtonText</MudButton>
+				</MudTooltip>
+			</MudStack>
+		}
+
+		@if (IsTvFormat)
+		{
+			<FolderFilesModeView @ref="_folderFilesModeView" Files="_folderFiles" DiscRootLabel="@Root" DiscRelativePath="@FolderFilesDiscRelativePath" />
+		}
+		else if (IsMovieFormat)
+		{
+			<MovieFilesModeView @ref="_movieFilesModeView" Files="_folderFiles" DiscRootLabel="@Root" DiscRelativePath="@FolderFilesDiscRelativePath" />
+		}
 	}
 	else if (_scanResult is { IsSuccess: true })
 	{
@@ -48,22 +98,27 @@ else
 					Label="Mode" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
 					<MudSelectItem Value="ScanMode.Titles">Titles</MudSelectItem>
 					<MudSelectItem Value="ScanMode.Chapters">Chapters</MudSelectItem>
+					<MudSelectItem Value="ScanMode.Movie">Movie</MudSelectItem>
 				</MudSelect>
 			</MudCard>
 			<MudTooltip Text="Bypass the 24-hour cache and re-scan the disc now">
 				<MudButton Variant="Variant.Outlined" Color="Color.Warning"
 					StartIcon="@Icons.Material.Filled.Refresh"
-					OnClick="ForceRescan">Rescan Disc</MudButton>
+					OnClick="ForceRescan">@RefreshButtonText</MudButton>
 			</MudTooltip>
 		</MudStack>
 
 		@if (_selectedMode == ScanMode.Titles)
 		{
-			<TitlesModeView ScanResult="_scanResult" />
+			<TitlesModeView ScanResult="_scanResult" DiscRootLabel="@Root" DiscRelativePath="@Path" />
+		}
+		else if (_selectedMode == ScanMode.Movie)
+		{
+			<MovieTitlesModeView ScanResult="_scanResult" DiscRootLabel="@Root" DiscRelativePath="@Path" />
 		}
 		else
 		{
-			<ChaptersModeView ScanResult="_scanResult" />
+			<ChaptersModeView ScanResult="_scanResult" DiscRootLabel="@Root" DiscRelativePath="@Path" />
 		}
 	}
 	else if (_scanResult is { IsSuccess: false })

@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Dto;
+using Sannel.Encoding.Manager.Web.Features.Filesystem.Options;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Services;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
+using Sannel.Encoding.Manager.Web.Features.Queue.Services;
+using Microsoft.Extensions.Options;
 
 namespace Sannel.Encoding.Manager.Web.Features.Settings.Components;
 
@@ -13,6 +16,9 @@ public partial class AddPresetDialog : ComponentBase
 
 	[Inject]
 	private IFilesystemService FilesystemService { get; set; } = default!;
+
+	[Inject]
+	private IOptions<FilesystemOptions> FilesystemOptions { get; set; } = default!;
 
 	private static readonly string[] JsonExtensions = [".json"];
 
@@ -123,11 +129,23 @@ public partial class AddPresetDialog : ComponentBase
 	private void ConfirmAsync()
 	{
 		var relativeParts = new List<string>(this._pathParts) { this._selectedFileName! };
+		var relativePath = string.Join("/", relativeParts);
+		
+		// Extract preset name from the JSON file
+		string? presetName = null;
+		var root = this.FilesystemOptions.Value.Roots.FirstOrDefault(r => r.Label == this._selectedRoot);
+		if (root is not null)
+		{
+			var fullPath = Path.Combine(root.Path, relativePath.Replace('/', Path.DirectorySeparatorChar));
+			presetName = PresetService.ExtractPresetNameFromFile(fullPath);
+		}
+
 		var preset = new EncodingPreset
 		{
 			Label = this._label.Trim(),
+			PresetName = presetName ?? string.Empty,
 			RootLabel = this._selectedRoot!,
-			RelativePath = string.Join("/", relativeParts),
+			RelativePath = relativePath,
 		};
 		this.MudDialog.Close(DialogResult.Ok(preset));
 	}

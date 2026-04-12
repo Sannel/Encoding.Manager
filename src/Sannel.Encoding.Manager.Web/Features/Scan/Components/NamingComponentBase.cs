@@ -1,9 +1,11 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using Sannel.Encoding.Manager.Web.Features.Omdb.Services;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
 using Sannel.Encoding.Manager.Web.Features.Queue.Services;
+using Sannel.Encoding.Manager.Web.Features.Scan.Utilities;
 using Sannel.Encoding.Manager.Web.Features.Settings.Services;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Dto;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Services;
@@ -18,6 +20,9 @@ public abstract class NamingComponentBase : ComponentBase
 {
 	[Inject]
 	private ITvdbService TvdbService { get; set; } = default!;
+
+	[Inject]
+	private IOmdbService OmdbService { get; set; } = default!;
 
 	[Inject]
 	private ISnackbar Snackbar { get; set; } = default!;
@@ -36,6 +41,7 @@ public abstract class NamingComponentBase : ComponentBase
 		public string Name { get; set; } = string.Empty;
 		public int? Season { get; set; }
 		public TvdbEpisode? Episode { get; set; }
+		public string? Resolution { get; set; }
 	}
 
 	protected string _showId = string.Empty;
@@ -47,15 +53,33 @@ public abstract class NamingComponentBase : ComponentBase
 	protected IReadOnlyList<int> _seasons = [];
 	protected readonly Dictionary<int, NamingRowData> _namingRows = [];
 
+	/// <summary>Movie search/lookup fields (used in Movie mode).</summary>
+	protected string _movieTitle = string.Empty;
+	protected bool _isOmdbLoading;
+	protected string? _omdbErrorMessage;
+	protected string? _movieName;
+	protected string? _movieYear;
+	protected string? _movieGenres;
+
 	/// <summary>Available HandBrake presets loaded from the database.</summary>
 	protected IReadOnlyList<EncodingPreset> _presets = [];
+
+	/// <summary>Available video resolutions for dropdown selection.</summary>
+	protected IReadOnlyList<string> _availableResolutions = ResolutionDetector.GetAvailableResolutions();
 
 	/// <summary>The preset label selected on the scan page (applied to all tracks when queuing).</summary>
 	protected string? _selectedPresetLabel;
 
+	/// <summary>Previously looked-up TVDB series from the local cache, for quick re-selection.</summary>
+	protected IReadOnlyList<TvdbCachedSeries> _cachedSeries = [];
+
+	/// <summary>The series currently selected in the cached-show dropdown.</summary>
+	protected TvdbCachedSeries? _selectedCachedShow;
+
 	protected override async Task OnInitializedAsync()
 	{
 		this._presets = await this.PresetService.GetPresetsAsync();
+		this._cachedSeries = await this.TvdbService.GetCachedSeriesAsync();
 	}
 
 	protected bool CanCascade =>
@@ -76,7 +100,7 @@ public abstract class NamingComponentBase : ComponentBase
 	/// Filters tracks with an empty OutputName, builds one disk-level queue item,
 	/// stamps AudioDefault from settings, persists, and shows a snackbar summary.
 	/// </summary>
-	protected async Task AddDiskToQueueAsync(string discPath, string mode, IReadOnlyList<EncodeTrackConfig> tracks)
+	protected async Task AddDiskToQueueAsync(string discPath, string? discRootLabel, string mode, IReadOnlyList<EncodeTrackConfig> tracks)
 	{
 		var toAdd = tracks.Where(t => !string.IsNullOrWhiteSpace(t.OutputName)).ToList();
 		if (toAdd.Count == 0)
@@ -92,17 +116,21 @@ public abstract class NamingComponentBase : ComponentBase
 		}
 
 		var settings = await this.SettingsService.GetSettingsAsync();
+		var tvdbId = int.TryParse(this._showId.Trim(), out var parsedId) ? parsedId : (int?)null;
 		var item = new EncodeQueueItem
 		{
 			DiscPath = discPath,
+			DiscRootLabel = discRootLabel,
 			Mode = mode,
 			TvdbShowName = this._seriesName,
+			TvdbId = tvdbId,
 			TracksJson = JsonSerializer.Serialize(toAdd),
 			AudioDefault = settings.AudioDefault,
 		};
 
 		await this.EncodeQueueService.AddItemAsync(item);
-		this.Snackbar.Add($"Disc added to queue with {toAdd.Count} track(s).", Severity.Success);
+		var subject = string.Equals(mode, "Files", StringComparison.OrdinalIgnoreCase) ? "Folder" : "Disc";
+		this.Snackbar.Add($"{subject} added to queue with {toAdd.Count} track(s).", Severity.Success);
 	}
 
 	protected IReadOnlyList<TvdbEpisode> EpisodesForSeason(int? season)
@@ -116,6 +144,18 @@ public abstract class NamingComponentBase : ComponentBase
 			.Where(e => e.SeasonNumber == season)
 			.OrderBy(e => e.EpisodeNumber)
 			.ToList();
+	}
+
+	protected async Task OnCachedShowSelected(TvdbCachedSeries? series)
+	{
+		this._selectedCachedShow = series;
+		if (series is null)
+		{
+			return;
+		}
+
+		this._showId = series.SeriesId.ToString();
+		await this.OnLoadFromTvdbClicked();
 	}
 
 	protected async Task OnLoadFromTvdbClicked()
@@ -166,6 +206,10 @@ public abstract class NamingComponentBase : ComponentBase
 	{
 		var row = this.GetNamingRow(key);
 		row.Episode = ep;
+		if (ep is not null)
+		{
+			row.Name = ep.Name;
+		}
 	}
 
 	protected virtual string GetFallbackAutoName(int key) => string.Empty;
@@ -202,7 +246,14 @@ public abstract class NamingComponentBase : ComponentBase
 			row.Name = string.Empty;
 			row.Season = null;
 			row.Episode = null;
+			row.Resolution = null;
 		}
+	}
+
+	protected void OnResolutionChanged(int key, string? resolution)
+	{
+		var row = this.GetNamingRow(key);
+		row.Resolution = resolution;
 	}
 
 	protected void OnEpisodeOrderTypeChanged(TvdbEpisodeOrderType type)
@@ -212,6 +263,88 @@ public abstract class NamingComponentBase : ComponentBase
 		this._allEpisodes = [];
 		this._seasons = [];
 		this._tvdbErrorMessage = null;
+	}
+
+	protected async Task OnLoadFromOmdbClicked()
+	{
+		if (string.IsNullOrWhiteSpace(this._movieTitle))
+		{
+			this._omdbErrorMessage = "Enter a movie title to search.";
+			return;
+		}
+
+		this._isOmdbLoading = true;
+		this._omdbErrorMessage = null;
+
+		try
+		{
+			var movie = await this.OmdbService.SearchMovieAsync(this._movieTitle);
+			if (movie is null)
+			{
+				this._omdbErrorMessage = "No movie found with that title.";
+				this._movieName = null;
+				this._movieYear = null;
+				this._movieGenres = null;
+				return;
+			}
+
+			this._movieName = movie.Title;
+			this._movieYear = movie.Year;
+			this._movieGenres = movie.Genres;
+
+			this.Snackbar.Add($"Loaded '{movie.Title}' ({movie.Year}) from OMDb.", Severity.Success);
+		}
+		catch (Exception ex)
+		{
+			this._omdbErrorMessage = $"Failed to load from OMDb: {ex.Message}";
+			this._movieName = null;
+			this._movieYear = null;
+			this._movieGenres = null;
+		}
+		finally
+		{
+			this._isOmdbLoading = false;
+		}
+	}
+
+	protected void ApplyMovieName(int key)
+	{
+		var row = this.GetNamingRow(key);
+		if (!string.IsNullOrEmpty(this._movieName))
+		{
+			row.Name = this._movieName;
+		}
+		else
+		{
+			var fallback = this.GetFallbackAutoName(key);
+			if (!string.IsNullOrEmpty(fallback))
+			{
+				row.Name = fallback;
+			}
+		}
+	}
+
+	protected void ApplyAllMovieNames()
+	{
+		foreach (var key in this._namingRows.Keys)
+		{
+			this.ApplyMovieName(key);
+		}
+	}
+
+	protected void ApplyDetectedResolution(int key, int width, int height)
+	{
+		var resolution = ResolutionDetector.DetectResolution(width, height);
+		this.OnResolutionChanged(key, resolution);
+	}
+
+	protected void ApplyAllDetectedResolutions(int width, int height)
+	{
+		var resolution = ResolutionDetector.DetectResolution(width, height);
+		foreach (var key in this._namingRows.Keys)
+		{
+			this.OnResolutionChanged(key, resolution);
+		}
 	}
 
 	protected void CascadeRows(IReadOnlyList<int> orderedKeys)

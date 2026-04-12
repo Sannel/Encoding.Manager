@@ -11,6 +11,11 @@ public class FileEntryResponse
 	public required string Name { get; set; }
 
 	/// <summary>
+	/// Gets or sets the path of the file relative to the selected folder.
+	/// </summary>
+	public required string RelativePath { get; set; }
+
+	/// <summary>
 	/// Gets or sets the file size in bytes.
 	/// </summary>
 	public required long SizeBytes { get; set; }

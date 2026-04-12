@@ -28,10 +28,42 @@ public partial class RunnersPage : ComponentBase
 		this._runners = await this.RunnerService.GetRunnersAsync();
 	}
 
+	private async Task ResetRunnerAsync(Guid id)
+	{
+		var reset = await this.RunnerService.ResetRunnerAsync(id);
+		this._runners = await this.RunnerService.GetRunnersAsync();
+
+		if (reset)
+		{
+			this.Snackbar.Add("Runner reset: disabled and active encode cancellation requested.", Severity.Info);
+		}
+		else
+		{
+			this.Snackbar.Add("Runner not found.", Severity.Warning);
+		}
+	}
+
 	private async Task DeleteRunnerAsync(Guid id)
 	{
 		await this.RunnerService.DeleteRunnerAsync(id);
 		this._runners = await this.RunnerService.GetRunnersAsync();
 		this.Snackbar.Add("Runner deleted.", Severity.Success);
 	}
+
+	private static string DiscLabel(string discPath) =>
+		Path.GetFileName(discPath.TrimEnd(Path.DirectorySeparatorChar, '/'))
+		?? discPath;
+
+	private static bool ShouldShowCurrentJobBadge(string? status) =>
+		string.Equals(status, "CancelRequested", StringComparison.OrdinalIgnoreCase)
+		|| string.Equals(status, "Encoding", StringComparison.OrdinalIgnoreCase)
+		|| string.Equals(status, "Canceled", StringComparison.OrdinalIgnoreCase);
+
+	private static Color GetCurrentJobStatusColor(string? status) => status switch
+	{
+		"CancelRequested" => Color.Info,
+		"Encoding" => Color.Warning,
+		"Canceled" => Color.Secondary,
+		_ => Color.Default,
+	};
 }

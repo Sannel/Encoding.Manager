@@ -8,4 +8,6 @@ public class RunnerDto
 	public bool IsEnabled { get; set; }
 	public DateTimeOffset? LastSeenAt { get; set; }
 	public Guid? CurrentJobId { get; set; }
+	public string? CurrentJobName { get; set; }
+	public string? CurrentJobStatus { get; set; }
 }

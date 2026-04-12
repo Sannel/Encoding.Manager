@@ -32,6 +32,11 @@ public interface IFilesystemService
 	Task<BrowseResponse> BrowseWithExtensionFilterAsync(string label, string? relativePath, string[] fileExtensions, CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Finds all media files under a folder recursively and returns them relative to that folder.
+	/// </summary>
+	Task<IReadOnlyList<FileEntryResponse>> GetMediaFilesRecursiveAsync(string label, string? relativePath = null, CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Resolves a root label and relative path to an absolute physical path,
 	/// with path-traversal validation.
 	/// </summary>
