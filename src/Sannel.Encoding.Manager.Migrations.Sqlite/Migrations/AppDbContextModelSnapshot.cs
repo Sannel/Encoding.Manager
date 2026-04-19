@@ -34,12 +34,21 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("CurrentTrackProgressPercent")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("DiscPath")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DiscRootLabel")
                         .HasColumnType("TEXT");
+
+                    b.Property<string>("EncodingCommandsJson")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Mode")
                         .IsRequired()
@@ -51,6 +60,9 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                     b.Property<string>("RunnerName")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("StartedAt")
                         .HasColumnType("TEXT");
 
@@ -61,6 +73,9 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                     b.Property<string>("TracksJson")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("TvdbId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("TvdbShowName")
                         .HasColumnType("TEXT");
@@ -77,6 +92,10 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Label")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PresetName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -152,6 +171,10 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("MovieTrackDestinationTemplate")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("SubtitleLanguages")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -160,6 +183,10 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TrackDestinationTemplate")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TvdbLanguage")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -205,7 +232,13 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("LastAccessedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OriginalLanguage")
                         .HasColumnType("TEXT");
 
                     b.HasKey("SeriesId");

@@ -9,6 +9,12 @@ public partial class ChaptersModeView : NamingComponentBase
 	[Parameter]
 	public required HandBrakeScanResult ScanResult { get; set; }
 
+	[Parameter]
+	public string? DiscRootLabel { get; set; }
+
+	[Parameter]
+	public string? DiscRelativePath { get; set; }
+
 	private TitleInfo? _selectedTitle;
 	private int _chaptersPerSegment = 1;
 
@@ -100,7 +106,11 @@ public partial class ChaptersModeView : NamingComponentBase
 					};
 				})
 				.ToList();
-			await this.AddDiskToQueueAsync(this.ScanResult.InputPath, "Chapters", tracks);
+			await this.AddDiskToQueueAsync(
+				this.DiscRootLabel is not null ? this.DiscRelativePath ?? this.ScanResult.InputPath : this.ScanResult.InputPath,
+				this.DiscRootLabel,
+				"Chapters",
+				tracks);
 		}
 		finally
 		{

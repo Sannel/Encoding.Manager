@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Sannel.Encoding.Manager.Web.Features.Data;
+using Sannel.Encoding.Manager.Web.Features.Settings.Entities;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Dto;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Entities;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Options;
@@ -48,7 +49,7 @@ public class TvdbService : ITvdbService
 			.FirstOrDefaultAsync(ct)
 			.ConfigureAwait(false);
 
-		if (latestEntry is not null && latestEntry.CachedAt > DateTimeOffset.UtcNow.Add(-CacheDuration))
+		if (latestEntry is not null && latestEntry.CachedAt > DateTimeOffset.Now.Add(-CacheDuration))
 		{
 			return await ctx.TvdbEpisodeCache
 				.Where(e => e.SeriesId == seriesId && e.OrderType == orderTypeStr)
@@ -66,13 +67,18 @@ public class TvdbService : ITvdbService
 
 		await this.EnsureAuthenticatedAsync(ct).ConfigureAwait(false);
 
+		// Check if the series' original language differs from the preferred language
+		var preferredLang = await this.GetPreferredLanguageAsync(ctx, ct).ConfigureAwait(false);
+		var useTranslation = await this.IsNonPreferredLanguageSeriesAsync(seriesId, preferredLang, ctx, ct).ConfigureAwait(false);
+		var langSuffix = useTranslation ? $"/{preferredLang}" : string.Empty;
+
 		var episodes = new List<TvdbEpisode>();
 		var page = 0;
 
 		while (true)
 		{
 			var response = await this._httpClient
-				.GetAsync($"series/{seriesId}/episodes/{orderTypeStr}?page={page}", ct)
+				.GetAsync($"series/{seriesId}/episodes/{orderTypeStr}{langSuffix}?page={page}", ct)
 				.ConfigureAwait(false);
 
 			response.EnsureSuccessStatusCode();
@@ -121,7 +127,7 @@ public class TvdbService : ITvdbService
 			.ToList();
 
 		// Persist to DB cache: replace old rows for this series+orderType
-		var now = DateTimeOffset.UtcNow;
+		var now = DateTimeOffset.Now;
 		await ctx.TvdbEpisodeCache
 			.Where(e => e.SeriesId == seriesId && e.OrderType == orderTypeStr)
 			.ExecuteDeleteAsync(ct)
@@ -160,8 +166,13 @@ public class TvdbService : ITvdbService
 			.FirstOrDefaultAsync(e => e.SeriesId == seriesId, ct)
 			.ConfigureAwait(false);
 
-		if (cached is not null && cached.CachedAt > DateTimeOffset.UtcNow.Add(-CacheDuration))
+		if (cached is not null && cached.CachedAt > DateTimeOffset.Now.Add(-CacheDuration))
 		{
+			// Stamp access time without reloading the full row
+			await ctx.TvdbSeriesCache
+				.Where(e => e.SeriesId == seriesId)
+				.ExecuteUpdateAsync(s => s.SetProperty(e => e.LastAccessedAt, DateTimeOffset.Now), ct)
+				.ConfigureAwait(false);
 			return cached.Name;
 		}
 
@@ -182,6 +193,22 @@ public class TvdbService : ITvdbService
 				? name.GetString()
 				: null;
 
+		var originalLanguage = data.TryGetProperty("originalLanguage", out var lang)
+			&& lang.ValueKind == JsonValueKind.String
+				? lang.GetString()
+				: null;
+
+		// If the series is not in the preferred language, fetch the translated name
+		var preferredLang = await this.GetPreferredLanguageAsync(ct).ConfigureAwait(false);
+		if (!string.Equals(originalLanguage, preferredLang, StringComparison.OrdinalIgnoreCase))
+		{
+			var translatedName = await this.GetTranslatedSeriesNameAsync(seriesId, preferredLang, ct).ConfigureAwait(false);
+			if (!string.IsNullOrEmpty(translatedName))
+			{
+				seriesName = translatedName;
+			}
+		}
+
 		// Persist to DB cache
 		await ctx.TvdbSeriesCache
 			.Where(e => e.SeriesId == seriesId)
@@ -192,11 +219,124 @@ public class TvdbService : ITvdbService
 		{
 			SeriesId = seriesId,
 			Name = seriesName,
-			CachedAt = DateTimeOffset.UtcNow,
+			OriginalLanguage = originalLanguage,
+			CachedAt = DateTimeOffset.Now,
+			LastAccessedAt = DateTimeOffset.Now,
 		});
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
 
 		return seriesName;
+	}
+
+	/// <inheritdoc />
+	public async Task<IReadOnlyList<TvdbCachedSeries>> GetCachedSeriesAsync(CancellationToken ct = default)
+	{
+		await using var ctx = await this._dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
+
+		var cutoff = DateTimeOffset.Now.AddDays(-2);
+
+		// Purge entries that have not been accessed in the last 2 days
+		await ctx.TvdbSeriesCache
+			.Where(s => (s.LastAccessedAt != null ? s.LastAccessedAt : s.CachedAt) < cutoff)
+			.ExecuteDeleteAsync(ct)
+			.ConfigureAwait(false);
+
+		return await ctx.TvdbSeriesCache
+			.AsNoTracking()
+			.Where(s => s.Name != null)
+			.OrderByDescending(s => s.LastAccessedAt != null ? s.LastAccessedAt : s.CachedAt)
+			.Select(s => new TvdbCachedSeries { SeriesId = s.SeriesId, Name = s.Name! })
+			.ToListAsync(ct)
+			.ConfigureAwait(false);
+	}
+
+	/// <summary>
+	/// Fetches the translated series name from TVDB for the given language.
+	/// Returns null if the translation is not available.
+	/// </summary>
+	private async Task<string?> GetTranslatedSeriesNameAsync(int seriesId, string language, CancellationToken ct)
+	{
+		try
+		{
+			var response = await this._httpClient
+				.GetAsync($"series/{seriesId}/translations/{language}", ct)
+				.ConfigureAwait(false);
+
+			if (!response.IsSuccessStatusCode)
+			{
+				return null;
+			}
+
+			using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+			using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct).ConfigureAwait(false);
+
+			return doc.RootElement.TryGetProperty("data", out var data)
+				&& data.TryGetProperty("name", out var name)
+				&& name.ValueKind == JsonValueKind.String
+					? name.GetString()
+					: null;
+		}
+		catch (HttpRequestException)
+		{
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// Checks the series cache to determine if the series' original language differs from the preferred language.
+	/// If not cached, fetches and caches the series info first.
+	/// </summary>
+	private async Task<bool> IsNonPreferredLanguageSeriesAsync(int seriesId, string preferredLanguage, AppDbContext ctx, CancellationToken ct)
+	{
+		var cached = await ctx.TvdbSeriesCache
+			.AsNoTracking()
+			.FirstOrDefaultAsync(e => e.SeriesId == seriesId, ct)
+			.ConfigureAwait(false);
+
+		if (cached is not null && cached.OriginalLanguage is not null)
+		{
+			return !string.Equals(cached.OriginalLanguage, preferredLanguage, StringComparison.OrdinalIgnoreCase);
+		}
+
+		// Not cached yet — fetch the series to populate the cache (including OriginalLanguage)
+		await this.GetSeriesNameAsync(seriesId, ct).ConfigureAwait(false);
+
+		// Re-read from cache
+		cached = await ctx.TvdbSeriesCache
+			.AsNoTracking()
+			.FirstOrDefaultAsync(e => e.SeriesId == seriesId, ct)
+			.ConfigureAwait(false);
+
+		if (cached?.OriginalLanguage is not null)
+		{
+			return !string.Equals(cached.OriginalLanguage, preferredLanguage, StringComparison.OrdinalIgnoreCase);
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Reads the preferred TVDB language from the AppSettings table.
+	/// Defaults to "eng" if no setting is configured.
+	/// </summary>
+	private async Task<string> GetPreferredLanguageAsync(AppDbContext ctx, CancellationToken ct)
+	{
+		var settings = await ctx.AppSettings
+			.AsNoTracking()
+			.FirstOrDefaultAsync(ct)
+			.ConfigureAwait(false);
+
+		return settings?.TvdbLanguage ?? "eng";
+	}
+
+	/// <summary>
+	/// Reads the preferred TVDB language from a new DbContext.
+	/// Defaults to "eng" if no setting is configured.
+	/// </summary>
+	private async Task<string> GetPreferredLanguageAsync(CancellationToken ct)
+	{
+		await using var ctx = await this._dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
+		return await this.GetPreferredLanguageAsync(ctx, ct).ConfigureAwait(false);
 	}
 
 	private async Task EnsureAuthenticatedAsync(CancellationToken ct)

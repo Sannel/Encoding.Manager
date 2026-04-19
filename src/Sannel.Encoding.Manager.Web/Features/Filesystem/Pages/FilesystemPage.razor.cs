@@ -101,9 +101,7 @@ public partial class FilesystemPage : ComponentBase
 			? file.Name
 			: $"{this._currentRelativePath}/{file.Name}";
 
-		this._selectedItem = $"{this._selectedRootLabel}:{relativePath}";
-		this._selectedItemType = "File";
-		this.Snackbar.Add($"Selected file: {file.Name}", Severity.Success);
+		this.NavigateToScan(relativePath, null, "file");
 	}
 
 	private void SelectDiscFolder(DirectoryEntryResponse folder)
@@ -112,10 +110,26 @@ public partial class FilesystemPage : ComponentBase
 			? folder.Name
 			: $"{this._currentRelativePath}/{folder.Name}";
 
-		var root = Uri.EscapeDataString(this._selectedRootLabel!);
-		var path = Uri.EscapeDataString(relativePath);
-		var discType = Uri.EscapeDataString(folder.DiscType.ToString());
-		this.NavigationManager.NavigateTo($"/scan?root={root}&path={path}&discType={discType}");
+		this.NavigateToScan(relativePath, folder.DiscType.ToString(), null);
+	}
+
+	private void SelectCurrentFolder()
+	{
+		if (string.IsNullOrEmpty(this._selectedRootLabel))
+		{
+			return;
+		}
+
+		this.NavigateToScan(this._currentRelativePath, null, "folder");
+	}
+
+	private void SelectFolder(DirectoryEntryResponse folder)
+	{
+		var relativePath = string.IsNullOrEmpty(this._currentRelativePath)
+			? folder.Name
+			: $"{this._currentRelativePath}/{folder.Name}";
+
+		this.NavigateToScan(relativePath, null, "folder");
 	}
 
 	private void ClearSelection()
@@ -187,5 +201,28 @@ public partial class FilesystemPage : ComponentBase
 		}
 
 		return $"{size:F2} {units[unitIndex]}";
+	}
+
+	private void NavigateToScan(string? relativePath, string? discType, string? selectionType)
+	{
+		var root = Uri.EscapeDataString(this._selectedRootLabel!);
+		var query = new List<string> { $"root={root}" };
+
+		if (!string.IsNullOrEmpty(relativePath))
+		{
+			query.Add($"path={Uri.EscapeDataString(relativePath)}");
+		}
+
+		if (!string.IsNullOrEmpty(discType))
+		{
+			query.Add($"discType={Uri.EscapeDataString(discType)}");
+		}
+
+		if (!string.IsNullOrEmpty(selectionType))
+		{
+			query.Add($"selectionType={Uri.EscapeDataString(selectionType)}");
+		}
+
+		this.NavigationManager.NavigateTo($"/scan?{string.Join("&", query)}");
 	}
 }

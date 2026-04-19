@@ -31,6 +31,11 @@ else
 					Disabled="@(string.IsNullOrEmpty(_currentRelativePath))">
 					⬆️ Up
 				</MudButton>
+				<MudButton Variant="Variant.Filled" Color="Color.Success" Class="ml-2"
+					OnClick="SelectCurrentFolder"
+					Disabled="@(string.IsNullOrEmpty(_selectedRootLabel))">
+					Select Current Folder
+				</MudButton>
 			</MudItem>
 		</MudGrid>
 
@@ -90,6 +95,10 @@ else
 								<MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
 									OnClick="@(() => OpenFolder(dir.Name))">
 									Open
+								</MudButton>
+								<MudButton Variant="Variant.Text" Color="Color.Success" Size="Size.Small"
+									OnClick="@(() => SelectFolder(dir))">
+									Select Folder
 								</MudButton>
 							}
 							else

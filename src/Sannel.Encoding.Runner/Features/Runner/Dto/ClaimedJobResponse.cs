@@ -8,6 +8,7 @@ public class ClaimedJobResponse
 	public string? DiscRootLabel { get; set; }
 	public string Mode { get; set; } = string.Empty;
 	public string? TvdbShowName { get; set; }
+	public int? TvdbId { get; set; }
 	public string AudioDefault { get; set; } = string.Empty;
 	public string TracksJson { get; set; } = "[]";
 	public Dictionary<string, PresetLocation> PresetMap { get; set; } = [];
@@ -20,6 +21,7 @@ public class ClaimedJobResponse
 /// <summary>Location of a preset file relative to a filesystem root.</summary>
 public class PresetLocation
 {
+	public string PresetName { get; set; } = string.Empty;
 	public string RootLabel { get; set; } = string.Empty;
 	public string RelativePath { get; set; } = string.Empty;
 }

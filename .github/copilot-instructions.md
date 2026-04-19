@@ -243,31 +243,50 @@ These rules are enforced via `.editorconfig` and must be followed in all generat
 
 ## Database Migrations
 
-Migrations are split by provider into two separate folders, each with its own namespace, so that EF Core generates and maintains independent model snapshots per provider.
+This project supports **two database providers**: SQLite and PostgreSQL. Each provider has its own dedicated migration project with an `IDesignTimeDbContextFactory` implementation:
 
 ```
-Features/Data/Migrations/
-├── Sqlite/     # namespace: Sannel.Encoding.Manager.Web.Features.Data.Migrations.Sqlite
-└── Postgres/   # namespace: Sannel.Encoding.Manager.Web.Features.Data.Migrations.Postgres
+src/
+├── Sannel.Encoding.Manager.Migrations.Sqlite/
+│   ├── Sannel.Encoding.Manager.Migrations.Sqlite.csproj
+│   ├── SqliteDesignTimeDbContextFactory.cs
+│   └── Migrations/                # namespace: Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
+│       ├── <timestamp>_<Name>.cs
+│       ├── <timestamp>_<Name>.Designer.cs
+│       └── AppDbContextModelSnapshot.cs
+└── Sannel.Encoding.Manager.Migrations.Postgres/
+    ├── Sannel.Encoding.Manager.Migrations.Postgres.csproj
+    ├── PostgresDesignTimeDbContextFactory.cs
+    └── Migrations/                # namespace: Sannel.Encoding.Manager.Migrations.Postgres.Migrations
+        ├── <timestamp>_<Name>.cs
+        ├── <timestamp>_<Name>.Designer.cs
+        └── AppDbContextModelSnapshot.cs
 ```
 
-**Always supply both `--output-dir` and `--namespace` when adding a migration.** Omitting `--namespace` causes EF to overwrite the wrong provider's snapshot.
+### CRITICAL: Every schema change requires migrations for BOTH providers
+
+**When any entity model changes, you MUST create a migration in BOTH the SQLite and Postgres projects.** Forgetting one provider will cause runtime failures when that provider is selected. Always run both commands below.
 
 ### Adding a new migration
 
-```pwsh
-# SQLite
-dotnet ef migrations add <MigrationName> `
-    --output-dir Features/Data/Migrations/Sqlite `
-    --namespace "Sannel.Encoding.Manager.Web.Features.Data.Migrations.Sqlite"
+**Always supply `--project`, `--output-dir`, and `--namespace`.** Omitting `--namespace` causes EF to place the migration in the wrong namespace and overwrite the wrong provider's snapshot.
 
-# Postgres
-$env:DB_PROVIDER = "postgres"
+Run both commands from the repository root:
+
+```pwsh
+# 1. SQLite — always create this migration
 dotnet ef migrations add <MigrationName> `
-    --output-dir Features/Data/Migrations/Postgres `
-    --namespace "Sannel.Encoding.Manager.Web.Features.Data.Migrations.Postgres"
+    --project src/Sannel.Encoding.Manager.Migrations.Sqlite/Sannel.Encoding.Manager.Migrations.Sqlite.csproj `
+    --output-dir Migrations `
+    --namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
+
+# 2. Postgres — always create this migration too
+dotnet ef migrations add <MigrationName> `
+    --project src/Sannel.Encoding.Manager.Migrations.Postgres/Sannel.Encoding.Manager.Migrations.Postgres.csproj `
+    --output-dir Migrations `
+    --namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
 ```
 
 ### How provider routing works at runtime
 
-`ProviderAwareMigrationsAssembly` (registered via `options.ReplaceService<IMigrationsAssembly, ProviderAwareMigrationsAssembly>()`) filters the migrations and snapshot visible to EF at runtime by checking whether the migration class namespace contains `.Sqlite.` or `.Postgres.`, matching the active provider.
+`Program.cs` selects the correct migration assembly based on the configured `Database:Provider` setting. When `"postgres"` or `"postgresql"` is specified, EF Core uses `Sannel.Encoding.Manager.Migrations.Postgres` as its migration assembly; otherwise it defaults to SQLite using `Sannel.Encoding.Manager.Migrations.Sqlite`. Each migration project contains its own `IDesignTimeDbContextFactory` so that `dotnet ef` can create the correct `DbContext` at design time without needing `--startup-project`.

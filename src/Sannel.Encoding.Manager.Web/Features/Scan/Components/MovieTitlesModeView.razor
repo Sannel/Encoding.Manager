@@ -1,0 +1,125 @@
+@using Sannel.Encoding.Manager.HandBrake
+@inherits NamingComponentBase
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2" Style="width: fit-content;">
+	<MudText Typo="Typo.body1">Minimum Duration</MudText>
+	<MudNumericField T="int" Value="_minimumMinutes" ValueChanged="OnMinimumMinutesChanged"
+		Label="Minutes" Variant="Variant.Outlined" Min="0" Style="max-width: 120px;" />
+	<MudNumericField T="int" Value="_minimumSeconds" ValueChanged="OnMinimumSecondsChanged"
+		Label="Seconds" Variant="Variant.Outlined" Min="0" Max="59" Style="max-width: 120px;" />
+</MudStack>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap" Spacing="2">
+	<MudTextField @bind-Value="_movieTitle" Label="Movie Title" Variant="Variant.Outlined"
+		Placeholder="e.g. The Matrix" Style="max-width: 220px;" />
+	@if (!string.IsNullOrEmpty(_movieName))
+	{
+		<MudStack Spacing="0">
+			<MudText Typo="Typo.subtitle1"><strong>@_movieName</strong></MudText>
+			@if (!string.IsNullOrEmpty(_movieYear) || !string.IsNullOrEmpty(_movieGenres))
+			{
+				<MudText Typo="Typo.body2" Style="opacity:.7;">
+					@if (!string.IsNullOrEmpty(_movieYear))
+					{
+						@_movieYear
+						@if (!string.IsNullOrEmpty(_movieGenres))
+						{
+							@(" • ")
+						}
+					}
+					@if (!string.IsNullOrEmpty(_movieGenres))
+					{
+						@_movieGenres
+					}
+				</MudText>
+			}
+		</MudStack>
+	}
+	<MudButton Variant="Variant.Filled" Color="Color.Primary"
+		OnClick="OnLoadFromOmdbClicked" Disabled="_isOmdbLoading">
+		@if (_isOmdbLoading)
+		{
+			<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+		}
+		Load from OMDb
+	</MudButton>
+	<MudButton Variant="Variant.Filled" Color="Color.Info"
+		StartIcon="@Icons.Material.Filled.AutoFixHigh"
+		OnClick="ApplyAllMovieNames">
+		Auto Names
+	</MudButton>
+</MudStack>
+
+@if (!string.IsNullOrEmpty(_omdbErrorMessage))
+{
+	<MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">@_omdbErrorMessage</MudAlert>
+}
+
+@if (FilteredTitles.Count > 0)
+{
+	foreach (var title in FilteredTitles)
+	{
+		var nr = GetNamingRow(title.TitleNumber);
+		<MudPaper Class="mb-2 pa-3" Elevation="2">
+			<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Wrap="Wrap.Wrap">
+				<MudText><strong>Title @title.TitleNumber</strong></MudText>
+				<MudText>@FormatDuration(title.Duration)</MudText>
+				<MudText>@(title.Width)×@(title.Height)</MudText>
+				<MudText>@title.FrameRate fps</MudText>
+				<MudText>@title.AudioTracks.Count audio track(s)</MudText>
+				<MudText>@title.Subtitles.Count subtitle(s)</MudText>
+				<MudText>@title.Chapters.Count chapter(s)</MudText>
+				<MudSpacer />
+				<MudIconButton Icon="@Icons.Material.Filled.AutoFixHigh" Size="Size.Small"
+					OnClick="@(() => ApplyMovieName(title.TitleNumber))" Title="Auto name" />
+				<MudIconButton Icon="@Icons.Material.Filled.ClearAll" Size="Size.Small"
+					OnClick="@(() => ClearNamingRow(title.TitleNumber))" Title="Clear row" />
+			</MudStack>
+			<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mt-2" Wrap="Wrap.Wrap">
+				<MudTextField @bind-Value="nr.Name" Label="Name" Variant="Variant.Outlined"
+					Margin="Margin.Dense" Style="min-width: 220px;" />
+				<MudSelect T="string?" Value="nr.Resolution"
+					ValueChanged="@(v => OnResolutionChanged(title.TitleNumber, v))"
+					Label="Resolution" Variant="Variant.Outlined" Margin="Margin.Dense"
+					Placeholder="—" AnchorOrigin="Origin.BottomCenter" Style="min-width: 110px;"
+					Clearable="true">
+					@foreach (var resolution in _availableResolutions)
+					{
+						<MudSelectItem T="string?" Value="@resolution">@resolution</MudSelectItem>
+					}
+				</MudSelect>
+			</MudStack>
+		</MudPaper>
+	}
+}
+else
+{
+	<MudAlert Severity="Severity.Info">No titles found matching the minimum duration.</MudAlert>
+}
+
+@if (FilteredTitles.Count > 0)
+{
+	<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mt-3">
+		@if (_presets.Count > 0)
+		{
+			<MudSelect T="string?" @bind-Value="_selectedPresetLabel"
+				Label="Preset" Variant="Variant.Outlined" Margin="Margin.Dense"
+				Placeholder="None" AnchorOrigin="Origin.BottomCenter" Style="min-width: 200px;"
+				Clearable="true">
+				@foreach (var preset in _presets)
+				{
+					<MudSelectItem T="string?" Value="@preset.Label">@preset.Label</MudSelectItem>
+				}
+			</MudSelect>
+		}
+		<MudButton Variant="Variant.Filled" Color="Color.Success"
+			StartIcon="@Icons.Material.Filled.AddToQueue"
+			OnClick="OnAddToQueueClicked" Disabled="_isAddingToQueue">
+			@if (_isAddingToQueue)
+			{
+				<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+			}
+			Add to Queue
+		</MudButton>
+	</MudStack>
+}

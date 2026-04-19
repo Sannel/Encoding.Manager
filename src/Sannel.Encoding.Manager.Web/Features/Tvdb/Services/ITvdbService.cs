@@ -20,4 +20,10 @@ public interface ITvdbService
 	/// Returns the series name for the given series ID, or null if not found.
 	/// </summary>
 	Task<string?> GetSeriesNameAsync(int seriesId, CancellationToken ct = default);
+
+	/// <summary>
+	/// Returns all series previously fetched from TVDB that are stored in the local cache,
+	/// ordered by name.
+	/// </summary>
+	Task<IReadOnlyList<TvdbCachedSeries>> GetCachedSeriesAsync(CancellationToken ct = default);
 }

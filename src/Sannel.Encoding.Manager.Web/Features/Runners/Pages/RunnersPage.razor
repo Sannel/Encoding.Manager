@@ -45,7 +45,23 @@ else
 			<MudTd DataLabel="Current Job">
 				@if (context.CurrentJobId.HasValue)
 				{
-					<MudText Typo="Typo.caption">@context.CurrentJobId.Value.ToString("D")[..8]…</MudText>
+					<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+						@if (!string.IsNullOrWhiteSpace(context.CurrentJobName))
+						{
+							<MudText Typo="Typo.caption">@DiscLabel(context.CurrentJobName)</MudText>
+						}
+						else
+						{
+							<MudText Typo="Typo.caption">@context.CurrentJobId.Value.ToString("D")[..8]…</MudText>
+						}
+
+						@if (ShouldShowCurrentJobBadge(context.CurrentJobStatus))
+						{
+							<MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="@GetCurrentJobStatusColor(context.CurrentJobStatus)">
+								@context.CurrentJobStatus
+							</MudChip>
+						}
+					</MudStack>
 				}
 				else
 				{
@@ -53,6 +69,9 @@ else
 				}
 			</MudTd>
 			<MudTd>
+				<MudIconButton Icon="@Icons.Material.Filled.RestartAlt" Color="Color.Warning"
+					Size="Size.Small" Title="Reset runner and cancel active encode"
+					OnClick="@(() => ResetRunnerAsync(context.Id))" />
 				<MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
 					Size="Size.Small" OnClick="@(() => DeleteRunnerAsync(context.Id))" />
 			</MudTd>

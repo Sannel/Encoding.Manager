@@ -419,3 +419,4 @@ FodyWeavers.xsd
 
 # DocFX generated output
 docs/_site/
+handbrake-scans/

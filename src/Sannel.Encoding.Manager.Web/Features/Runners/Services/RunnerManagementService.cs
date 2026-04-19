@@ -26,6 +26,14 @@ public class RunnerManagementService : IRunnerManagementService
 				IsEnabled = r.IsEnabled,
 				LastSeenAt = r.LastSeenAt,
 				CurrentJobId = r.CurrentJobId,
+				CurrentJobName = ctx.EncodeQueueItems
+					.Where(q => q.Id == r.CurrentJobId)
+					.Select(q => q.DiscPath)
+					.FirstOrDefault(),
+				CurrentJobStatus = ctx.EncodeQueueItems
+					.Where(q => q.Id == r.CurrentJobId)
+					.Select(q => q.Status)
+					.FirstOrDefault(),
 			})
 			.ToListAsync(ct)
 			.ConfigureAwait(false);
@@ -41,6 +49,32 @@ public class RunnerManagementService : IRunnerManagementService
 			runner.IsEnabled = enabled;
 			await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
 		}
+	}
+
+	/// <inheritdoc />
+	public async Task<bool> ResetRunnerAsync(Guid id, CancellationToken ct = default)
+	{
+		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
+		var runner = await ctx.Runners.FirstOrDefaultAsync(r => r.Id == id, ct).ConfigureAwait(false);
+		if (runner is null)
+		{
+			return false;
+		}
+
+		runner.IsEnabled = false;
+		runner.LastSeenAt = null;
+
+		if (runner.CurrentJobId.HasValue)
+		{
+			var item = await ctx.EncodeQueueItems.FirstOrDefaultAsync(q => q.Id == runner.CurrentJobId.Value, ct).ConfigureAwait(false);
+			if (item is not null && string.Equals(item.Status, "Encoding", StringComparison.OrdinalIgnoreCase))
+			{
+				item.Status = "CancelRequested";
+			}
+		}
+
+		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
+		return true;
 	}
 
 	/// <inheritdoc />
