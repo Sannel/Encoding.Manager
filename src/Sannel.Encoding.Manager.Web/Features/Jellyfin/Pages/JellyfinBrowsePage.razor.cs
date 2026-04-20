@@ -43,6 +43,9 @@ public partial class JellyfinBrowsePage : ComponentBase
 	private bool _isLoading;
 	private List<JellyfinItem> _items = [];
 
+	private List<JellyfinVirtualFolder> _libraries = [];
+	private string? _selectedLibraryId;
+
 	private List<BreadcrumbItem> _breadcrumbs = [];
 	private readonly List<(string Id, string Name, string Type)> _navigationStack = [];
 
@@ -59,6 +62,15 @@ public partial class JellyfinBrowsePage : ComponentBase
 		var serverServiceImpl = (JellyfinServerService)this.ServerService;
 		this._client = this.ClientFactory.CreateClient(this._server.BaseUrl, serverServiceImpl.DecryptApiKey(this._server.ApiKey));
 
+		try
+		{
+			this._libraries = (await this._client.GetVirtualFoldersAsync()).ToList();
+		}
+		catch
+		{
+			this._libraries = [];
+		}
+
 		await this.SearchAsync();
 	}
 
@@ -71,7 +83,7 @@ public partial class JellyfinBrowsePage : ComponentBase
 
 		this._isLoading = true;
 		this._page = 0;
-		this._parentId = null;
+		this._parentId = this._selectedLibraryId;
 		this._navigationStack.Clear();
 		this.UpdateBreadcrumbs();
 		try

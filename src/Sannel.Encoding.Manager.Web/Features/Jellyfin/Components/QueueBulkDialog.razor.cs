@@ -36,6 +36,9 @@ public partial class QueueBulkDialog : ComponentBase
 	[Inject]
 	private ISnackbar Snackbar { get; set; } = default!;
 
+	[Inject]
+	private ILogger<QueueBulkDialog> Logger { get; set; } = default!;
+
 	private List<JellyfinItem> _episodes = [];
 	private List<JellyfinServer> _destServers = [];
 	private List<JellyfinDestinationRoot> _destRoots = [];
@@ -161,8 +164,9 @@ public partial class QueueBulkDialog : ComponentBase
 					await this.EncodeService.QueueItemAsync(request);
 					queued++;
 				}
-				catch
+				catch (Exception ex)
 				{
+					this.Logger.LogError(ex, "Failed to queue episode '{EpisodeName}' (ItemId={ItemId}) from '{ParentName}' on ServerId={ServerId}.", episode.Name, episode.Id, this.ParentItem.Name, this.ServerId);
 					failed++;
 				}
 			}
@@ -173,7 +177,9 @@ public partial class QueueBulkDialog : ComponentBase
 			}
 			else
 			{
-				this.Snackbar.Add($"Queued {queued}, failed {failed} episode(s).", Severity.Warning);
+				var message = $"Queued {queued}, failed {failed} episode(s).";
+				this.Logger.LogError("Bulk queue for '{ParentName}' (ServerId={ServerId}): {Message}", this.ParentItem.Name, this.ServerId, message);
+				this.Snackbar.Add(message, Severity.Warning);
 			}
 
 			this.MudDialog.Close(DialogResult.Ok(queued));
