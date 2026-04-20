@@ -1,7 +1,9 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Sannel.Encoding.Manager.Jellyfin;
 using Sannel.Encoding.Manager.Web.Features.Data;
 using Sannel.Encoding.Manager.Web.Features.Jellyfin.Dto;
+using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
 
 namespace Sannel.Encoding.Manager.Web.Features.Jellyfin.Services;
@@ -57,17 +59,39 @@ public class JellyfinEncodeService : IJellyfinEncodeService
 		// Build the remote SFTP path
 		var relativePath = this._pathBuilder.BuildRemotePath(destRoot, item);
 
+		// Build a single track config for the Jellyfin source file (always title 1)
+		var outputName = Path.GetFileNameWithoutExtension(relativePath);
+		var isEpisode = string.Equals(item.Type, "Episode", StringComparison.OrdinalIgnoreCase);
+
+		var track = new EncodeTrackConfig
+		{
+			TitleNumber = 1,
+			OutputName = outputName,
+			SeasonNumber = isEpisode ? item.ParentIndexNumber : null,
+			EpisodeNumber = isEpisode ? item.IndexNumber : null,
+			MovieYear = !isEpisode ? item.ProductionYear?.ToString() : null,
+			PresetLabel = string.IsNullOrWhiteSpace(request.PresetLabel) ? null : request.PresetLabel,
+		};
+		var tracksJson = JsonSerializer.Serialize(new[] { track });
+
 		// Determine the max sort order
 		var maxSortOrder = await ctx.EncodeQueueItems
 			.Where(i => i.Status == "Queued")
 			.MaxAsync(i => (int?)i.SortOrder, ct)
 			.ConfigureAwait(false) ?? 0;
 
+		// Parse TVDB ID from provider IDs
+		var tvdbString = isEpisode ? item.SeriesProviderIds?.Tvdb : item.ProviderIds?.Tvdb;
+		int? tvdbId = int.TryParse(tvdbString, out var parsed) ? parsed : null;
+
 		var queueItem = new EncodeQueueItem
 		{
 			DiscPath = string.Empty,
 			Mode = "Titles",
 			Status = "Queued",
+			TracksJson = tracksJson,
+			TvdbShowName = isEpisode ? item.SeriesName : item.Name,
+			TvdbId = tvdbId,
 			SortOrder = maxSortOrder + 1,
 			JellyfinSourceServerId = sourceServer.Id,
 			JellyfinSourceItemId = request.ItemId,
