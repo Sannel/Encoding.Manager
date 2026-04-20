@@ -47,6 +47,12 @@
 							Variant="Variant.Outlined">@(context.IsDestination ? "Yes" : "No")</MudChip>
 					</MudTd>
 					<MudTd DataLabel="Actions">
+						@if (context.IsSource)
+						{
+							<MudIconButton Icon="@Icons.Material.Filled.FolderOpen" Color="Color.Primary"
+								Size="Size.Small" Title="Browse"
+								Href="@($"/jellyfin/browse/{context.Id}")" />
+						}
 						<MudIconButton Icon="@Icons.Material.Filled.NetworkPing" Color="Color.Info"
 							Size="Size.Small" Title="Ping"
 							OnClick="@(() => PingServerAsync(context.Id))" />

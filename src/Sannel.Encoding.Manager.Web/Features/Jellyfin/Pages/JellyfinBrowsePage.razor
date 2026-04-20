@@ -9,6 +9,11 @@
 	<MudText Typo="Typo.h4">Browse: @_serverName</MudText>
 </MudStack>
 
+@if (_breadcrumbs.Count > 0)
+{
+	<MudBreadcrumbs Items="_breadcrumbs" Class="mb-2" />
+}
+
 <MudCard Class="mb-4 pa-4">
 	<MudGrid>
 		<MudItem xs="12" sm="4">
@@ -16,6 +21,7 @@
 				AnchorOrigin="Origin.BottomCenter">
 				<MudSelectItem Value="@("Movie")">Movies</MudSelectItem>
 				<MudSelectItem Value="@("Series")">Series</MudSelectItem>
+				<MudSelectItem Value="@("Season")">Seasons</MudSelectItem>
 				<MudSelectItem Value="@("Episode")">Episodes</MudSelectItem>
 			</MudSelect>
 		</MudItem>
@@ -57,8 +63,23 @@ else
 				@if (string.Equals(context.Type, "Series", StringComparison.OrdinalIgnoreCase))
 				{
 					<MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
-						OnClick="@(() => DrillIntoAsync(context.Id))">
+						OnClick="@(() => DrillIntoSeriesAsync(context))">
 						Browse
+					</MudButton>
+					<MudButton Variant="Variant.Text" Color="Color.Success" Size="Size.Small"
+						OnClick="@(() => OpenBulkQueueDialogAsync(context))">
+						Queue All
+					</MudButton>
+				}
+				else if (string.Equals(context.Type, "Season", StringComparison.OrdinalIgnoreCase))
+				{
+					<MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
+						OnClick="@(() => DrillIntoSeasonAsync(context))">
+						Browse
+					</MudButton>
+					<MudButton Variant="Variant.Text" Color="Color.Success" Size="Size.Small"
+						OnClick="@(() => OpenBulkQueueDialogAsync(context))">
+						Queue Season
 					</MudButton>
 				}
 				else

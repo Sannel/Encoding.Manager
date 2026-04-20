@@ -43,6 +43,9 @@ public partial class JellyfinBrowsePage : ComponentBase
 	private bool _isLoading;
 	private List<JellyfinItem> _items = [];
 
+	private List<BreadcrumbItem> _breadcrumbs = [];
+	private readonly List<(string Id, string Name, string Type)> _navigationStack = [];
+
 	protected override async Task OnInitializedAsync()
 	{
 		this._server = await this.ServerService.GetServerAsync(this.ServerId);
@@ -68,6 +71,9 @@ public partial class JellyfinBrowsePage : ComponentBase
 
 		this._isLoading = true;
 		this._page = 0;
+		this._parentId = null;
+		this._navigationStack.Clear();
+		this.UpdateBreadcrumbs();
 		try
 		{
 			await this.LoadPageAsync();
@@ -93,7 +99,7 @@ public partial class JellyfinBrowsePage : ComponentBase
 				IncludeItemTypes = this._selectedType,
 				SearchTerm = string.IsNullOrWhiteSpace(this._search) ? null : this._search,
 				ParentId = this._parentId,
-				Recursive = true,
+				Recursive = this._parentId is null,
 				StartIndex = this._page * PageSize,
 				Limit = PageSize,
 				Fields = "ProviderIds",
@@ -113,12 +119,71 @@ public partial class JellyfinBrowsePage : ComponentBase
 		}
 	}
 
-	private async Task DrillIntoAsync(string parentId)
+	private async Task DrillIntoSeriesAsync(JellyfinItem series)
 	{
-		this._parentId = parentId;
-		this._selectedType = "Episode";
+		this._navigationStack.Add((series.Id, series.Name, "Series"));
+		this._parentId = series.Id;
+		this._selectedType = "Season";
+		this._search = string.Empty;
 		this._page = 0;
+		this.UpdateBreadcrumbs();
 		await this.LoadPageAsync();
+	}
+
+	private async Task DrillIntoSeasonAsync(JellyfinItem season)
+	{
+		this._navigationStack.Add((season.Id, season.Name, "Season"));
+		this._parentId = season.Id;
+		this._selectedType = "Episode";
+		this._search = string.Empty;
+		this._page = 0;
+		this.UpdateBreadcrumbs();
+		await this.LoadPageAsync();
+	}
+
+	private async Task NavigateToBreadcrumbAsync(int index)
+	{
+		if (index < 0)
+		{
+			this._parentId = null;
+			this._selectedType = "Movie";
+			this._search = string.Empty;
+			this._navigationStack.Clear();
+		}
+		else
+		{
+			var entry = this._navigationStack[index];
+			this._parentId = entry.Id;
+			this._selectedType = entry.Type switch
+			{
+				"Series" => "Season",
+				"Season" => "Episode",
+				_ => "Episode",
+			};
+			this._search = string.Empty;
+			this._navigationStack.RemoveRange(index + 1, this._navigationStack.Count - index - 1);
+		}
+
+		this._page = 0;
+		this.UpdateBreadcrumbs();
+		await this.LoadPageAsync();
+	}
+
+	private void UpdateBreadcrumbs()
+	{
+		this._breadcrumbs = [];
+
+		if (this._navigationStack.Count > 0)
+		{
+			this._breadcrumbs.Add(new BreadcrumbItem("Library", null, false, Icons.Material.Filled.Home));
+		}
+
+		for (var i = 0; i < this._navigationStack.Count; i++)
+		{
+			var entry = this._navigationStack[i];
+			var isLast = i == this._navigationStack.Count - 1;
+			this._breadcrumbs.Add(new BreadcrumbItem(entry.Name, null, isLast));
+		}
 	}
 
 	private async Task PreviousPageAsync()
@@ -158,5 +223,27 @@ public partial class JellyfinBrowsePage : ComponentBase
 		{
 			this.Snackbar.Add("Item queued for encoding.", Severity.Success);
 		}
+	}
+
+	private async Task OpenBulkQueueDialogAsync(JellyfinItem parentItem)
+	{
+		if (this._client is null)
+		{
+			return;
+		}
+
+		var title = string.Equals(parentItem.Type, "Series", StringComparison.OrdinalIgnoreCase)
+			? $"Queue Series: {parentItem.Name}"
+			: $"Queue Season: {parentItem.Name}";
+
+		var parameters = new DialogParameters<QueueBulkDialog>
+		{
+			{ x => x.ServerId, this.ServerId },
+			{ x => x.Client, this._client },
+			{ x => x.ParentItem, parentItem },
+		};
+		var dialog = await this.DialogService.ShowAsync<QueueBulkDialog>(title, parameters,
+			new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+		await dialog.Result;
 	}
 }
