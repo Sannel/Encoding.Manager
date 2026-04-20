@@ -57,9 +57,11 @@ public class JellyfinClient : IJellyfinClient
 			?? new ItemsResponse();
 	}
 
-	public async Task<JellyfinItem?> GetItemAsync(string itemId, CancellationToken ct = default)
+	public async Task<JellyfinItem?> GetItemAsync(string itemId, string? userId = null, CancellationToken ct = default)
 	{
-		var url = $"Items/{HttpUtility.UrlEncode(itemId)}?Fields=ProviderIds";
+		var url = userId is not null
+			? $"Users/{HttpUtility.UrlEncode(userId)}/Items/{HttpUtility.UrlEncode(itemId)}?Fields=ProviderIds"
+			: $"Items/{HttpUtility.UrlEncode(itemId)}?Fields=ProviderIds";
 		return await this._httpClient.GetFromJsonAsync<JellyfinItem>(url, JsonOptions, ct).ConfigureAwait(false);
 	}
 

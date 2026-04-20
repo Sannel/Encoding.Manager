@@ -6,7 +6,7 @@ public interface IJellyfinClient
 {
 	Task<JellyfinSystemInfo?> GetSystemInfoAsync(CancellationToken ct = default);
 	Task<ItemsResponse> GetItemsAsync(GetItemsRequest request, CancellationToken ct = default);
-	Task<JellyfinItem?> GetItemAsync(string itemId, CancellationToken ct = default);
+	Task<JellyfinItem?> GetItemAsync(string itemId, string? userId = null, CancellationToken ct = default);
 	Task DownloadItemAsync(string itemId, Stream destination, CancellationToken ct = default);
 	Task RefreshLibraryAsync(CancellationToken ct = default);
 	Task<IReadOnlyList<JellyfinVirtualFolder>> GetVirtualFoldersAsync(CancellationToken ct = default);

@@ -35,7 +35,7 @@ public partial class JellyfinBrowsePage : ComponentBase
 	private JellyfinServer? _server;
 	private IJellyfinClient? _client;
 
-	private string _selectedType = "Movie";
+	private string? _includeItemTypes;
 	private string _search = string.Empty;
 	private string? _parentId;
 	private int _page;
@@ -84,6 +84,7 @@ public partial class JellyfinBrowsePage : ComponentBase
 		this._isLoading = true;
 		this._page = 0;
 		this._parentId = this._selectedLibraryId;
+		this._includeItemTypes = null;
 		this._navigationStack.Clear();
 		this.UpdateBreadcrumbs();
 		try
@@ -108,7 +109,7 @@ public partial class JellyfinBrowsePage : ComponentBase
 		{
 			var response = await this._client.GetItemsAsync(new GetItemsRequest
 			{
-				IncludeItemTypes = this._selectedType,
+				IncludeItemTypes = this._includeItemTypes,
 				SearchTerm = string.IsNullOrWhiteSpace(this._search) ? null : this._search,
 				ParentId = this._parentId,
 				Recursive = this._parentId is null,
@@ -117,7 +118,9 @@ public partial class JellyfinBrowsePage : ComponentBase
 				Fields = "ProviderIds",
 			});
 
-			this._items = response.Items.ToList();
+			this._items = response.Items
+				.OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+				.ToList();
 			this._totalCount = response.TotalRecordCount;
 		}
 		catch (Exception ex)
@@ -135,7 +138,7 @@ public partial class JellyfinBrowsePage : ComponentBase
 	{
 		this._navigationStack.Add((series.Id, series.Name, "Series"));
 		this._parentId = series.Id;
-		this._selectedType = "Season";
+		this._includeItemTypes = "Season";
 		this._search = string.Empty;
 		this._page = 0;
 		this.UpdateBreadcrumbs();
@@ -146,7 +149,7 @@ public partial class JellyfinBrowsePage : ComponentBase
 	{
 		this._navigationStack.Add((season.Id, season.Name, "Season"));
 		this._parentId = season.Id;
-		this._selectedType = "Episode";
+		this._includeItemTypes = "Episode";
 		this._search = string.Empty;
 		this._page = 0;
 		this.UpdateBreadcrumbs();
@@ -157,8 +160,8 @@ public partial class JellyfinBrowsePage : ComponentBase
 	{
 		if (index < 0)
 		{
-			this._parentId = null;
-			this._selectedType = "Movie";
+			this._parentId = this._selectedLibraryId;
+			this._includeItemTypes = null;
 			this._search = string.Empty;
 			this._navigationStack.Clear();
 		}
@@ -166,7 +169,7 @@ public partial class JellyfinBrowsePage : ComponentBase
 		{
 			var entry = this._navigationStack[index];
 			this._parentId = entry.Id;
-			this._selectedType = entry.Type switch
+			this._includeItemTypes = entry.Type switch
 			{
 				"Series" => "Season",
 				"Season" => "Episode",

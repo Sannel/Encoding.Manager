@@ -49,7 +49,9 @@ public class JellyfinEncodeService : IJellyfinEncodeService
 
 		// Fetch item metadata from Jellyfin
 		var client = this._clientFactory.CreateClient(sourceServer.BaseUrl, this._serverService.DecryptApiKey(sourceServer.ApiKey));
-		var item = await client.GetItemAsync(request.ItemId, ct).ConfigureAwait(false)
+		var users = await client.GetUsersAsync(ct).ConfigureAwait(false);
+		var userId = users.FirstOrDefault()?.Id;
+		var item = await client.GetItemAsync(request.ItemId, userId, ct).ConfigureAwait(false)
 			?? throw new InvalidOperationException($"Item '{request.ItemId}' not found on source server.");
 
 		// Build the remote SFTP path

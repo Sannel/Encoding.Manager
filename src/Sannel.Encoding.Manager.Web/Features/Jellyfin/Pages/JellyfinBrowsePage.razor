@@ -16,7 +16,7 @@
 
 <MudCard Class="mb-4 pa-4">
 	<MudGrid>
-		<MudItem xs="12" sm="3">
+		<MudItem xs="12" sm="4">
 			<MudSelect @bind-Value="_selectedLibraryId" Label="Library" Variant="Variant.Outlined"
 				Clearable="true" AnchorOrigin="Origin.BottomCenter">
 				@foreach (var lib in _libraries)
@@ -25,16 +25,7 @@
 				}
 			</MudSelect>
 		</MudItem>
-		<MudItem xs="12" sm="3">
-			<MudSelect @bind-Value="_selectedType" Label="Type" Variant="Variant.Outlined"
-				AnchorOrigin="Origin.BottomCenter">
-				<MudSelectItem Value="@("Movie")">Movies</MudSelectItem>
-				<MudSelectItem Value="@("Series")">Series</MudSelectItem>
-				<MudSelectItem Value="@("Season")">Seasons</MudSelectItem>
-				<MudSelectItem Value="@("Episode")">Episodes</MudSelectItem>
-			</MudSelect>
-		</MudItem>
-		<MudItem xs="12" sm="4">
+		<MudItem xs="12" sm="6">
 			<MudTextField @bind-Value="_search" Label="Search" Variant="Variant.Outlined"
 				Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search"
 				OnAdornmentClick="SearchAsync" OnKeyDown="OnSearchKeyDown" />
