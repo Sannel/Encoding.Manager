@@ -131,6 +131,45 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                     b.ToTable("JellyfinSyncProfiles");
                 });
 
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Logging.Entities.LogEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Exception")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Source")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Timestamp")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Level");
+
+                    b.HasIndex("Source");
+
+                    b.HasIndex("Timestamp");
+
+                    b.ToTable("LogEntries");
+                });
+
             modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem", b =>
                 {
                     b.Property<Guid>("Id")

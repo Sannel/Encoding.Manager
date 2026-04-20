@@ -1,0 +1,104 @@
+@page "/logs"
+@rendermode InteractiveServer
+
+<PageTitle>Logs</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Application Logs</MudText>
+
+<MudCard Class="mb-4 pa-4">
+	<MudGrid>
+		<MudItem xs="12" sm="3">
+			<MudSelect @bind-Value="_levelFilter" Label="Level" Variant="Variant.Outlined"
+				Clearable="true" AnchorOrigin="Origin.BottomCenter">
+				<MudSelectItem Value="@("Warning")">Warning</MudSelectItem>
+				<MudSelectItem Value="@("Error")">Error</MudSelectItem>
+				<MudSelectItem Value="@("Critical")">Critical</MudSelectItem>
+			</MudSelect>
+		</MudItem>
+		<MudItem xs="12" sm="3">
+			<MudSelect @bind-Value="_sourceFilter" Label="Source" Variant="Variant.Outlined"
+				Clearable="true" AnchorOrigin="Origin.BottomCenter">
+				<MudSelectItem Value="@("Server")">Server</MudSelectItem>
+				@foreach (var source in _knownSources)
+				{
+					<MudSelectItem Value="@source">@source</MudSelectItem>
+				}
+			</MudSelect>
+		</MudItem>
+		<MudItem xs="12" sm="4">
+			<MudTextField @bind-Value="_searchTerm" Label="Search" Variant="Variant.Outlined"
+				Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search"
+				OnAdornmentClick="SearchAsync" OnKeyDown="OnSearchKeyDown" />
+		</MudItem>
+		<MudItem xs="12" sm="2" Class="d-flex align-center gap-2">
+			<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SearchAsync">
+				Filter
+			</MudButton>
+			<MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="PurgeOldLogsAsync">
+				Purge
+			</MudButton>
+		</MudItem>
+	</MudGrid>
+</MudCard>
+
+@if (_isLoading)
+{
+	<MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+}
+else if (_logs.Count == 0)
+{
+	<MudAlert Severity="Severity.Info">No log entries found.</MudAlert>
+}
+else
+{
+	<MudTable Items="_logs" Hover="true" Striped="true" Dense="true" Breakpoint="Breakpoint.Sm">
+		<HeaderContent>
+			<MudTh>Timestamp</MudTh>
+			<MudTh>Level</MudTh>
+			<MudTh>Source</MudTh>
+			<MudTh>Category</MudTh>
+			<MudTh>Message</MudTh>
+			<MudTh>Actions</MudTh>
+		</HeaderContent>
+		<RowTemplate>
+			<MudTd DataLabel="Timestamp">
+				<MudText Typo="Typo.caption">@context.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</MudText>
+			</MudTd>
+			<MudTd DataLabel="Level">
+				<MudChip T="string" Size="Size.Small"
+					Color="@GetLevelColor(context.Level)"
+					Variant="Variant.Filled">
+					@context.Level
+				</MudChip>
+			</MudTd>
+			<MudTd DataLabel="Source">@(context.Source ?? "Server")</MudTd>
+			<MudTd DataLabel="Category">
+				<MudText Typo="Typo.caption" Style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+					@context.Category
+				</MudText>
+			</MudTd>
+			<MudTd DataLabel="Message">
+				<MudText Typo="Typo.body2" Style="max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+					@context.Message
+				</MudText>
+			</MudTd>
+			<MudTd DataLabel="Actions">
+				<MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Small"
+					Color="Color.Default"
+					OnClick="@(() => ShowDetailAsync(context))" />
+				<MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small"
+					Color="Color.Default" title="Copy for AI"
+					OnClick="@(() => CopyForAiAsync(context))" />
+			</MudTd>
+		</RowTemplate>
+	</MudTable>
+
+	<MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="2" Class="mt-4">
+		<MudButton Variant="Variant.Outlined" Disabled="@(_page <= 0)"
+			OnClick="PreviousPageAsync">Previous</MudButton>
+		<MudText Typo="Typo.body2">Page @(_page + 1) of @((_totalCount + PageSize - 1) / PageSize)</MudText>
+		<MudButton Variant="Variant.Outlined"
+			Disabled="@((_page + 1) * PageSize >= _totalCount)"
+			OnClick="NextPageAsync">Next</MudButton>
+	</MudStack>
+}

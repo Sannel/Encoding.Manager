@@ -28,6 +28,7 @@ using Sannel.Encoding.Manager.Web.Features.Omdb.Services;
 using Sannel.Encoding.Manager.HandBrake;
 using Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
 using Sannel.Encoding.Manager.Web.Features.Configuration;
+using Sannel.Encoding.Manager.Web.Features.Logging.Services;
 
 // Handle the 'configure' subcommand before building the web host.
 if (args.Length > 0 && args[0].Equals("configure", StringComparison.OrdinalIgnoreCase))
@@ -174,6 +175,9 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
 
 // Application settings
 builder.Services.AddScoped<ISettingsService, SettingsService>();
+
+// Logging
+builder.Logging.AddDBLogProvider();
 
 // Encoding queue
 builder.Services.AddSingleton<QueueChangeNotifier>();

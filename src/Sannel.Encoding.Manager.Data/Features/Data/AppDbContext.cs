@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities;
+using Sannel.Encoding.Manager.Web.Features.Logging.Entities;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
 using Sannel.Encoding.Manager.Web.Features.Scan.Entities;
 using Sannel.Encoding.Manager.Web.Features.Settings.Entities;
@@ -37,6 +38,7 @@ public class AppDbContext : DbContext
 	public DbSet<JellyfinServer> JellyfinServers => this.Set<JellyfinServer>();
 	public DbSet<JellyfinSyncProfile> JellyfinSyncProfiles => this.Set<JellyfinSyncProfile>();
 	public DbSet<JellyfinDestinationRoot> JellyfinDestinationRoots => this.Set<JellyfinDestinationRoot>();
+	public DbSet<LogEntry> LogEntries => this.Set<LogEntry>();
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
@@ -98,6 +100,14 @@ public class AppDbContext : DbContext
 				.WithMany()
 				.HasForeignKey(e => e.ServerId)
 				.OnDelete(DeleteBehavior.Cascade);
+		});
+
+		modelBuilder.Entity<LogEntry>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasIndex(e => e.Timestamp);
+			entity.HasIndex(e => e.Level);
+			entity.HasIndex(e => e.Source);
 		});
 	}
 }
