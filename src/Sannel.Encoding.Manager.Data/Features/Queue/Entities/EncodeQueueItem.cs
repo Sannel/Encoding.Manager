@@ -64,4 +64,24 @@ public class EncodeQueueItem
 	/// User-defined sort position. Lower value = higher priority. Assigned on add; swapped on reorder.
 	/// </summary>
 	public int SortOrder { get; set; }
+
+	// ── Jellyfin integration (all nullable — non-Jellyfin jobs leave these null) ──
+
+	/// <summary>FK → JellyfinServer used as the source.</summary>
+	public Guid? JellyfinSourceServerId { get; set; }
+
+	/// <summary>Item ID on the source Jellyfin server.</summary>
+	public string? JellyfinSourceItemId { get; set; }
+
+	/// <summary>FK → JellyfinServer to refresh after encode.</summary>
+	public Guid? JellyfinDestServerId { get; set; }
+
+	/// <summary>FK → JellyfinDestinationRoot selected for SFTP delivery.</summary>
+	public Guid? JellyfinDestRootId { get; set; }
+
+	/// <summary>Auto-built relative path within the destination root.</summary>
+	public string? JellyfinDestRelativePath { get; set; }
+
+	/// <summary>"Pending", "Uploading", "Uploaded", or "Failed".</summary>
+	public string? JellyfinUploadStatus { get; set; }
 }

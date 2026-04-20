@@ -1,0 +1,54 @@
+<MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h6">Queue: @Item.Name</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudStack Spacing="3">
+			<MudText Typo="Typo.body2">
+				<strong>Type:</strong> @Item.Type
+				@if (Item.ProductionYear.HasValue)
+				{
+					@($" ({Item.ProductionYear})")
+				}
+			</MudText>
+
+			<MudSelect @bind-Value="_destServerId" Label="Destination Server" Variant="Variant.Outlined"
+				AnchorOrigin="Origin.BottomCenter">
+				@foreach (var server in _destServers)
+				{
+					<MudSelectItem Value="server.Id">@server.Name</MudSelectItem>
+				}
+			</MudSelect>
+
+			@if (_destRoots.Count > 0)
+			{
+				<MudSelect @bind-Value="_destRootId" Label="Destination Root" Variant="Variant.Outlined"
+					AnchorOrigin="Origin.BottomCenter">
+					@foreach (var root in _destRoots)
+					{
+						<MudSelectItem Value="root.Id">@root.Name — @root.RootPath</MudSelectItem>
+					}
+				</MudSelect>
+			}
+
+			<MudSelect @bind-Value="_presetLabel" Label="Encoding Preset" Variant="Variant.Outlined"
+				AnchorOrigin="Origin.BottomCenter">
+				@foreach (var preset in _presets)
+				{
+					<MudSelectItem Value="@preset.Label">@preset.Label</MudSelectItem>
+				}
+			</MudSelect>
+		</MudStack>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancel</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Primary"
+			OnClick="QueueAsync" Disabled="@(!CanQueue || _isQueueing)">
+			@if (_isQueueing)
+			{
+				<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+			}
+			Queue
+		</MudButton>
+	</DialogActions>
+</MudDialog>

@@ -22,6 +22,120 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinDestinationRoot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RootPath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ServerId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServerId");
+
+                    b.ToTable("JellyfinDestinationRoots");
+                });
+
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinServer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ApiKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BaseUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedAt")
+                        .IsRequired()
+                        .HasColumnType("character varying(48)");
+
+                    b.Property<bool>("IsDestination")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsSource")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SftpHost")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SftpPassword")
+                        .HasColumnType("text");
+
+                    b.Property<int>("SftpPort")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SftpUsername")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("JellyfinServers");
+                });
+
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinSyncProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastSyncStatus")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LastSyncedAt")
+                        .HasColumnType("character varying(48)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ServerAId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ServerBId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SyncIntervalMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserIdA")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserIdB")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServerAId");
+
+                    b.HasIndex("ServerBId");
+
+                    b.ToTable("JellyfinSyncProfiles");
+                });
+
             modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -54,6 +168,24 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
 
                     b.Property<bool>("IsArchived")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("JellyfinDestRelativePath")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("JellyfinDestRootId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("JellyfinDestServerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("JellyfinSourceItemId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("JellyfinSourceServerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("JellyfinUploadStatus")
+                        .HasColumnType("text");
 
                     b.Property<string>("Mode")
                         .IsRequired()
@@ -253,6 +385,36 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                     b.HasKey("SeriesId");
 
                     b.ToTable("TvdbSeriesCache");
+                });
+
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinDestinationRoot", b =>
+                {
+                    b.HasOne("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinServer", "Server")
+                        .WithMany()
+                        .HasForeignKey("ServerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Server");
+                });
+
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinSyncProfile", b =>
+                {
+                    b.HasOne("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinServer", "ServerA")
+                        .WithMany()
+                        .HasForeignKey("ServerAId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinServer", "ServerB")
+                        .WithMany()
+                        .HasForeignKey("ServerBId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ServerA");
+
+                    b.Navigation("ServerB");
                 });
 #pragma warning restore 612, 618
         }

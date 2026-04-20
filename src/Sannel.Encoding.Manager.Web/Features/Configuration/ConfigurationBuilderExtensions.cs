@@ -18,6 +18,8 @@ public static class ConfigurationBuilderExtensions
 		var directory = Path.GetDirectoryName(fullPath)!;
 		var fileName = Path.GetFileName(fullPath);
 
+		Directory.CreateDirectory(directory);
+
 		return builder.Add(new EncryptedJsonConfigurationSource
 		{
 			FileProvider = new PhysicalFileProvider(directory),

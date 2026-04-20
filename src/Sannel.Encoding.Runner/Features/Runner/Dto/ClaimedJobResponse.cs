@@ -16,6 +16,12 @@ public class ClaimedJobResponse
 	public string? TrackDestinationRoot { get; set; }
 	public string[] AudioLanguages { get; set; } = [];
 	public string[] SubtitleLanguages { get; set; } = [];
+
+	/// <summary>Jellyfin download URL when the source is a Jellyfin server. Null for local disc jobs.</summary>
+	public string? JellyfinDownloadUrl { get; set; }
+
+	/// <summary>Decrypted Jellyfin API key for downloading the source item.</summary>
+	public string? JellyfinApiKey { get; set; }
 }
 
 /// <summary>Location of a preset file relative to a filesystem root.</summary>

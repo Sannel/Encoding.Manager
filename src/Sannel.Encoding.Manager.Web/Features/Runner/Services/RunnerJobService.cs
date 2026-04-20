@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Sannel.Encoding.Manager.Web.Features.Data;
@@ -17,17 +18,20 @@ public class RunnerJobService : IRunnerJobService
 	private readonly ILogger<RunnerJobService> _logger;
 	private readonly IHubContext<QueueHub> _hubContext;
 	private readonly QueueChangeNotifier _notifier;
+	private readonly IDataProtector _protector;
 
 	public RunnerJobService(
 		IDbContextFactory<AppDbContext> dbFactory,
 		ILogger<RunnerJobService> logger,
 		IHubContext<QueueHub> hubContext,
-		QueueChangeNotifier notifier)
+		QueueChangeNotifier notifier,
+		IDataProtectionProvider dpProvider)
 	{
 		_dbFactory = dbFactory;
 		_logger = logger;
 		_hubContext = hubContext;
 		_notifier = notifier;
+		_protector = dpProvider.CreateProtector("Jellyfin.Credentials");
 	}
 
 	/// <inheritdoc />
@@ -170,7 +174,9 @@ public class RunnerJobService : IRunnerJobService
 			AudioLanguages = settings.AudioLanguages
 				.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
 			SubtitleLanguages = settings.SubtitleLanguages
-				.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+				.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+			JellyfinDownloadUrl = await BuildJellyfinDownloadUrlAsync(ctx, nextItem, ct).ConfigureAwait(false),
+			JellyfinApiKey = await GetDecryptedJellyfinApiKeyAsync(ctx, nextItem, ct).ConfigureAwait(false)
 		};
 	}
 
@@ -308,5 +314,47 @@ public class RunnerJobService : IRunnerJobService
 		}
 
 		return presetMap;
+	}
+
+	private async Task<string?> BuildJellyfinDownloadUrlAsync(
+		AppDbContext ctx, Queue.Entities.EncodeQueueItem item, CancellationToken ct)
+	{
+		if (item.JellyfinSourceServerId is null || string.IsNullOrEmpty(item.JellyfinSourceItemId))
+		{
+			return null;
+		}
+
+		var server = await ctx.JellyfinServers
+			.AsNoTracking()
+			.FirstOrDefaultAsync(s => s.Id == item.JellyfinSourceServerId, ct)
+			.ConfigureAwait(false);
+
+		if (server is null)
+		{
+			return null;
+		}
+
+		return $"{server.BaseUrl.TrimEnd('/')}/Items/{item.JellyfinSourceItemId}/Download";
+	}
+
+	private async Task<string?> GetDecryptedJellyfinApiKeyAsync(
+		AppDbContext ctx, Queue.Entities.EncodeQueueItem item, CancellationToken ct)
+	{
+		if (item.JellyfinSourceServerId is null)
+		{
+			return null;
+		}
+
+		var server = await ctx.JellyfinServers
+			.AsNoTracking()
+			.FirstOrDefaultAsync(s => s.Id == item.JellyfinSourceServerId, ct)
+			.ConfigureAwait(false);
+
+		if (server is null)
+		{
+			return null;
+		}
+
+		return _protector.Unprotect(server.ApiKey);
 	}
 }

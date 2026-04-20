@@ -1,0 +1,83 @@
+@page "/jellyfin/browse/{ServerId:guid}"
+@rendermode InteractiveServer
+
+<PageTitle>Browse Jellyfin Library</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+	<MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Href="/jellyfin"
+		Color="Color.Default" Title="Back to Jellyfin" />
+	<MudText Typo="Typo.h4">Browse: @_serverName</MudText>
+</MudStack>
+
+<MudCard Class="mb-4 pa-4">
+	<MudGrid>
+		<MudItem xs="12" sm="4">
+			<MudSelect @bind-Value="_selectedType" Label="Type" Variant="Variant.Outlined"
+				AnchorOrigin="Origin.BottomCenter">
+				<MudSelectItem Value="@("Movie")">Movies</MudSelectItem>
+				<MudSelectItem Value="@("Series")">Series</MudSelectItem>
+				<MudSelectItem Value="@("Episode")">Episodes</MudSelectItem>
+			</MudSelect>
+		</MudItem>
+		<MudItem xs="12" sm="4">
+			<MudTextField @bind-Value="_search" Label="Search" Variant="Variant.Outlined"
+				Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search"
+				OnAdornmentClick="SearchAsync" OnKeyDown="OnSearchKeyDown" />
+		</MudItem>
+		<MudItem xs="12" sm="4" Class="d-flex align-center">
+			<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SearchAsync">
+				Search
+			</MudButton>
+		</MudItem>
+	</MudGrid>
+</MudCard>
+
+@if (_isLoading)
+{
+	<MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+}
+else if (_items.Count == 0)
+{
+	<MudAlert Severity="Severity.Info">No items found.</MudAlert>
+}
+else
+{
+	<MudTable Items="_items" Hover="true" Striped="true" Dense="true">
+		<HeaderContent>
+			<MudTh>Name</MudTh>
+			<MudTh>Type</MudTh>
+			<MudTh>Year</MudTh>
+			<MudTh>Actions</MudTh>
+		</HeaderContent>
+		<RowTemplate>
+			<MudTd DataLabel="Name">@context.Name</MudTd>
+			<MudTd DataLabel="Type">@context.Type</MudTd>
+			<MudTd DataLabel="Year">@(context.ProductionYear?.ToString() ?? "—")</MudTd>
+			<MudTd DataLabel="Actions">
+				@if (string.Equals(context.Type, "Series", StringComparison.OrdinalIgnoreCase))
+				{
+					<MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
+						OnClick="@(() => DrillIntoAsync(context.Id))">
+						Browse
+					</MudButton>
+				}
+				else
+				{
+					<MudButton Variant="Variant.Text" Color="Color.Success" Size="Size.Small"
+						OnClick="@(() => OpenQueueDialogAsync(context))">
+						Encode
+					</MudButton>
+				}
+			</MudTd>
+		</RowTemplate>
+	</MudTable>
+
+	<MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="2" Class="mt-4">
+		<MudButton Variant="Variant.Outlined" Disabled="@(_page <= 0)"
+			OnClick="PreviousPageAsync">Previous</MudButton>
+		<MudText Typo="Typo.body2">Page @(_page + 1)</MudText>
+		<MudButton Variant="Variant.Outlined"
+			Disabled="@((_page + 1) * PageSize >= _totalCount)"
+			OnClick="NextPageAsync">Next</MudButton>
+	</MudStack>
+}

@@ -207,6 +207,25 @@ builder.Services.AddOptions<OmdbOptions>()
     });
 builder.Services.AddHttpClient<IOmdbService, OmdbService>();
 
+// Jellyfin integration
+builder.Services.Configure<Sannel.Encoding.Manager.Web.Features.Jellyfin.Options.JellyfinOptions>(
+    builder.Configuration.GetSection("Jellyfin"));
+builder.Services.AddSingleton<Sannel.Encoding.Manager.Jellyfin.IJellyfinClientFactory,
+    Sannel.Encoding.Manager.Jellyfin.JellyfinClientFactory>();
+builder.Services.AddScoped<Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.JellyfinServerService>();
+builder.Services.AddScoped<Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.IJellyfinServerService>(
+    sp => sp.GetRequiredService<Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.JellyfinServerService>());
+builder.Services.AddScoped<Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.IJellyfinSyncService,
+    Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.JellyfinSyncService>();
+builder.Services.AddScoped<Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.IJellyfinSftpService,
+    Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.JellyfinSftpService>();
+builder.Services.AddSingleton<Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.IJellyfinPathBuilder,
+    Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.JellyfinPathBuilder>();
+builder.Services.AddScoped<Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.IJellyfinEncodeService,
+    Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.JellyfinEncodeService>();
+builder.Services.AddHostedService<Sannel.Encoding.Manager.Web.Features.Jellyfin.BackgroundServices.PlayStateSyncWorker>();
+builder.Services.AddHostedService<Sannel.Encoding.Manager.Web.Features.Jellyfin.BackgroundServices.JellyfinUploadWorker>();
+
 // MVC Controllers for API endpoints
 builder.Services.AddControllers();
 builder.Services.AddSignalR();

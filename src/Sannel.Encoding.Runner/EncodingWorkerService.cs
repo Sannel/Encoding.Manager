@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
@@ -16,6 +17,7 @@ public class EncodingWorkerService : BackgroundService
 	private readonly PathNormalizer _pathNormalizer;
 	private readonly RunnerOptions _runnerOptions;
 	private readonly FilesystemOptions _fsOptions;
+	private readonly IHttpClientFactory _httpClientFactory;
 	private readonly ILogger<EncodingWorkerService> _logger;
 	private static readonly TimeSpan CancelPollInterval = TimeSpan.FromSeconds(2);
 
@@ -25,6 +27,7 @@ public class EncodingWorkerService : BackgroundService
 		PathNormalizer pathNormalizer,
 		IOptions<RunnerOptions> runnerOptions,
 		IOptions<FilesystemOptions> fsOptions,
+		IHttpClientFactory httpClientFactory,
 		ILogger<EncodingWorkerService> logger)
 	{
 		_api = api;
@@ -32,6 +35,7 @@ public class EncodingWorkerService : BackgroundService
 		_pathNormalizer = pathNormalizer;
 		_runnerOptions = runnerOptions.Value;
 		_fsOptions = fsOptions.Value;
+		_httpClientFactory = httpClientFactory;
 		_logger = logger;
 	}
 
@@ -94,10 +98,23 @@ public class EncodingWorkerService : BackgroundService
 
 	private async Task ProcessJobAsync(ClaimedJobResponse job, CancellationToken ct)
 	{
+		string? jellyfinTempFile = null;
 		try
 		{
-			var absDiscPath = ResolveDiscPath(job);
-			_logger.LogInformation("Resolved disc path: {Path}", absDiscPath);
+			string absDiscPath;
+
+			// If this is a Jellyfin-sourced job, download the source file to tmp
+			if (!string.IsNullOrEmpty(job.JellyfinDownloadUrl) && !string.IsNullOrEmpty(job.JellyfinApiKey))
+			{
+				absDiscPath = await DownloadJellyfinSourceAsync(job, ct);
+				jellyfinTempFile = absDiscPath;
+				_logger.LogInformation("Downloaded Jellyfin source to: {Path}", absDiscPath);
+			}
+			else
+			{
+				absDiscPath = ResolveDiscPath(job);
+				_logger.LogInformation("Resolved disc path: {Path}", absDiscPath);
+			}
 
 			if (!File.Exists(absDiscPath) && !IsDirectoryAccessible(absDiscPath))
 			{
@@ -298,6 +315,10 @@ public class EncodingWorkerService : BackgroundService
 		{
 			_logger.LogError(ex, "Unhandled error processing job {JobId}.", job.JobId);
 			await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: ex.Message, ct: ct);
+		}
+		finally
+		{
+			CleanupTempFile(jellyfinTempFile);
 		}
 	}
 
@@ -593,6 +614,54 @@ public class EncodingWorkerService : BackgroundService
 		catch
 		{
 			return false;
+		}
+	}
+
+	private async Task<string> DownloadJellyfinSourceAsync(ClaimedJobResponse job, CancellationToken ct)
+	{
+		var tempDir = Path.Combine(Path.GetTempPath(), "encoding-manager", job.JobId.ToString());
+		Directory.CreateDirectory(tempDir);
+		var tempFile = Path.Combine(tempDir, "source.mkv");
+
+		_logger.LogInformation("Downloading Jellyfin source for job {JobId} from {Url}", job.JobId, job.JellyfinDownloadUrl);
+
+		using var client = _httpClientFactory.CreateClient();
+		using var request = new HttpRequestMessage(HttpMethod.Get, job.JellyfinDownloadUrl);
+		request.Headers.Add("X-Emby-Token", job.JellyfinApiKey);
+
+		using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+		response.EnsureSuccessStatusCode();
+
+		await using var fileStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true);
+		await response.Content.CopyToAsync(fileStream, ct);
+
+		_logger.LogInformation("Jellyfin source downloaded ({Size} bytes): {Path}", new FileInfo(tempFile).Length, tempFile);
+		return tempFile;
+	}
+
+	private void CleanupTempFile(string? tempFile)
+	{
+		if (string.IsNullOrEmpty(tempFile))
+		{
+			return;
+		}
+
+		try
+		{
+			if (File.Exists(tempFile))
+			{
+				File.Delete(tempFile);
+			}
+
+			var dir = Path.GetDirectoryName(tempFile);
+			if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir))
+			{
+				Directory.Delete(dir, recursive: true);
+			}
+		}
+		catch (Exception ex)
+		{
+			_logger.LogWarning(ex, "Failed to clean up temp file: {Path}", tempFile);
 		}
 	}
 }
