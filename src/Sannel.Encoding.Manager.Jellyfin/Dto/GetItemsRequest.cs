@@ -4,7 +4,7 @@ public class GetItemsRequest
 {
 	public string? IncludeItemTypes { get; set; }
 	public bool Recursive { get; set; } = true;
-	public string Fields { get; set; } = "ProviderIds,UserData";
+	public string Fields { get; set; } = "ProviderIds,UserData,SeriesProviderIds";
 	public string? ParentId { get; set; }
 	public string? SearchTerm { get; set; }
 	public int? StartIndex { get; set; }

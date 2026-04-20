@@ -8,22 +8,20 @@ public partial class JellyfinPathBuilder : IJellyfinPathBuilder
 {
 	public string BuildRemotePath(JellyfinDestinationRoot root, JellyfinItem item, string extension = "mkv")
 	{
-		var rootPath = root.RootPath.TrimEnd('/');
-
 		if (string.Equals(item.Type, "Episode", StringComparison.OrdinalIgnoreCase))
 		{
-			return this.BuildEpisodePath(rootPath, item, extension);
+			return this.BuildEpisodePath(item, extension);
 		}
 
 		if (string.Equals(item.Type, "Movie", StringComparison.OrdinalIgnoreCase))
 		{
-			return this.BuildMoviePath(rootPath, item, extension);
+			return this.BuildMoviePath(item, extension);
 		}
 
 		throw new ArgumentException($"Unsupported item type: {item.Type}");
 	}
 
-	private string BuildEpisodePath(string rootPath, JellyfinItem item, string extension)
+	private string BuildEpisodePath(JellyfinItem item, string extension)
 	{
 		var seriesName = Sanitize(item.SeriesName ?? "Unknown Series");
 		var seasonNumber = item.ParentIndexNumber ?? 0;
@@ -38,10 +36,10 @@ public partial class JellyfinPathBuilder : IJellyfinPathBuilder
 		var seasonFolder = $"Season {seasonNumber:D2}";
 		var fileName = $"{seriesName} S{seasonNumber:D2}E{episodeNumber:D2} - {episodeTitle}.{extension}";
 
-		return $"{rootPath}/{seriesFolder}/{seasonFolder}/{fileName}";
+		return $"{seriesFolder}/{seasonFolder}/{fileName}";
 	}
 
-	private string BuildMoviePath(string rootPath, JellyfinItem item, string extension)
+	private string BuildMoviePath(JellyfinItem item, string extension)
 	{
 		var title = Sanitize(item.Name);
 		var year = item.ProductionYear;
@@ -54,7 +52,7 @@ public partial class JellyfinPathBuilder : IJellyfinPathBuilder
 
 		var fileName = $"{nameWithYear}.{extension}";
 
-		return $"{rootPath}/{folder}/{fileName}";
+		return $"{folder}/{fileName}";
 	}
 
 	private static string BuildProviderTag(JellyfinProviderIds? providerIds)

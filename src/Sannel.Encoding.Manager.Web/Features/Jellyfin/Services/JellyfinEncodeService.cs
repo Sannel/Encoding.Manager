@@ -112,18 +112,19 @@ public class JellyfinEncodeService : IJellyfinEncodeService
 			.ConfigureAwait(false)
 			?? throw new InvalidOperationException("Destination root not found.");
 
+		var remotePath = $"{destRoot.RootPath.TrimEnd('/')}/{item.JellyfinDestRelativePath}";
+
 		try
 		{
 			item.JellyfinUploadStatus = "Uploading";
 			await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
 
-			// Resolve the encoded output files and upload
-			var remotePath = $"{destRoot.RootPath.TrimEnd('/')}/{item.JellyfinDestRelativePath}";
-
-			// For now, upload the encoded output from TrackDestinationRoot
-			// The actual output path resolution would depend on the encode track config
-			// This is a simplified version — the full implementation would resolve each track output
-			await this._sftpService.UploadFileAsync(destServer, item.DiscPath, remotePath, ct).ConfigureAwait(false);
+			// Upload is only possible if we have a local file (non-Jellyfin jobs or after runner uploads).
+			// For Jellyfin-sourced jobs, the runner will handle the upload — server only does library refresh.
+			if (!string.IsNullOrEmpty(item.DiscPath))
+			{
+				await this._sftpService.UploadFileAsync(destServer, item.DiscPath, remotePath, ct).ConfigureAwait(false);
+			}
 
 			// Trigger library refresh
 			var client = this._clientFactory.CreateClient(destServer.BaseUrl, this._serverService.DecryptApiKey(destServer.ApiKey));
@@ -136,7 +137,7 @@ public class JellyfinEncodeService : IJellyfinEncodeService
 		}
 		catch (Exception ex)
 		{
-			this._logger.LogError(ex, "SFTP upload failed for job {JobId}.", queueItemId);
+			this._logger.LogError(ex, "SFTP upload failed for job {JobId}. LocalPath={LocalPath}, RemotePath={RemotePath}.", queueItemId, item.DiscPath, remotePath);
 			item.JellyfinUploadStatus = "Failed";
 			await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
 		}

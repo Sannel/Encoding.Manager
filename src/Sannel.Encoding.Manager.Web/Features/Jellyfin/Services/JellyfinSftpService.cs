@@ -56,9 +56,17 @@ public class JellyfinSftpService : IJellyfinSftpService
 		foreach (var part in parts)
 		{
 			current += "/" + part;
-			if (!client.Exists(current))
+			try
 			{
-				client.CreateDirectory(current);
+				if (!client.Exists(current))
+				{
+					client.CreateDirectory(current);
+				}
+			}
+			catch (Exception ex)
+			{
+				this._logger.LogError(ex, "Failed to create remote directory '{Directory}' (full target: '{RemotePath}').", current, remotePath);
+				throw;
 			}
 		}
 	}
