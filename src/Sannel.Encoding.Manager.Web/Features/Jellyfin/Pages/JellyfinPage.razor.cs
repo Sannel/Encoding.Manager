@@ -30,6 +30,7 @@ public partial class JellyfinPage : ComponentBase
 	private List<JellyfinServer> _servers = [];
 	private List<DestRootViewModel> _destRoots = [];
 	private List<JellyfinSyncProfile> _syncProfiles = [];
+	private readonly Dictionary<Guid, (int Processed, int Total)> _syncProgress = [];
 	private bool _isLoadingServers = true;
 	private bool _isLoadingRoots = true;
 	private bool _isLoadingProfiles = true;
@@ -252,23 +253,36 @@ public partial class JellyfinPage : ComponentBase
 
 	private async Task RunSyncNowAsync(Guid profileId)
 	{
+		var profile = await this.SyncService.GetSyncProfileAsync(profileId);
+		if (profile is null)
+		{
+			this.Snackbar.Add("Sync profile not found.", Severity.Warning);
+			return;
+		}
+
+		this._syncProgress[profileId] = (0, 0);
+		this.StateHasChanged();
+
+		var progress = new Progress<(int Processed, int Total)>(p =>
+		{
+			this._syncProgress[profileId] = p;
+			this.InvokeAsync(this.StateHasChanged);
+		});
+
 		try
 		{
-			var profile = await this.SyncService.GetSyncProfileAsync(profileId);
-			if (profile is null)
-			{
-				this.Snackbar.Add("Sync profile not found.", Severity.Warning);
-				return;
-			}
-
-			this.Snackbar.Add("Sync started...", Severity.Info);
-			await this.SyncService.SyncProfileAsync(profile);
+			await this.SyncService.SyncProfileAsync(profile, progress);
 			await this.LoadSyncProfilesAsync();
 			this.Snackbar.Add("Sync completed.", Severity.Success);
 		}
 		catch (Exception ex)
 		{
 			this.Snackbar.Add($"Sync failed: {ex.Message}", Severity.Error);
+		}
+		finally
+		{
+			this._syncProgress.Remove(profileId);
+			this.StateHasChanged();
 		}
 	}
 

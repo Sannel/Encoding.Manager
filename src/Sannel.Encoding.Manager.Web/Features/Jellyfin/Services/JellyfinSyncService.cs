@@ -102,7 +102,7 @@ public class JellyfinSyncService : IJellyfinSyncService
 		return true;
 	}
 
-	public async Task SyncProfileAsync(JellyfinSyncProfile profile, CancellationToken ct = default)
+	public async Task SyncProfileAsync(JellyfinSyncProfile profile, IProgress<(int Processed, int Total)>? progress = null, CancellationToken ct = default)
 	{
 		await using var ctx = await this._dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
 		var tracked = await ctx.JellyfinSyncProfiles
@@ -127,7 +127,7 @@ public class JellyfinSyncService : IJellyfinSyncService
 				tracked.ServerB.BaseUrl,
 				this._serverService.DecryptApiKey(tracked.ServerB.ApiKey));
 
-			await this.SyncPlayStatesAsync(clientA, tracked.UserIdA, clientB, tracked.UserIdB, ct).ConfigureAwait(false);
+			await this.SyncPlayStatesAsync(clientA, tracked.UserIdA, clientB, tracked.UserIdB, progress, ct).ConfigureAwait(false);
 
 			tracked.LastSyncedAt = DateTimeOffset.UtcNow;
 			tracked.LastSyncStatus = "Success";
@@ -147,26 +147,32 @@ public class JellyfinSyncService : IJellyfinSyncService
 	private async Task SyncPlayStatesAsync(
 		IJellyfinClient clientA, string userIdA,
 		IJellyfinClient clientB, string userIdB,
+		IProgress<(int Processed, int Total)>? progress,
 		CancellationToken ct)
 	{
-		// Fetch all played items from both users with UserData
+		// Fetch all items from both users with UserData
 		var itemsA = await this.FetchAllUserItemsAsync(clientA, userIdA, ct).ConfigureAwait(false);
 		var itemsB = await this.FetchAllUserItemsAsync(clientB, userIdB, ct).ConfigureAwait(false);
 
-		// Build lookup by provider IDs for matching across servers
-		var lookupB = this.BuildProviderLookup(itemsB);
+		// Build lookup by name/year for matching across servers
+		var lookupB = BuildItemLookup(itemsB);
 
+		var total = itemsA.Count;
+		var processed = 0;
 		var synced = 0;
+		progress?.Report((0, total));
 		foreach (var itemA in itemsA)
 		{
-			if (itemA.UserData is null || itemA.ProviderIds is null)
+			if (itemA.UserData is null)
 			{
+				progress?.Report((++processed, total));
 				continue;
 			}
 
-			var providerKey = this.GetProviderKey(itemA.ProviderIds);
-			if (providerKey is null || !lookupB.TryGetValue(providerKey, out var matchingB))
+			var matchKey = GetMatchKey(itemA);
+			if (matchKey is null || !lookupB.TryGetValue(matchKey, out var matchingB))
 			{
+				progress?.Report((++processed, total));
 				continue;
 			}
 
@@ -179,6 +185,7 @@ public class JellyfinSyncService : IJellyfinSyncService
 
 			if (dateA is null && dateB is null)
 			{
+				progress?.Report((++processed, total));
 				continue;
 			}
 
@@ -213,6 +220,8 @@ public class JellyfinSyncService : IJellyfinSyncService
 					synced++;
 				}
 			}
+
+			progress?.Report((++processed, total));
 		}
 
 		this._logger.LogInformation("Synced {Count} play state/position updates.", synced);
@@ -232,7 +241,7 @@ public class JellyfinSyncService : IJellyfinSyncService
 				Recursive = true,
 				StartIndex = startIndex,
 				Limit = pageSize,
-				Fields = "ProviderIds,UserData",
+				Fields = "UserData",
 			}, ct).ConfigureAwait(false);
 
 			allItems.AddRange(response.Items);
@@ -248,17 +257,12 @@ public class JellyfinSyncService : IJellyfinSyncService
 		return allItems;
 	}
 
-	private Dictionary<string, JellyfinItem> BuildProviderLookup(List<JellyfinItem> items)
+	private static Dictionary<string, JellyfinItem> BuildItemLookup(List<JellyfinItem> items)
 	{
 		var lookup = new Dictionary<string, JellyfinItem>(StringComparer.OrdinalIgnoreCase);
 		foreach (var item in items)
 		{
-			if (item.ProviderIds is null)
-			{
-				continue;
-			}
-
-			var key = this.GetProviderKey(item.ProviderIds);
+			var key = GetMatchKey(item);
 			if (key is not null)
 			{
 				lookup.TryAdd(key, item);
@@ -268,21 +272,34 @@ public class JellyfinSyncService : IJellyfinSyncService
 		return lookup;
 	}
 
-	private string? GetProviderKey(JellyfinProviderIds providerIds)
+	private static string? GetMatchKey(JellyfinItem item)
 	{
-		if (!string.IsNullOrEmpty(providerIds.Tvdb))
+		if (string.Equals(item.Type, "Episode", StringComparison.OrdinalIgnoreCase))
 		{
-			return $"tvdb:{providerIds.Tvdb}";
+			var series = item.SeriesName?.Trim();
+			var season = item.ParentIndexNumber;
+			var episode = item.IndexNumber;
+			if (string.IsNullOrEmpty(series) || season is null || episode is null)
+			{
+				return null;
+			}
+
+			return item.ProductionYear.HasValue
+				? $"episode:{series}|{item.ProductionYear}|s{season:D2}e{episode:D2}"
+				: $"episode:{series}|s{season:D2}e{episode:D2}";
 		}
 
-		if (!string.IsNullOrEmpty(providerIds.Tmdb))
+		if (string.Equals(item.Type, "Movie", StringComparison.OrdinalIgnoreCase))
 		{
-			return $"tmdb:{providerIds.Tmdb}";
-		}
+			var name = item.Name?.Trim();
+			if (string.IsNullOrEmpty(name))
+			{
+				return null;
+			}
 
-		if (!string.IsNullOrEmpty(providerIds.Imdb))
-		{
-			return $"imdb:{providerIds.Imdb}";
+			return item.ProductionYear.HasValue
+				? $"movie:{name}|{item.ProductionYear}"
+				: $"movie:{name}";
 		}
 
 		return null;

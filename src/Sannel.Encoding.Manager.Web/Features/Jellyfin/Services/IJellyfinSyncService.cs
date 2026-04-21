@@ -10,5 +10,5 @@ public interface IJellyfinSyncService
 	Task<JellyfinSyncProfile> CreateSyncProfileAsync(JellyfinSyncProfileDto dto, CancellationToken ct = default);
 	Task<JellyfinSyncProfile?> UpdateSyncProfileAsync(Guid id, JellyfinSyncProfileDto dto, CancellationToken ct = default);
 	Task<bool> DeleteSyncProfileAsync(Guid id, CancellationToken ct = default);
-	Task SyncProfileAsync(JellyfinSyncProfile profile, CancellationToken ct = default);
+	Task SyncProfileAsync(JellyfinSyncProfile profile, IProgress<(int Processed, int Total)>? progress = null, CancellationToken ct = default);
 }

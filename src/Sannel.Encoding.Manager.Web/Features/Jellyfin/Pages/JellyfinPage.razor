@@ -163,7 +163,21 @@
 						</MudChip>
 					</MudTd>
 					<MudTd DataLabel="Last Sync">
-						@if (context.LastSyncedAt.HasValue)
+						@if (_syncProgress.TryGetValue(context.Id, out var syncState))
+						{
+							@if (syncState.Total == 0)
+							{
+								<MudText Typo="Typo.caption">Fetching items...</MudText>
+								<MudProgressLinear Indeterminate="true" Color="Color.Primary" Rounded="true" Size="Size.Small" />
+							}
+							else
+							{
+								var pct = syncState.Processed * 100.0 / syncState.Total;
+								<MudText Typo="Typo.caption">Syncing @syncState.Processed / @syncState.Total (@((int)pct)%)</MudText>
+								<MudProgressLinear Value="pct" Color="Color.Primary" Rounded="true" Size="Size.Small" />
+							}
+						}
+						else if (context.LastSyncedAt.HasValue)
 						{
 							<MudText Typo="Typo.caption">@context.LastSyncedAt.Value.ToLocalTime().ToString("g")</MudText>
 							<MudChip T="string" Size="Size.Small"
@@ -180,6 +194,7 @@
 					<MudTd DataLabel="Actions">
 						<MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Success"
 							Size="Size.Small" Title="Run now"
+							Disabled="@_syncProgress.ContainsKey(context.Id)"
 							OnClick="@(() => RunSyncNowAsync(context.Id))" />
 						<MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Default"
 							Size="Size.Small" Title="Edit"

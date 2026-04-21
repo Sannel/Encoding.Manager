@@ -68,7 +68,7 @@ public class PlayStateSyncWorker : BackgroundService
 			try
 			{
 				this._logger.LogInformation("Running sync for profile {ProfileName}.", profile.Name);
-				await syncService.SyncProfileAsync(profile, ct).ConfigureAwait(false);
+				await syncService.SyncProfileAsync(profile, ct: ct).ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
