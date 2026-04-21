@@ -28,19 +28,7 @@ public partial class JellyfinPathBuilder : IJellyfinPathBuilder
 		var episodeNumber = item.IndexNumber ?? 0;
 		var episodeTitle = Sanitize(item.Name);
 		var tvdbId = ExtractTvdbIdFromPath(item.Path, levelsAboveFile: 2);
-		string providerTag;
-		if (!string.IsNullOrEmpty(tvdbId))
-		{
-			providerTag = $"[tvdbid-{tvdbId}]";
-		}
-		else
-		{
-			providerTag = BuildProviderTag(item.SeriesProviderIds);
-			if (string.IsNullOrEmpty(providerTag))
-			{
-				providerTag = BuildProviderTag(item.ProviderIds);
-			}
-		}
+		var providerTag = string.IsNullOrEmpty(tvdbId) ? string.Empty : $"[tvdbid-{tvdbId}]";
 
 		var seriesFolder = string.IsNullOrEmpty(providerTag)
 			? seriesName
@@ -56,7 +44,8 @@ public partial class JellyfinPathBuilder : IJellyfinPathBuilder
 	{
 		var title = Sanitize(item.Name);
 		var year = item.ProductionYear;
-		var providerTag = BuildProviderTag(item.ProviderIds);
+		var tvdbId = ExtractTvdbIdFromPath(item.Path, levelsAboveFile: 1);
+		var providerTag = string.IsNullOrEmpty(tvdbId) ? string.Empty : $"[tvdbid-{tvdbId}]";
 
 		var nameWithYear = year.HasValue ? $"{title} ({year})" : title;
 		var folder = string.IsNullOrEmpty(providerTag)
@@ -100,31 +89,6 @@ public partial class JellyfinPathBuilder : IJellyfinPathBuilder
 
 		var match = TvdbIdFolderRegex().Match(segments[folderIndex]);
 		return match.Success ? match.Groups[1].Value : null;
-	}
-
-	private static string BuildProviderTag(JellyfinProviderIds? providerIds)
-	{
-		if (providerIds is null)
-		{
-			return string.Empty;
-		}
-
-		if (!string.IsNullOrEmpty(providerIds.Tvdb))
-		{
-			return $"[tvdbid-{providerIds.Tvdb}]";
-		}
-
-		if (!string.IsNullOrEmpty(providerIds.Tmdb))
-		{
-			return $"[tmdbid-{providerIds.Tmdb}]";
-		}
-
-		if (!string.IsNullOrEmpty(providerIds.Imdb))
-		{
-			return $"[imdbid-{providerIds.Imdb}]";
-		}
-
-		return string.Empty;
 	}
 
 	private static string Sanitize(string name) =>
