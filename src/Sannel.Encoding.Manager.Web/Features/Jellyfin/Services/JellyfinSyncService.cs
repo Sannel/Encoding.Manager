@@ -170,21 +170,52 @@ public class JellyfinSyncService : IJellyfinSyncService
 				continue;
 			}
 
-			// Sync A -> B: if A is played and B is not, mark B played
-			if (itemA.UserData.Played && matchingB.UserData is { Played: false })
+			var dataA = itemA.UserData;
+			var dataB = matchingB.UserData;
+
+			// Whichever side has the more recent LastPlayedDate wins for both played state and position
+			var dateA = dataA.LastPlayedDate;
+			var dateB = dataB?.LastPlayedDate;
+
+			if (dateA is null && dateB is null)
 			{
-				await clientB.MarkPlayedAsync(userIdB, matchingB.Id, ct).ConfigureAwait(false);
-				synced++;
+				continue;
 			}
-			// Sync B -> A: if B is played and A is not, mark A played
-			else if (matchingB.UserData is { Played: true } && !itemA.UserData.Played)
+
+			var aWins = dateA.HasValue && (!dateB.HasValue || dateA > dateB);
+			if (aWins)
 			{
-				await clientA.MarkPlayedAsync(userIdA, itemA.Id, ct).ConfigureAwait(false);
-				synced++;
+				if (!dataA.Played || dataB is not { Played: true })
+				{
+					if (dataA.Played)
+					{
+						await clientB.MarkPlayedAsync(userIdB, matchingB.Id, ct).ConfigureAwait(false);
+					}
+					else
+					{
+						await clientB.UpdatePlaybackPositionAsync(userIdB, matchingB.Id, dataA.PlaybackPositionTicks, ct).ConfigureAwait(false);
+					}
+
+					synced++;
+				}
+			}
+			else
+			{
+				// B wins
+				if (dataB!.Played && !dataA.Played)
+				{
+					await clientA.MarkPlayedAsync(userIdA, itemA.Id, ct).ConfigureAwait(false);
+					synced++;
+				}
+				else if (!dataB.Played)
+				{
+					await clientA.UpdatePlaybackPositionAsync(userIdA, itemA.Id, dataB.PlaybackPositionTicks, ct).ConfigureAwait(false);
+					synced++;
+				}
 			}
 		}
 
-		this._logger.LogInformation("Synced {Count} play states.", synced);
+		this._logger.LogInformation("Synced {Count} play state/position updates.", synced);
 	}
 
 	private async Task<List<JellyfinItem>> FetchAllUserItemsAsync(IJellyfinClient client, string userId, CancellationToken ct)
