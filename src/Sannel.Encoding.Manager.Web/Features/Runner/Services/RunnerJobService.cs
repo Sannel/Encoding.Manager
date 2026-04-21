@@ -158,6 +158,8 @@ public class RunnerJobService : IRunnerJobService
 				: "{TVDBShow}/Season {SeasonNumber}/{EpisodeName}";
 		}
 
+		var jellyfinUploadInfo = await BuildJellyfinUploadInfoAsync(ctx, nextItem, ct).ConfigureAwait(false);
+
 		return new ClaimedJobResponse
 		{
 			JobId = nextItem.Id,
@@ -176,7 +178,12 @@ public class RunnerJobService : IRunnerJobService
 			SubtitleLanguages = settings.SubtitleLanguages
 				.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
 			JellyfinDownloadUrl = await BuildJellyfinDownloadUrlAsync(ctx, nextItem, ct).ConfigureAwait(false),
-			JellyfinApiKey = await GetDecryptedJellyfinApiKeyAsync(ctx, nextItem, ct).ConfigureAwait(false)
+			JellyfinApiKey = await GetDecryptedJellyfinApiKeyAsync(ctx, nextItem, ct).ConfigureAwait(false),
+			JellyfinSftpHost = jellyfinUploadInfo?.Host,
+			JellyfinSftpPort = jellyfinUploadInfo?.Port,
+			JellyfinSftpUsername = jellyfinUploadInfo?.Username,
+			JellyfinSftpPassword = jellyfinUploadInfo?.Password,
+			JellyfinSftpRemotePath = jellyfinUploadInfo?.RemotePath
 		};
 	}
 
@@ -356,5 +363,78 @@ public class RunnerJobService : IRunnerJobService
 		}
 
 		return _protector.Unprotect(server.ApiKey);
+	}
+
+	private async Task<JellyfinRunnerUploadInfo?> BuildJellyfinUploadInfoAsync(
+		AppDbContext ctx,
+		Queue.Entities.EncodeQueueItem item,
+		CancellationToken ct)
+	{
+		if (item.JellyfinDestServerId is null
+			|| item.JellyfinDestRootId is null
+			|| string.IsNullOrWhiteSpace(item.JellyfinDestRelativePath))
+		{
+			return null;
+		}
+
+		var destServer = await ctx.JellyfinServers
+			.AsNoTracking()
+			.FirstOrDefaultAsync(s => s.Id == item.JellyfinDestServerId, ct)
+			.ConfigureAwait(false);
+
+		if (destServer is null)
+		{
+			return null;
+		}
+
+		var destRoot = await ctx.JellyfinDestinationRoots
+			.AsNoTracking()
+			.FirstOrDefaultAsync(r => r.Id == item.JellyfinDestRootId, ct)
+			.ConfigureAwait(false);
+
+		if (destRoot is null)
+		{
+			return null;
+		}
+
+		string? host;
+		if (!string.IsNullOrWhiteSpace(destServer.SftpHost))
+		{
+			host = destServer.SftpHost;
+		}
+		else if (Uri.TryCreate(destServer.BaseUrl, UriKind.Absolute, out var baseUri))
+		{
+			host = baseUri.Host;
+		}
+		else
+		{
+			host = null;
+		}
+
+		var encryptedPassword = destServer.SftpPassword;
+		var password = string.IsNullOrWhiteSpace(encryptedPassword)
+			? null
+			: _protector.Unprotect(encryptedPassword);
+
+		var remotePath = $"{destRoot.RootPath.TrimEnd('/')}/{item.JellyfinDestRelativePath.TrimStart('/')}"
+			.Replace('\\', '/');
+
+		return new JellyfinRunnerUploadInfo
+		{
+			Host = host,
+			Port = destServer.SftpPort <= 0 ? 22 : destServer.SftpPort,
+			Username = destServer.SftpUsername,
+			Password = password,
+			RemotePath = remotePath
+		};
+	}
+
+	private sealed class JellyfinRunnerUploadInfo
+	{
+		public string? Host { get; init; }
+		public int Port { get; init; }
+		public string? Username { get; init; }
+		public string? Password { get; init; }
+		public string RemotePath { get; init; } = string.Empty;
 	}
 }

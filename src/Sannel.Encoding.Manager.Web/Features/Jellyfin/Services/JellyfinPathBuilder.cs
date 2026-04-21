@@ -34,7 +34,7 @@ public partial class JellyfinPathBuilder : IJellyfinPathBuilder
 			: $"{seriesName} {providerTag}";
 
 		var seasonFolder = $"Season {seasonNumber:D2}";
-		var fileName = $"{seriesName} S{seasonNumber:D2}E{episodeNumber:D2} - {episodeTitle}.{extension}";
+		var fileName = $"s{seasonNumber:D2}e{episodeNumber:D2} - {episodeTitle}.{extension}";
 
 		return $"{seriesFolder}/{seasonFolder}/{fileName}";
 	}

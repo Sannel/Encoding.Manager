@@ -148,6 +148,24 @@ public partial class LogsPage : ComponentBase
 		}
 	}
 
+	private async Task PurgeAllLogsAsync()
+	{
+		var result = await this.DialogService.ShowMessageBoxAsync(
+			"Purge All Logs",
+			"Delete all log entries, including entries from the last 30 days?",
+			yesText: "Delete All",
+			cancelText: "Cancel");
+
+		if (result == true)
+		{
+			await using var context = await this.ContextFactory.CreateDbContextAsync();
+			var deleted = await context.LogEntries.ExecuteDeleteAsync();
+			this.Snackbar.Add($"Deleted {deleted} log entries.", Severity.Success);
+			this._page = 0;
+			await this.LoadPageAsync();
+		}
+	}
+
 	private async Task ShowDetailAsync(LogEntry entry)
 	{
 		var parameters = new DialogParameters<LogDetailDialog>
