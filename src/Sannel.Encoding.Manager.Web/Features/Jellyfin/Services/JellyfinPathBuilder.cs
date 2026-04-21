@@ -28,6 +28,10 @@ public partial class JellyfinPathBuilder : IJellyfinPathBuilder
 		var episodeNumber = item.IndexNumber ?? 0;
 		var episodeTitle = Sanitize(item.Name);
 		var providerTag = BuildProviderTag(item.SeriesProviderIds);
+		if (string.IsNullOrEmpty(providerTag))
+		{
+			providerTag = BuildProviderTag(item.ProviderIds);
+		}
 
 		var seriesFolder = string.IsNullOrEmpty(providerTag)
 			? seriesName

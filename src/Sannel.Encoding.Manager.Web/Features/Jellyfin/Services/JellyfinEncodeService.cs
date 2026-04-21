@@ -81,7 +81,9 @@ public class JellyfinEncodeService : IJellyfinEncodeService
 			.ConfigureAwait(false) ?? 0;
 
 		// Parse TVDB ID from provider IDs
-		var tvdbString = isEpisode ? item.SeriesProviderIds?.Tvdb : item.ProviderIds?.Tvdb;
+		var tvdbString = isEpisode
+			? item.SeriesProviderIds?.Tvdb ?? item.ProviderIds?.Tvdb
+			: item.ProviderIds?.Tvdb;
 		int? tvdbId = int.TryParse(tvdbString, out var parsed) ? parsed : null;
 
 		var queueItem = new EncodeQueueItem
