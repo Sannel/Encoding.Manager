@@ -21,7 +21,6 @@ public class EncodingWorkerService : BackgroundService
 	private readonly IHttpClientFactory _httpClientFactory;
 	private readonly ILogger<EncodingWorkerService> _logger;
 	private static readonly TimeSpan CancelPollInterval = TimeSpan.FromSeconds(2);
-	private const string JellyfinAclUser = "jellyfin";
 
 	public EncodingWorkerService(
 		IRunnerApiClient api,
@@ -812,20 +811,6 @@ public class EncodingWorkerService : BackgroundService
 					sftpClient.Disconnect();
 				}
 			}
-
-			using var sshClient = new SshClient(host, port, username, password);
-			sshClient.Connect();
-			try
-			{
-				ApplyJellyfinAcl(sshClient, remotePath);
-			}
-			finally
-			{
-				if (sshClient.IsConnected)
-				{
-					sshClient.Disconnect();
-				}
-			}
 		}, ct);
 
 		_logger.LogInformation(
@@ -833,79 +818,6 @@ public class EncodingWorkerService : BackgroundService
 			job.JobId,
 			remotePath);
 	}
-
-	private void ApplyJellyfinAcl(SshClient sshClient, string remoteFilePath)
-	{
-		var normalizedFilePath = NormalizeRemotePath(remoteFilePath).TrimEnd('/');
-		if (string.IsNullOrWhiteSpace(normalizedFilePath))
-		{
-			throw new InvalidOperationException("Remote file path is required for ACL updates.");
-		}
-
-		var directoryPaths = BuildDirectoryAclPaths(normalizedFilePath);
-		_logger.LogInformation(
-			"Applying setfacl ACLs for jellyfin. Directories: {Directories}; File: {FilePath}",
-			directoryPaths.Count == 0 ? "(none)" : string.Join(", ", directoryPaths),
-			normalizedFilePath);
-
-		var commandText = BuildJellyfinAclCommand(normalizedFilePath, directoryPaths);
-		var command = sshClient.RunCommand(commandText);
-		if (command.ExitStatus != 0)
-		{
-			var output = string.IsNullOrWhiteSpace(command.Error) ? command.Result : command.Error;
-			throw new InvalidOperationException(
-				$"Failed to apply setfacl permissions for '{remoteFilePath}'. Exit code {command.ExitStatus}. Output: {output}");
-		}
-	}
-
-	private static string BuildJellyfinAclCommand(string normalizedFilePath, IReadOnlyCollection<string> directoryPaths)
-	{
-		var commandParts = new List<string>();
-		foreach (var directoryPath in directoryPaths)
-		{
-			commandParts.Add($"setfacl -m u:{JellyfinAclUser}:rwx {QuoteForBash(directoryPath)}");
-		}
-
-		commandParts.Add($"setfacl -m u:{JellyfinAclUser}:r {QuoteForBash(normalizedFilePath)}");
-
-		return "set -e; " + string.Join("; ", commandParts);
-	}
-
-	private static List<string> BuildDirectoryAclPaths(string remoteFilePath)
-	{
-		var directoryPath = GetRemoteDirectory(remoteFilePath);
-		if (string.IsNullOrWhiteSpace(directoryPath))
-		{
-			return [];
-		}
-
-		var segments = directoryPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-		var directories = new List<string>(segments.Length);
-		var current = directoryPath.StartsWith("/", StringComparison.Ordinal) ? "/" : string.Empty;
-
-		foreach (var segment in segments)
-		{
-			if (string.IsNullOrEmpty(current))
-			{
-				current = segment;
-			}
-			else if (current == "/")
-			{
-				current = "/" + segment;
-			}
-			else
-			{
-				current += "/" + segment;
-			}
-
-			directories.Add(current);
-		}
-
-		return directories;
-	}
-
-	private static string QuoteForBash(string value) =>
-		"'" + value.Replace("'", "'\"'\"'") + "'";
 
 	private static void EnsureRemoteDirectoryExists(SftpClient client, string remoteDirectory)
 	{

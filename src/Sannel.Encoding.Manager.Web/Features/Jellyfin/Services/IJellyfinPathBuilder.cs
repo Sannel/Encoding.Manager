@@ -6,4 +6,5 @@ namespace Sannel.Encoding.Manager.Web.Features.Jellyfin.Services;
 public interface IJellyfinPathBuilder
 {
 	string BuildRemotePath(JellyfinDestinationRoot root, JellyfinItem item, string extension = "mkv");
+	int? ExtractTvdbId(JellyfinItem item);
 }

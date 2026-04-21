@@ -59,7 +59,7 @@ public class JellyfinClient : IJellyfinClient
 
 	public async Task<JellyfinItem?> GetItemAsync(string itemId, string? userId = null, CancellationToken ct = default)
 	{
-		var fields = "ProviderIds,SeriesProviderIds";
+		var fields = "ProviderIds,SeriesProviderIds,Path";
 		var url = userId is not null
 			? $"Users/{HttpUtility.UrlEncode(userId)}/Items/{HttpUtility.UrlEncode(itemId)}?Fields={fields}"
 			: $"Items/{HttpUtility.UrlEncode(itemId)}?Fields={fields}";

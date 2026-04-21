@@ -80,11 +80,8 @@ public class JellyfinEncodeService : IJellyfinEncodeService
 			.MaxAsync(i => (int?)i.SortOrder, ct)
 			.ConfigureAwait(false) ?? 0;
 
-		// Parse TVDB ID from provider IDs
-		var tvdbString = isEpisode
-			? item.SeriesProviderIds?.Tvdb ?? item.ProviderIds?.Tvdb
-			: item.ProviderIds?.Tvdb;
-		int? tvdbId = int.TryParse(tvdbString, out var parsed) ? parsed : null;
+		// Parse TVDB ID from source file path (more reliable than Jellyfin metadata)
+		int? tvdbId = this._pathBuilder.ExtractTvdbId(item);
 
 		var queueItem = new EncodeQueueItem
 		{

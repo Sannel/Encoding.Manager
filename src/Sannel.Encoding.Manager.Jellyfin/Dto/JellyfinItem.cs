@@ -14,4 +14,5 @@ public class JellyfinItem
 	public string? SeriesId { get; set; }
 	public JellyfinProviderIds? SeriesProviderIds { get; set; }
 	public string? ParentId { get; set; }
+	public string? Path { get; set; }
 }

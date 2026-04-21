@@ -27,10 +27,19 @@ public partial class JellyfinPathBuilder : IJellyfinPathBuilder
 		var seasonNumber = item.ParentIndexNumber ?? 0;
 		var episodeNumber = item.IndexNumber ?? 0;
 		var episodeTitle = Sanitize(item.Name);
-		var providerTag = BuildProviderTag(item.SeriesProviderIds);
-		if (string.IsNullOrEmpty(providerTag))
+		var tvdbId = ExtractTvdbIdFromPath(item.Path, levelsAboveFile: 2);
+		string providerTag;
+		if (!string.IsNullOrEmpty(tvdbId))
 		{
-			providerTag = BuildProviderTag(item.ProviderIds);
+			providerTag = $"[tvdbid-{tvdbId}]";
+		}
+		else
+		{
+			providerTag = BuildProviderTag(item.SeriesProviderIds);
+			if (string.IsNullOrEmpty(providerTag))
+			{
+				providerTag = BuildProviderTag(item.ProviderIds);
+			}
 		}
 
 		var seriesFolder = string.IsNullOrEmpty(providerTag)
@@ -57,6 +66,40 @@ public partial class JellyfinPathBuilder : IJellyfinPathBuilder
 		var fileName = $"{nameWithYear}.{extension}";
 
 		return $"{folder}/{fileName}";
+	}
+
+	public int? ExtractTvdbId(JellyfinItem item)
+	{
+		var isEpisode = string.Equals(item.Type, "Episode", StringComparison.OrdinalIgnoreCase);
+		var levelsAboveFile = isEpisode ? 2 : 1;
+		var fromPath = ExtractTvdbIdFromPath(item.Path, levelsAboveFile);
+		if (int.TryParse(fromPath, out var tvdbId))
+		{
+			return tvdbId;
+		}
+
+		var tvdbString = isEpisode
+			? item.SeriesProviderIds?.Tvdb ?? item.ProviderIds?.Tvdb
+			: item.ProviderIds?.Tvdb;
+		return int.TryParse(tvdbString, out var parsed) ? parsed : null;
+	}
+
+	private static string? ExtractTvdbIdFromPath(string? filePath, int levelsAboveFile)
+	{
+		if (string.IsNullOrEmpty(filePath))
+		{
+			return null;
+		}
+
+		var segments = filePath.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+		var folderIndex = segments.Length - 1 - levelsAboveFile;
+		if (folderIndex < 0)
+		{
+			return null;
+		}
+
+		var match = TvdbIdFolderRegex().Match(segments[folderIndex]);
+		return match.Success ? match.Groups[1].Value : null;
 	}
 
 	private static string BuildProviderTag(JellyfinProviderIds? providerIds)
@@ -89,4 +132,5 @@ public partial class JellyfinPathBuilder : IJellyfinPathBuilder
 
 	[GeneratedRegex(@"[<>:""/\\|?*]")]
 	private static partial Regex IllegalCharsRegex();
-}
+	[GeneratedRegex(@"\[tvdbid-(\d+)\]", RegexOptions.IgnoreCase)]
+	private static partial Regex TvdbIdFolderRegex();}
