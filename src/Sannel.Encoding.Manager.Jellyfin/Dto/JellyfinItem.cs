@@ -15,4 +15,5 @@ public class JellyfinItem
 	public JellyfinProviderIds? SeriesProviderIds { get; set; }
 	public string? ParentId { get; set; }
 	public string? Path { get; set; }
+	public long? RunTimeTicks { get; set; }
 }

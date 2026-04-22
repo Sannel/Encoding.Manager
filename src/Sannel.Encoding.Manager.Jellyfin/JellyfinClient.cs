@@ -137,9 +137,14 @@ public class JellyfinClient : IJellyfinClient
 		return item?.UserData;
 	}
 
-	public async Task MarkPlayedAsync(string userId, string itemId, CancellationToken ct = default)
+	public async Task MarkPlayedAsync(string userId, string itemId, DateTimeOffset? datePlayed = null, CancellationToken ct = default)
 	{
 		var url = $"Users/{HttpUtility.UrlEncode(userId)}/PlayedItems/{HttpUtility.UrlEncode(itemId)}";
+		if (datePlayed.HasValue)
+		{
+			url += $"?DatePlayed={Uri.EscapeDataString(datePlayed.Value.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))}";
+		}
+
 		var response = await this._httpClient.PostAsync(url, null, ct).ConfigureAwait(false);
 		response.EnsureSuccessStatusCode();
 	}
@@ -151,10 +156,10 @@ public class JellyfinClient : IJellyfinClient
 		response.EnsureSuccessStatusCode();
 	}
 
-	public async Task UpdatePlaybackPositionAsync(string userId, string itemId, long positionTicks, CancellationToken ct = default)
+	public async Task UpdatePlaybackPositionAsync(string userId, string itemId, long positionTicks, DateTimeOffset? lastPlayedDate = null, CancellationToken ct = default)
 	{
 		var url = $"Users/{HttpUtility.UrlEncode(userId)}/Items/{HttpUtility.UrlEncode(itemId)}/UserData";
-		var payload = new { PlaybackPositionTicks = positionTicks };
+		var payload = new { PlaybackPositionTicks = positionTicks, LastPlayedDate = lastPlayedDate?.UtcDateTime };
 		var response = await this._httpClient.PostAsJsonAsync(url, payload, JsonOptions, ct).ConfigureAwait(false);
 		response.EnsureSuccessStatusCode();
 	}

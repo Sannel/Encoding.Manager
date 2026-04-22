@@ -13,7 +13,7 @@ public interface IJellyfinClient
 	Task<IReadOnlyList<JellyfinUser>> GetUsersAsync(CancellationToken ct = default);
 	Task<ItemsResponse> GetUserItemsAsync(string userId, GetItemsRequest request, CancellationToken ct = default);
 	Task<JellyfinUserData?> GetUserDataAsync(string userId, string itemId, CancellationToken ct = default);
-	Task MarkPlayedAsync(string userId, string itemId, CancellationToken ct = default);
+	Task MarkPlayedAsync(string userId, string itemId, DateTimeOffset? datePlayed = null, CancellationToken ct = default);
 	Task MarkUnplayedAsync(string userId, string itemId, CancellationToken ct = default);
-	Task UpdatePlaybackPositionAsync(string userId, string itemId, long positionTicks, CancellationToken ct = default);
+	Task UpdatePlaybackPositionAsync(string userId, string itemId, long positionTicks, DateTimeOffset? lastPlayedDate = null, CancellationToken ct = default);
 }

@@ -188,13 +188,13 @@ public class JellyfinSyncService : IJellyfinSyncService
 				{
 					if (dataB is not { Played: true })
 					{
-						await clientB.MarkPlayedAsync(userIdB, itemB.Id, ct).ConfigureAwait(false);
+						await clientB.MarkPlayedAsync(userIdB, itemB.Id, dataA.LastPlayedDate, ct).ConfigureAwait(false);
 						synced++;
 					}
 				}
 				else
 				{
-					await clientB.UpdatePlaybackPositionAsync(userIdB, itemB.Id, dataA.PlaybackPositionTicks, ct).ConfigureAwait(false);
+					await clientB.UpdatePlaybackPositionAsync(userIdB, itemB.Id, dataA.PlaybackPositionTicks, dataA.LastPlayedDate, ct).ConfigureAwait(false);
 					synced++;
 				}
 			}
@@ -205,13 +205,13 @@ public class JellyfinSyncService : IJellyfinSyncService
 				{
 					if (dataA is not { Played: true })
 					{
-						await clientA.MarkPlayedAsync(userIdA, itemA.Id, ct).ConfigureAwait(false);
+						await clientA.MarkPlayedAsync(userIdA, itemA.Id, dataB.LastPlayedDate, ct).ConfigureAwait(false);
 						synced++;
 					}
 				}
 				else
 				{
-					await clientA.UpdatePlaybackPositionAsync(userIdA, itemA.Id, dataB.PlaybackPositionTicks, ct).ConfigureAwait(false);
+					await clientA.UpdatePlaybackPositionAsync(userIdA, itemA.Id, dataB.PlaybackPositionTicks, dataB.LastPlayedDate, ct).ConfigureAwait(false);
 					synced++;
 				}
 			}
@@ -257,7 +257,7 @@ public class JellyfinSyncService : IJellyfinSyncService
 				var itemA = lookupA.GetValueOrDefault(key);
 				var itemB = lookupB.GetValueOrDefault(key);
 				var rep = itemA ?? itemB!;
-				return new SyncCompareRow(GetDisplayName(rep), rep.Type, itemA?.UserData, itemB?.UserData);
+				return new SyncCompareRow(GetDisplayName(rep), rep.Type, rep.RunTimeTicks, itemA?.UserData, itemB?.UserData);
 			})
 			.OrderBy(r => r.DisplayName)
 			.ToList();

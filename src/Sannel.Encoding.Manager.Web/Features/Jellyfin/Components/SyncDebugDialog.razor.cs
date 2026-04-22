@@ -65,4 +65,15 @@ public partial class SyncDebugDialog : ComponentBase
 
 	private static string FormatDate(DateTimeOffset? date) =>
 		date.HasValue ? date.Value.ToLocalTime().ToString("g") : "—";
+
+	private static string FormatPct(long? positionTicks, long? runTimeTicks)
+	{
+		if (positionTicks is null || runTimeTicks is null or 0)
+		{
+			return "—";
+		}
+
+		var pct = positionTicks.Value * 100.0 / runTimeTicks.Value;
+		return $"{pct:F0}%";
+	}
 }

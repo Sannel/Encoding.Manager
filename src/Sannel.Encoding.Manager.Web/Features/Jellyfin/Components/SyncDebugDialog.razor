@@ -32,8 +32,10 @@
 					<MudTh Style="min-width:340px">Item</MudTh>
 					<MudTh>A Last Played</MudTh>
 					<MudTh>A ✓</MudTh>
+					<MudTh>A %</MudTh>
 					<MudTh>B Last Played</MudTh>
 					<MudTh>B ✓</MudTh>
+					<MudTh>B %</MudTh>
 					<MudTh>Winner</MudTh>
 				</HeaderContent>
 				<RowTemplate>
@@ -49,6 +51,7 @@
 							<MudIcon Icon="@Icons.Material.Outlined.RadioButtonUnchecked" Color="Color.Default" Size="Size.Small" />
 						}
 					</MudTd>
+					<MudTd DataLabel="A %">@FormatPct(context.UserDataA?.PlaybackPositionTicks, context.RunTimeTicks)</MudTd>
 					<MudTd DataLabel="B Last Played">@FormatDate(context.UserDataB?.LastPlayedDate)</MudTd>
 					<MudTd DataLabel="B Played">
 						@if (context.UserDataB?.Played == true)
@@ -60,6 +63,7 @@
 							<MudIcon Icon="@Icons.Material.Outlined.RadioButtonUnchecked" Color="Color.Default" Size="Size.Small" />
 						}
 					</MudTd>
+					<MudTd DataLabel="B %">@FormatPct(context.UserDataB?.PlaybackPositionTicks, context.RunTimeTicks)</MudTd>
 					<MudTd DataLabel="Winner">
 						@{
 							var dateA = context.UserDataA?.LastPlayedDate;
