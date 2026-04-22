@@ -217,7 +217,7 @@ public partial class QueuePage : ComponentBase, IDisposable
 		}
 		else
 		{
-			this.Snackbar.Add("Only failed, finished, or canceled items can be reset to queued.", Severity.Warning);
+			this.Snackbar.Add("Only failed, finished, canceled, or cancel-requested items can be reset to queued.", Severity.Warning);
 		}
 	}
 
@@ -294,7 +294,8 @@ public partial class QueuePage : ComponentBase, IDisposable
 	private static bool CanResetToQueued(string status) =>
 		string.Equals(status, "Failed", StringComparison.OrdinalIgnoreCase)
 		|| string.Equals(status, "Finished", StringComparison.OrdinalIgnoreCase)
-		|| string.Equals(status, "Canceled", StringComparison.OrdinalIgnoreCase);
+		|| string.Equals(status, "Canceled", StringComparison.OrdinalIgnoreCase)
+		|| string.Equals(status, "CancelRequested", StringComparison.OrdinalIgnoreCase);
 
 	private static bool CanCancelEncoding(string status) =>
 		string.Equals(status, "Encoding", StringComparison.OrdinalIgnoreCase);

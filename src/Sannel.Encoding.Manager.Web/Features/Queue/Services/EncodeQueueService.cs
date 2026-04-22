@@ -93,7 +93,8 @@ public class EncodeQueueService : IEncodeQueueService
 		var isFailed = string.Equals(item.Status, "Failed", StringComparison.OrdinalIgnoreCase);
 		var isFinished = string.Equals(item.Status, "Finished", StringComparison.OrdinalIgnoreCase);
 		var isCanceled = string.Equals(item.Status, "Canceled", StringComparison.OrdinalIgnoreCase);
-		if (!isFailed && !isFinished && !isCanceled)
+		var isCancelRequested = string.Equals(item.Status, "CancelRequested", StringComparison.OrdinalIgnoreCase);
+		if (!isFailed && !isFinished && !isCanceled && !isCancelRequested)
 		{
 			return false;
 		}
