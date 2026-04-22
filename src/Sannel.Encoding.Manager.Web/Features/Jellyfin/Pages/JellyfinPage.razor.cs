@@ -251,6 +251,16 @@ public partial class JellyfinPage : ComponentBase
 		}
 	}
 
+	private async Task OpenSyncDebugDialogAsync(JellyfinSyncProfile profile)
+	{
+		var parameters = new DialogParameters<SyncDebugDialog>
+		{
+			{ x => x.Profile, profile }
+		};
+		await this.DialogService.ShowAsync<SyncDebugDialog>($"Sync Debug: {profile.Name}", parameters,
+			new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true });
+	}
+
 	private async Task RunSyncNowAsync(Guid profileId)
 	{
 		var profile = await this.SyncService.GetSyncProfileAsync(profileId);

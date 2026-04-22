@@ -150,37 +150,28 @@ public class JellyfinSyncService : IJellyfinSyncService
 		IProgress<(int Processed, int Total)>? progress,
 		CancellationToken ct)
 	{
-		// Fetch all items from both users with UserData
 		var itemsA = await this.FetchAllUserItemsAsync(clientA, userIdA, ct).ConfigureAwait(false);
 		var itemsB = await this.FetchAllUserItemsAsync(clientB, userIdB, ct).ConfigureAwait(false);
 
-		// Build lookup by name/year for matching across servers
+		var lookupA = BuildItemLookup(itemsA);
 		var lookupB = BuildItemLookup(itemsB);
 
-		var total = itemsA.Count;
+		// Only process items that exist on both servers — true A↔B bidirectional sync
+		var keys = lookupA.Keys.Intersect(lookupB.Keys, StringComparer.OrdinalIgnoreCase).ToList();
+		var total = keys.Count;
 		var processed = 0;
 		var synced = 0;
 		progress?.Report((0, total));
-		foreach (var itemA in itemsA)
-		{
-			if (itemA.UserData is null)
-			{
-				progress?.Report((++processed, total));
-				continue;
-			}
 
-			var matchKey = GetMatchKey(itemA);
-			if (matchKey is null || !lookupB.TryGetValue(matchKey, out var matchingB))
-			{
-				progress?.Report((++processed, total));
-				continue;
-			}
+		foreach (var key in keys)
+		{
+			var itemA = lookupA[key];
+			var itemB = lookupB[key];
 
 			var dataA = itemA.UserData;
-			var dataB = matchingB.UserData;
+			var dataB = itemB.UserData;
 
-			// Whichever side has the more recent LastPlayedDate wins for both played state and position
-			var dateA = dataA.LastPlayedDate;
+			var dateA = dataA?.LastPlayedDate;
 			var dateB = dataB?.LastPlayedDate;
 
 			if (dateA is null && dateB is null)
@@ -192,29 +183,33 @@ public class JellyfinSyncService : IJellyfinSyncService
 			var aWins = dateA.HasValue && (!dateB.HasValue || dateA > dateB);
 			if (aWins)
 			{
-				if (!dataA.Played || dataB is not { Played: true })
+				// A's activity is more recent — push A's state to B
+				if (dataA!.Played)
 				{
-					if (dataA.Played)
+					if (dataB is not { Played: true })
 					{
-						await clientB.MarkPlayedAsync(userIdB, matchingB.Id, ct).ConfigureAwait(false);
+						await clientB.MarkPlayedAsync(userIdB, itemB.Id, ct).ConfigureAwait(false);
+						synced++;
 					}
-					else
-					{
-						await clientB.UpdatePlaybackPositionAsync(userIdB, matchingB.Id, dataA.PlaybackPositionTicks, ct).ConfigureAwait(false);
-					}
-
+				}
+				else
+				{
+					await clientB.UpdatePlaybackPositionAsync(userIdB, itemB.Id, dataA.PlaybackPositionTicks, ct).ConfigureAwait(false);
 					synced++;
 				}
 			}
 			else
 			{
-				// B wins
-				if (dataB!.Played && !dataA.Played)
+				// B's activity is more recent — push B's state to A
+				if (dataB!.Played)
 				{
-					await clientA.MarkPlayedAsync(userIdA, itemA.Id, ct).ConfigureAwait(false);
-					synced++;
+					if (dataA is not { Played: true })
+					{
+						await clientA.MarkPlayedAsync(userIdA, itemA.Id, ct).ConfigureAwait(false);
+						synced++;
+					}
 				}
-				else if (!dataB.Played)
+				else
 				{
 					await clientA.UpdatePlaybackPositionAsync(userIdA, itemA.Id, dataB.PlaybackPositionTicks, ct).ConfigureAwait(false);
 					synced++;
@@ -225,6 +220,61 @@ public class JellyfinSyncService : IJellyfinSyncService
 		}
 
 		this._logger.LogInformation("Synced {Count} play state/position updates.", synced);
+	}
+
+	public async Task<IReadOnlyList<SyncCompareRow>> GetComparisonAsync(JellyfinSyncProfile profile, CancellationToken ct = default)
+	{
+		await using var ctx = await this._dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
+		var tracked = await ctx.JellyfinSyncProfiles
+			.Include(p => p.ServerA)
+			.Include(p => p.ServerB)
+			.FirstOrDefaultAsync(p => p.Id == profile.Id, ct)
+			.ConfigureAwait(false);
+
+		if (tracked?.ServerA is null || tracked.ServerB is null)
+		{
+			return [];
+		}
+
+		var clientA = this._clientFactory.CreateClient(
+			tracked.ServerA.BaseUrl,
+			this._serverService.DecryptApiKey(tracked.ServerA.ApiKey));
+		var clientB = this._clientFactory.CreateClient(
+			tracked.ServerB.BaseUrl,
+			this._serverService.DecryptApiKey(tracked.ServerB.ApiKey));
+
+		var itemsA = await this.FetchAllUserItemsAsync(clientA, tracked.UserIdA, ct).ConfigureAwait(false);
+		var itemsB = await this.FetchAllUserItemsAsync(clientB, tracked.UserIdB, ct).ConfigureAwait(false);
+
+		var lookupA = BuildItemLookup(itemsA);
+		var lookupB = BuildItemLookup(itemsB);
+
+		var allKeys = lookupA.Keys.Union(lookupB.Keys, StringComparer.OrdinalIgnoreCase).ToList();
+
+		return allKeys
+			.Select(key =>
+			{
+				var itemA = lookupA.GetValueOrDefault(key);
+				var itemB = lookupB.GetValueOrDefault(key);
+				var rep = itemA ?? itemB!;
+				return new SyncCompareRow(GetDisplayName(rep), rep.Type, itemA?.UserData, itemB?.UserData);
+			})
+			.OrderBy(r => r.DisplayName)
+			.ToList();
+	}
+
+	private static string GetDisplayName(JellyfinItem item)
+	{
+		if (string.Equals(item.Type, "Episode", StringComparison.OrdinalIgnoreCase))
+		{
+			var year = item.ProductionYear.HasValue ? $" ({item.ProductionYear})" : "";
+			var se = $"S{item.ParentIndexNumber:D2}E{item.IndexNumber:D2}";
+			return $"{item.SeriesName}{year} {se} - {item.Name}";
+		}
+
+		return item.ProductionYear.HasValue
+			? $"{item.Name} ({item.ProductionYear})"
+			: item.Name;
 	}
 
 	private async Task<List<JellyfinItem>> FetchAllUserItemsAsync(IJellyfinClient client, string userId, CancellationToken ct)

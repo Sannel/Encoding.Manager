@@ -196,6 +196,9 @@
 							Size="Size.Small" Title="Run now"
 							Disabled="@_syncProgress.ContainsKey(context.Id)"
 							OnClick="@(() => RunSyncNowAsync(context.Id))" />
+						<MudIconButton Icon="@Icons.Material.Filled.BugReport" Color="Color.Info"
+							Size="Size.Small" Title="Debug"
+							OnClick="@(() => OpenSyncDebugDialogAsync(context))" />
 						<MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Default"
 							Size="Size.Small" Title="Edit"
 							OnClick="@(() => OpenEditSyncProfileDialogAsync(context))" />
