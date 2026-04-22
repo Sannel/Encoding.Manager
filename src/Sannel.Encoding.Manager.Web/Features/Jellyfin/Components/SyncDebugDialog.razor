@@ -24,7 +24,7 @@
 					AdornmentIcon="@Icons.Material.Filled.Search"
 					Immediate="true" DebounceInterval="200" Class="flex-1" />
 				<MudText Typo="Typo.caption" Style="white-space:nowrap">
-					@_rows.Count total · @Filtered.Count shown
+					@Filtered.Count shown (of @_rows.Count fetched)
 				</MudText>
 			</MudStack>
 			<MudTable Items="Filtered" Dense="true" Hover="true" FixedHeader="true" Height="60vh" Striped="true">

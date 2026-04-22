@@ -22,9 +22,22 @@ public partial class SyncDebugDialog : ComponentBase
 	private bool _isLoading = true;
 	private string _search = string.Empty;
 
-	private List<SyncCompareRow> Filtered => string.IsNullOrWhiteSpace(this._search)
-		? this._rows
-		: this._rows.Where(r => r.DisplayName.Contains(this._search, StringComparison.OrdinalIgnoreCase)).ToList();
+	private List<SyncCompareRow> Filtered
+	{
+		get
+		{
+			var rows = this._rows
+				.Where(r => r.UserDataA is not null && r.UserDataB is not null
+					&& r.UserDataA.LastPlayedDate != r.UserDataB.LastPlayedDate);
+
+			if (!string.IsNullOrWhiteSpace(this._search))
+			{
+				rows = rows.Where(r => r.DisplayName.Contains(this._search, StringComparison.OrdinalIgnoreCase));
+			}
+
+			return rows.ToList();
+		}
+	}
 
 	protected override async Task OnInitializedAsync()
 	{
