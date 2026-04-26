@@ -1,14 +1,17 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
 using MudBlazor;
 using Sannel.Encoding.Manager.Web.Features.Queue.Components;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
+using Sannel.Encoding.Manager.Web.Features.Queue.Options;
 using Sannel.Encoding.Manager.Web.Features.Queue.Services;
 
 namespace Sannel.Encoding.Manager.Web.Features.Queue.Pages;
 
-public partial class QueuePage : ComponentBase, IDisposable
+public partial class QueuePage : ComponentBase, IAsyncDisposable
 {
 	[Inject]
 	private IEncodeQueueService EncodeQueueService { get; set; } = default!;
@@ -22,31 +25,93 @@ public partial class QueuePage : ComponentBase, IDisposable
 	[Inject]
 	private QueueChangeNotifier Notifier { get; set; } = default!;
 
-	private IReadOnlyList<EncodeQueueItem> _items = [];
+	[Inject]
+	private IJSRuntime JS { get; set; } = default!;
+
+	[Inject]
+	private IOptions<QueueOptions> QueueOptions { get; set; } = default!;
+
+	private List<EncodeQueueItem> _items = [];
 	private bool _isLoading = true;
 	private bool _showCleared;
 	private MudDropContainer<EncodeQueueItem>? _dropContainer;
 
+	private int _skip;
+	private bool _hasMore = true;
+	private bool _isLoadingMore;
+	private int _loadGeneration;
+	private ElementReference _scrollSentinel;
+	private IJSObjectReference? _jsModule;
+	private IJSObjectReference? _jsObserver;
+	private DotNetObjectReference<QueuePage>? _dotNetRef;
+
+	private int PageSize => this.QueueOptions.Value.PageSize;
+
 	protected override async Task OnInitializedAsync()
 	{
-		await this.LoadAsync(showLoadingIndicator: true);
+		await this.LoadFirstPageAsync();
 		this.Notifier.ItemUpserted += this.OnItemUpserted;
 		this.Notifier.ItemDeleted += this.OnItemDeleted;
 	}
 
-	private async Task LoadAsync(bool showLoadingIndicator = false)
+	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
-		if (showLoadingIndicator)
+		if (!firstRender)
 		{
-			this._isLoading = true;
+			return;
 		}
 
-		this._items = await this.EncodeQueueService.GetItemsAsync(this._showCleared);
+		this._dotNetRef = DotNetObjectReference.Create(this);
+		this._jsModule = await this.JS.InvokeAsync<IJSObjectReference>(
+			"import", "./Features/Queue/Pages/QueuePage.razor.js");
+		this._jsObserver = await this._jsModule.InvokeAsync<IJSObjectReference>(
+			"initScrollSentinel", this._scrollSentinel, this._dotNetRef);
+	}
 
-		if (showLoadingIndicator)
+	private async Task LoadFirstPageAsync()
+	{
+		this._isLoading = true;
+		var result = await this.EncodeQueueService.GetPagedItemsAsync(0, this.PageSize, this._showCleared);
+		this._items = result.ToList();
+		this._skip = result.Count;
+		this._hasMore = result.Count == this.PageSize;
+		this._isLoading = false;
+	}
+
+	[JSInvokable]
+	public async Task OnScrolledToBottom()
+	{
+		if (!this._hasMore || this._isLoadingMore)
 		{
-			this._isLoading = false;
+			return;
 		}
+
+		var gen = this._loadGeneration;
+		this._isLoadingMore = true;
+		await this.InvokeAsync(this.StateHasChanged);
+
+		var result = await this.EncodeQueueService.GetPagedItemsAsync(this._skip, this.PageSize, this._showCleared);
+
+		if (gen != this._loadGeneration)
+		{
+			// Filter changed while this load was in flight — discard results
+			this._isLoadingMore = false;
+			return;
+		}
+
+		var existingIds = this._items.Select(i => i.Id).ToHashSet();
+		foreach (var item in result)
+		{
+			if (existingIds.Add(item.Id))
+			{
+				this._items.Add(item);
+			}
+		}
+
+		this._skip += result.Count;
+		this._hasMore = result.Count == this.PageSize;
+		this._isLoadingMore = false;
+		await this.InvokeAsync(StateHasChanged);
 	}
 
 	private async void OnItemUpserted(EncodeQueueItem item)
@@ -249,7 +314,11 @@ public partial class QueuePage : ComponentBase, IDisposable
 	private async Task OnShowClearedChanged(bool value)
 	{
 		this._showCleared = value;
-		await this.LoadAsync(showLoadingIndicator: true);
+		this._loadGeneration++;
+		this._items = [];
+		this._skip = 0;
+		this._hasMore = true;
+		await this.LoadFirstPageAsync();
 	}
 
 	private async Task OpenDetailDialogAsync(EncodeQueueItem item)
@@ -304,9 +373,30 @@ public partial class QueuePage : ComponentBase, IDisposable
 		Path.GetFileName(discPath.TrimEnd(Path.DirectorySeparatorChar, '/'))
 		?? discPath;
 
-	public void Dispose()
+	public async ValueTask DisposeAsync()
 	{
 		this.Notifier.ItemUpserted -= this.OnItemUpserted;
 		this.Notifier.ItemDeleted -= this.OnItemDeleted;
+
+		if (this._jsObserver is not null)
+		{
+			try
+			{
+				await this._jsObserver.InvokeVoidAsync("disconnect");
+			}
+			catch (JSDisconnectedException) { }
+			await this._jsObserver.DisposeAsync();
+		}
+
+		if (this._jsModule is not null)
+		{
+			try
+			{
+				await this._jsModule.DisposeAsync();
+			}
+			catch (JSDisconnectedException) { }
+		}
+
+		this._dotNetRef?.Dispose();
 	}
 }

@@ -29,6 +29,8 @@ using Sannel.Encoding.Manager.HandBrake;
 using Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
 using Sannel.Encoding.Manager.Web.Features.Configuration;
 using Sannel.Encoding.Manager.Web.Features.Logging.Services;
+using Sannel.Encoding.Manager.Web.Features.Queue.Options;
+using Sannel.Encoding.Manager.Web.Features.Logging.Entities;
 
 // Handle the 'configure' subcommand before building the web host.
 if (args.Length > 0 && args[0].Equals("configure", StringComparison.OrdinalIgnoreCase))
@@ -180,6 +182,7 @@ builder.Services.AddScoped<ISettingsService, SettingsService>();
 builder.Logging.AddDBLogProvider();
 
 // Encoding queue
+builder.Services.Configure<QueueOptions>(builder.Configuration.GetSection("Queue"));
 builder.Services.AddSingleton<QueueChangeNotifier>();
 builder.Services.AddScoped<IEncodeQueueService, EncodeQueueService>();
 builder.Services.AddScoped<IPresetService, PresetService>();
@@ -235,6 +238,35 @@ builder.Services.AddControllers();
 builder.Services.AddSignalR();
 
 var app = builder.Build();
+
+static void TryLogCrash(IServiceProvider services, Exception? ex, string category)
+{
+	Console.Error.WriteLine($"[CRASH] {category}: {ex}");
+	try
+	{
+		var factory = services.GetRequiredService<IDbContextFactory<AppDbContext>>();
+		using var ctx = factory.CreateDbContext();
+		ctx.LogEntries.Add(new LogEntry
+		{
+			Level = "Critical",
+			Category = category,
+			Message = ex?.Message ?? "Unhandled exception",
+			Exception = ex?.ToString(),
+			Source = "Server",
+		});
+		ctx.SaveChanges();
+	}
+	catch { }
+}
+
+AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+	TryLogCrash(app.Services, args.ExceptionObject as Exception, "AppDomain.UnhandledException");
+
+TaskScheduler.UnobservedTaskException += (_, args) =>
+{
+	args.SetObserved();
+	TryLogCrash(app.Services, args.Exception, "TaskScheduler.UnobservedTaskException");
+};
 
 // Apply any pending EF Core migrations automatically on startup
 using (var scope = app.Services.CreateScope())

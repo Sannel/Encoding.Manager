@@ -35,7 +35,7 @@ public class EncodeQueueService : IEncodeQueueService
 	}
 
 	/// <inheritdoc />
-	public async Task<IReadOnlyList<EncodeQueueItem>> GetItemsAsync(bool includeCleared = false, CancellationToken ct = default)
+	public async Task<IReadOnlyList<EncodeQueueItem>> GetPagedItemsAsync(int skip, int take, bool includeCleared = false, CancellationToken ct = default)
 	{
 		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
 		var query = ctx.EncodeQueueItems.AsQueryable();
@@ -46,6 +46,9 @@ public class EncodeQueueService : IEncodeQueueService
 
 		return await query
 			.OrderBy(i => i.SortOrder)
+			.ThenBy(i => i.Id)
+			.Skip(skip)
+			.Take(take)
 			.ToListAsync(ct)
 			.ConfigureAwait(false);
 	}
@@ -168,43 +171,76 @@ public class EncodeQueueService : IEncodeQueueService
 	public async Task<bool> MoveItemAsync(Guid id, MoveDirection direction, CancellationToken ct = default)
 	{
 		await using var ctx = await _dbFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
-		var allItems = await ctx.EncodeQueueItems
-			.Where(i => !i.IsArchived)
-			.OrderBy(i => i.SortOrder)
-			.ToListAsync(ct)
+
+		var item = await ctx.EncodeQueueItems
+			.FirstOrDefaultAsync(i => i.Id == id, ct)
 			.ConfigureAwait(false);
 
-		var item = allItems.FirstOrDefault(i => i.Id == id);
 		if (item is null || !string.Equals(item.Status, "Queued", StringComparison.OrdinalIgnoreCase))
 		{
 			return false;
 		}
 
-		var currentIndex = allItems.IndexOf(item);
-		EncodeQueueItem? swapTarget;
-
+		EncodeQueueItem? neighbor;
 		if (direction == MoveDirection.Up)
 		{
-			swapTarget = allItems
-				.Take(currentIndex)
-				.LastOrDefault(i => string.Equals(i.Status, "Queued", StringComparison.OrdinalIgnoreCase));
+			// Find the nearest Queued item with a lower SortOrder
+			neighbor = await ctx.EncodeQueueItems
+				.Where(i => i.Status == "Queued" && i.SortOrder < item.SortOrder)
+				.OrderByDescending(i => i.SortOrder)
+				.ThenByDescending(i => i.Id)
+				.FirstOrDefaultAsync(ct)
+				.ConfigureAwait(false);
 		}
 		else
 		{
-			swapTarget = allItems
-				.Skip(currentIndex + 1)
-				.FirstOrDefault(i => string.Equals(i.Status, "Queued", StringComparison.OrdinalIgnoreCase));
+			// Find the nearest Queued item with a higher SortOrder
+			neighbor = await ctx.EncodeQueueItems
+				.Where(i => i.Status == "Queued" && i.SortOrder > item.SortOrder)
+				.OrderBy(i => i.SortOrder)
+				.ThenBy(i => i.Id)
+				.FirstOrDefaultAsync(ct)
+				.ConfigureAwait(false);
 		}
 
-		if (swapTarget is null)
+		if (neighbor is null)
 		{
 			return false;
 		}
 
-		(item.SortOrder, swapTarget.SortOrder) = (swapTarget.SortOrder, item.SortOrder);
+		var targetSortOrder = neighbor.SortOrder;
+
+		// Push all items sitting at the target SortOrder out of the way,
+		// then slot the moving item into that position.
+		if (direction == MoveDirection.Up)
+		{
+			await ctx.EncodeQueueItems
+				.Where(i => i.SortOrder == targetSortOrder)
+				.ExecuteUpdateAsync(s => s.SetProperty(i => i.SortOrder, i => i.SortOrder + 1), ct)
+				.ConfigureAwait(false);
+		}
+		else
+		{
+			await ctx.EncodeQueueItems
+				.Where(i => i.SortOrder == targetSortOrder)
+				.ExecuteUpdateAsync(s => s.SetProperty(i => i.SortOrder, i => i.SortOrder - 1), ct)
+				.ConfigureAwait(false);
+		}
+
+		item.SortOrder = targetSortOrder;
 		await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
+
+		// Reload the neighbor to get its updated SortOrder before notifying
+		var updatedNeighbor = await ctx.EncodeQueueItems
+			.FirstOrDefaultAsync(i => i.Id == neighbor.Id, ct)
+			.ConfigureAwait(false);
+
 		await NotifyQueueItemUpsertedAsync(item, ct).ConfigureAwait(false);
-		await NotifyQueueItemUpsertedAsync(swapTarget, ct).ConfigureAwait(false);
+		if (updatedNeighbor is not null)
+		{
+			await NotifyQueueItemUpsertedAsync(updatedNeighbor, ct).ConfigureAwait(false);
+		}
+
 		return true;
 	}
 
