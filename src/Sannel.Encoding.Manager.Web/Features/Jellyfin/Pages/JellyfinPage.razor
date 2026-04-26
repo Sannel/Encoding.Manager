@@ -1,0 +1,213 @@
+@page "/jellyfin"
+@rendermode InteractiveServer
+
+<PageTitle>Jellyfin</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Jellyfin</MudText>
+
+<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+	<MudTabPanel Text="Servers">
+		<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+			<MudText Typo="Typo.h5">Servers</MudText>
+			<MudSpacer />
+			<MudButton Variant="Variant.Filled" Color="Color.Primary"
+				StartIcon="@Icons.Material.Filled.Add"
+				OnClick="OpenAddServerDialogAsync">
+				Add Server
+			</MudButton>
+		</MudStack>
+
+		@if (_isLoadingServers)
+		{
+			<MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+		}
+		else if (_servers.Count == 0)
+		{
+			<MudAlert Severity="Severity.Info">No Jellyfin servers configured yet.</MudAlert>
+		}
+		else
+		{
+			<MudTable Items="_servers" Hover="true" Striped="true" Dense="true">
+				<HeaderContent>
+					<MudTh>Name</MudTh>
+					<MudTh>URL</MudTh>
+					<MudTh>Source</MudTh>
+					<MudTh>Destination</MudTh>
+					<MudTh>Actions</MudTh>
+				</HeaderContent>
+				<RowTemplate>
+					<MudTd DataLabel="Name">@context.Name</MudTd>
+					<MudTd DataLabel="URL">@context.BaseUrl</MudTd>
+					<MudTd DataLabel="Source">
+						<MudChip T="string" Size="Size.Small" Color="@(context.IsSource ? Color.Success : Color.Default)"
+							Variant="Variant.Outlined">@(context.IsSource ? "Yes" : "No")</MudChip>
+					</MudTd>
+					<MudTd DataLabel="Destination">
+						<MudChip T="string" Size="Size.Small" Color="@(context.IsDestination ? Color.Success : Color.Default)"
+							Variant="Variant.Outlined">@(context.IsDestination ? "Yes" : "No")</MudChip>
+					</MudTd>
+					<MudTd DataLabel="Actions">
+						@if (context.IsSource)
+						{
+							<MudIconButton Icon="@Icons.Material.Filled.FolderOpen" Color="Color.Primary"
+								Size="Size.Small" Title="Browse"
+								Href="@($"/jellyfin/browse/{context.Id}")" />
+						}
+						<MudIconButton Icon="@Icons.Material.Filled.NetworkPing" Color="Color.Info"
+							Size="Size.Small" Title="Ping"
+							OnClick="@(() => PingServerAsync(context.Id))" />
+						<MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Default"
+							Size="Size.Small" Title="Edit"
+							OnClick="@(() => OpenEditServerDialogAsync(context))" />
+						<MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+							Size="Size.Small" Title="Delete"
+							OnClick="@(() => DeleteServerAsync(context.Id))" />
+					</MudTd>
+				</RowTemplate>
+			</MudTable>
+		}
+	</MudTabPanel>
+
+	<MudTabPanel Text="Destination Roots">
+		<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+			<MudText Typo="Typo.h5">Destination Roots</MudText>
+			<MudSpacer />
+			<MudButton Variant="Variant.Filled" Color="Color.Primary"
+				StartIcon="@Icons.Material.Filled.Add"
+				OnClick="OpenAddDestRootDialogAsync"
+				Disabled="@(_servers.Count == 0)">
+				Add Root
+			</MudButton>
+		</MudStack>
+
+		@if (_isLoadingRoots)
+		{
+			<MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+		}
+		else if (_destRoots.Count == 0)
+		{
+			<MudAlert Severity="Severity.Info">No destination roots configured yet.</MudAlert>
+		}
+		else
+		{
+			<MudTable Items="_destRoots" Hover="true" Striped="true" Dense="true">
+				<HeaderContent>
+					<MudTh>Name</MudTh>
+					<MudTh>Server</MudTh>
+					<MudTh>Root Path</MudTh>
+					<MudTh>Actions</MudTh>
+				</HeaderContent>
+				<RowTemplate>
+					<MudTd DataLabel="Name">@context.Root.Name</MudTd>
+					<MudTd DataLabel="Server">@context.ServerName</MudTd>
+					<MudTd DataLabel="Root Path">@context.Root.RootPath</MudTd>
+					<MudTd DataLabel="Actions">
+						<MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Default"
+							Size="Size.Small" Title="Edit"
+							OnClick="@(() => OpenEditDestRootDialogAsync(context.Root))" />
+						<MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+							Size="Size.Small" Title="Delete"
+							OnClick="@(() => DeleteDestRootAsync(context.Root.Id))" />
+					</MudTd>
+				</RowTemplate>
+			</MudTable>
+		}
+	</MudTabPanel>
+
+	<MudTabPanel Text="Sync Profiles">
+		<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+			<MudText Typo="Typo.h5">Sync Profiles</MudText>
+			<MudSpacer />
+			<MudButton Variant="Variant.Filled" Color="Color.Primary"
+				StartIcon="@Icons.Material.Filled.Add"
+				OnClick="OpenAddSyncProfileDialogAsync"
+				Disabled="@(_servers.Count < 2)">
+				Add Profile
+			</MudButton>
+		</MudStack>
+
+		@if (_isLoadingProfiles)
+		{
+			<MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+		}
+		else if (_syncProfiles.Count == 0)
+		{
+			<MudAlert Severity="Severity.Info">No sync profiles configured yet.</MudAlert>
+		}
+		else
+		{
+			<MudTable Items="_syncProfiles" Hover="true" Striped="true" Dense="true">
+				<HeaderContent>
+					<MudTh>Name</MudTh>
+					<MudTh>Server A</MudTh>
+					<MudTh>User A</MudTh>
+					<MudTh>Server B</MudTh>
+					<MudTh>User B</MudTh>
+					<MudTh>Interval</MudTh>
+					<MudTh>Enabled</MudTh>
+					<MudTh>Last Sync</MudTh>
+					<MudTh>Actions</MudTh>
+				</HeaderContent>
+				<RowTemplate>
+					<MudTd DataLabel="Name">@context.Name</MudTd>
+					<MudTd DataLabel="Server A">@context.ServerA?.Name</MudTd>
+					<MudTd DataLabel="User A">@context.UserIdA</MudTd>
+					<MudTd DataLabel="Server B">@context.ServerB?.Name</MudTd>
+					<MudTd DataLabel="User B">@context.UserIdB</MudTd>
+					<MudTd DataLabel="Interval">@(context.SyncIntervalMinutes)m</MudTd>
+					<MudTd DataLabel="Enabled">
+						<MudChip T="string" Size="Size.Small"
+							Color="@(context.IsEnabled ? Color.Success : Color.Default)"
+							Variant="Variant.Outlined">
+							@(context.IsEnabled ? "Yes" : "No")
+						</MudChip>
+					</MudTd>
+					<MudTd DataLabel="Last Sync">
+						@if (_syncProgress.TryGetValue(context.Id, out var syncState))
+						{
+							@if (syncState.Total == 0)
+							{
+								<MudText Typo="Typo.caption">Fetching items...</MudText>
+								<MudProgressLinear Indeterminate="true" Color="Color.Primary" Rounded="true" Size="Size.Small" />
+							}
+							else
+							{
+								var pct = syncState.Processed * 100.0 / syncState.Total;
+								<MudText Typo="Typo.caption">Syncing @syncState.Processed / @syncState.Total (@((int)pct)%)</MudText>
+								<MudProgressLinear Value="pct" Color="Color.Primary" Rounded="true" Size="Size.Small" />
+							}
+						}
+						else if (context.LastSyncedAt.HasValue)
+						{
+							<MudText Typo="Typo.caption">@context.LastSyncedAt.Value.ToLocalTime().ToString("g")</MudText>
+							<MudChip T="string" Size="Size.Small"
+								Color="@GetSyncStatusColor(context.LastSyncStatus)"
+								Variant="Variant.Outlined">
+								@context.LastSyncStatus
+							</MudChip>
+						}
+						else
+						{
+							<MudText Typo="Typo.caption" Style="opacity:.5">Never</MudText>
+						}
+					</MudTd>
+					<MudTd DataLabel="Actions">
+						<MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Success"
+							Size="Size.Small" Title="Run now"
+							Disabled="@_syncProgress.ContainsKey(context.Id)"
+							OnClick="@(() => RunSyncNowAsync(context.Id))" />
+						<MudIconButton Icon="@Icons.Material.Filled.BugReport" Color="Color.Info"
+							Size="Size.Small" Title="Debug"
+							OnClick="@(() => OpenSyncDebugDialogAsync(context))" />
+						<MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Default"
+							Size="Size.Small" Title="Edit"
+							OnClick="@(() => OpenEditSyncProfileDialogAsync(context))" />
+						<MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+							Size="Size.Small" Title="Delete"
+							OnClick="@(() => DeleteSyncProfileAsync(context.Id))" />
+					</MudTd>
+				</RowTemplate>
+			</MudTable>
+		}
+	</MudTabPanel>
+</MudTabs>

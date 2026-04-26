@@ -28,6 +28,9 @@ using Sannel.Encoding.Manager.Web.Features.Omdb.Services;
 using Sannel.Encoding.Manager.HandBrake;
 using Sannel.Encoding.Manager.Web.Features.Utility.HandBrake;
 using Sannel.Encoding.Manager.Web.Features.Configuration;
+using Sannel.Encoding.Manager.Web.Features.Logging.Services;
+using Sannel.Encoding.Manager.Web.Features.Queue.Options;
+using Sannel.Encoding.Manager.Web.Features.Logging.Entities;
 
 // Handle the 'configure' subcommand before building the web host.
 if (args.Length > 0 && args[0].Equals("configure", StringComparison.OrdinalIgnoreCase))
@@ -175,7 +178,11 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
 // Application settings
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 
+// Logging
+builder.Logging.AddDBLogProvider();
+
 // Encoding queue
+builder.Services.Configure<QueueOptions>(builder.Configuration.GetSection("Queue"));
 builder.Services.AddSingleton<QueueChangeNotifier>();
 builder.Services.AddScoped<IEncodeQueueService, EncodeQueueService>();
 builder.Services.AddScoped<IPresetService, PresetService>();
@@ -207,11 +214,59 @@ builder.Services.AddOptions<OmdbOptions>()
     });
 builder.Services.AddHttpClient<IOmdbService, OmdbService>();
 
+// Jellyfin integration
+builder.Services.Configure<Sannel.Encoding.Manager.Web.Features.Jellyfin.Options.JellyfinOptions>(
+    builder.Configuration.GetSection("Jellyfin"));
+builder.Services.AddSingleton<Sannel.Encoding.Manager.Jellyfin.IJellyfinClientFactory,
+    Sannel.Encoding.Manager.Jellyfin.JellyfinClientFactory>();
+builder.Services.AddScoped<Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.JellyfinServerService>();
+builder.Services.AddScoped<Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.IJellyfinServerService>(
+    sp => sp.GetRequiredService<Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.JellyfinServerService>());
+builder.Services.AddScoped<Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.IJellyfinSyncService,
+    Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.JellyfinSyncService>();
+builder.Services.AddScoped<Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.IJellyfinSftpService,
+    Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.JellyfinSftpService>();
+builder.Services.AddSingleton<Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.IJellyfinPathBuilder,
+    Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.JellyfinPathBuilder>();
+builder.Services.AddScoped<Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.IJellyfinEncodeService,
+    Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.JellyfinEncodeService>();
+builder.Services.AddHostedService<Sannel.Encoding.Manager.Web.Features.Jellyfin.BackgroundServices.PlayStateSyncWorker>();
+builder.Services.AddHostedService<Sannel.Encoding.Manager.Web.Features.Jellyfin.BackgroundServices.JellyfinUploadWorker>();
+
 // MVC Controllers for API endpoints
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
 
 var app = builder.Build();
+
+static void TryLogCrash(IServiceProvider services, Exception? ex, string category)
+{
+	Console.Error.WriteLine($"[CRASH] {category}: {ex}");
+	try
+	{
+		var factory = services.GetRequiredService<IDbContextFactory<AppDbContext>>();
+		using var ctx = factory.CreateDbContext();
+		ctx.LogEntries.Add(new LogEntry
+		{
+			Level = "Critical",
+			Category = category,
+			Message = ex?.Message ?? "Unhandled exception",
+			Exception = ex?.ToString(),
+			Source = "Server",
+		});
+		ctx.SaveChanges();
+	}
+	catch { }
+}
+
+AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+	TryLogCrash(app.Services, args.ExceptionObject as Exception, "AppDomain.UnhandledException");
+
+TaskScheduler.UnobservedTaskException += (_, args) =>
+{
+	args.SetObserved();
+	TryLogCrash(app.Services, args.Exception, "TaskScheduler.UnobservedTaskException");
+};
 
 // Apply any pending EF Core migrations automatically on startup
 using (var scope = app.Services.CreateScope())

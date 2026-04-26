@@ -17,6 +17,159 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
 
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinDestinationRoot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RootPath")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ServerId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServerId");
+
+                    b.ToTable("JellyfinDestinationRoots");
+                });
+
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinServer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ApiKey")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BaseUrl")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedAt")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDestination")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsSource")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SftpHost")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SftpPassword")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SftpPort")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SftpUsername")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("JellyfinServers");
+                });
+
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinSyncProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("LastSyncStatus")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LastSyncedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ServerAId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ServerBId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SyncIntervalMinutes")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserIdA")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserIdB")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServerAId");
+
+                    b.HasIndex("ServerBId");
+
+                    b.ToTable("JellyfinSyncProfiles");
+                });
+
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Logging.Entities.LogEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Exception")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Source")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Timestamp")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Level");
+
+                    b.HasIndex("Source");
+
+                    b.HasIndex("Timestamp");
+
+                    b.ToTable("LogEntries");
+                });
+
             modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -49,6 +202,24 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
 
                     b.Property<bool>("IsArchived")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("JellyfinDestRelativePath")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("JellyfinDestRootId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("JellyfinDestServerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("JellyfinSourceItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("JellyfinSourceServerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("JellyfinUploadStatus")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Mode")
                         .IsRequired()
@@ -244,6 +415,36 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                     b.HasKey("SeriesId");
 
                     b.ToTable("TvdbSeriesCache");
+                });
+
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinDestinationRoot", b =>
+                {
+                    b.HasOne("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinServer", "Server")
+                        .WithMany()
+                        .HasForeignKey("ServerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Server");
+                });
+
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinSyncProfile", b =>
+                {
+                    b.HasOne("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinServer", "ServerA")
+                        .WithMany()
+                        .HasForeignKey("ServerAId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinServer", "ServerB")
+                        .WithMany()
+                        .HasForeignKey("ServerBId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ServerA");
+
+                    b.Navigation("ServerB");
                 });
 #pragma warning restore 612, 618
         }
