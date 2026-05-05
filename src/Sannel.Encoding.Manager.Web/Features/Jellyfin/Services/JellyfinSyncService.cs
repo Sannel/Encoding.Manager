@@ -171,50 +171,47 @@ public class JellyfinSyncService : IJellyfinSyncService
 			var dataA = itemA.UserData;
 			var dataB = itemB.UserData;
 
-			var dateA = dataA?.LastPlayedDate;
-			var dateB = dataB?.LastPlayedDate;
+			var aIsPlayed = dataA?.Played == true;
+			var bIsPlayed = dataB?.Played == true;
 
-			if (dateA is null && dateB is null)
+			if (aIsPlayed && !bIsPlayed)
 			{
-				progress?.Report((++processed, total));
-				continue;
+				// A is fully played, B is not — played state always wins.
+				// Jellyfin resets PlaybackPositionTicks to 0 server-side when marking as played.
+				await clientB.MarkPlayedAsync(userIdB, itemB.Id, dataA!.LastPlayedDate, ct).ConfigureAwait(false);
+				synced++;
 			}
-
-			var aWins = dateA.HasValue && (!dateB.HasValue || dateA > dateB);
-			if (aWins)
+			else if (bIsPlayed && !aIsPlayed)
 			{
-				// A's activity is more recent — push A's state to B
-				if (dataA!.Played)
+				// B is fully played, A is not — played state always wins.
+				await clientA.MarkPlayedAsync(userIdA, itemA.Id, dataB!.LastPlayedDate, ct).ConfigureAwait(false);
+				synced++;
+			}
+			else if (!aIsPlayed && !bIsPlayed)
+			{
+				// Both in progress — use most-recent activity date to determine direction.
+				var dateA = dataA?.LastPlayedDate;
+				var dateB = dataB?.LastPlayedDate;
+
+				if (dateA is null && dateB is null)
 				{
-					if (dataB is not { Played: true })
-					{
-						await clientB.MarkPlayedAsync(userIdB, itemB.Id, dataA.LastPlayedDate, ct).ConfigureAwait(false);
-						synced++;
-					}
+					progress?.Report((++processed, total));
+					continue;
+				}
+
+				var aWins = dateA.HasValue && (!dateB.HasValue || dateA > dateB);
+				if (aWins)
+				{
+					await clientB.UpdatePlaybackPositionAsync(userIdB, itemB.Id, dataA!.PlaybackPositionTicks, dataA.LastPlayedDate, ct).ConfigureAwait(false);
+					synced++;
 				}
 				else
 				{
-					await clientB.UpdatePlaybackPositionAsync(userIdB, itemB.Id, dataA.PlaybackPositionTicks, dataA.LastPlayedDate, ct).ConfigureAwait(false);
+					await clientA.UpdatePlaybackPositionAsync(userIdA, itemA.Id, dataB!.PlaybackPositionTicks, dataB.LastPlayedDate, ct).ConfigureAwait(false);
 					synced++;
 				}
 			}
-			else
-			{
-				// B's activity is more recent — push B's state to A
-				if (dataB!.Played)
-				{
-					if (dataA is not { Played: true })
-					{
-						await clientA.MarkPlayedAsync(userIdA, itemA.Id, dataB.LastPlayedDate, ct).ConfigureAwait(false);
-						synced++;
-					}
-				}
-				else
-				{
-					await clientA.UpdatePlaybackPositionAsync(userIdA, itemA.Id, dataB.PlaybackPositionTicks, dataB.LastPlayedDate, ct).ConfigureAwait(false);
-					synced++;
-				}
-			}
+			// else: both played — nothing to do.
 
 			progress?.Report((++processed, total));
 		}
