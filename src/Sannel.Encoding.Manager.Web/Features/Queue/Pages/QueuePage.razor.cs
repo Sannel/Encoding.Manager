@@ -41,6 +41,7 @@ public partial class QueuePage : ComponentBase, IAsyncDisposable
 	private bool _isLoadingMore;
 	private int _loadGeneration;
 	private ElementReference _scrollSentinel;
+	private string? _observedSentinelId;
 	private IJSObjectReference? _jsModule;
 	private IJSObjectReference? _jsObserver;
 	private DotNetObjectReference<QueuePage>? _dotNetRef;
@@ -56,13 +57,29 @@ public partial class QueuePage : ComponentBase, IAsyncDisposable
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
-		if (!firstRender)
+		var sentinelId = this._scrollSentinel.Id;
+		if (string.IsNullOrEmpty(sentinelId) || sentinelId == this._observedSentinelId)
 		{
 			return;
 		}
 
-		this._dotNetRef = DotNetObjectReference.Create(this);
-		this._jsModule = await this.JS.InvokeAsync<IJSObjectReference>(
+		this._observedSentinelId = sentinelId;
+
+		// Disconnect the previous observer when the sentinel element is replaced
+		// (e.g., after the show-cleared filter toggle empties and reloads the list).
+		if (this._jsObserver is not null)
+		{
+			try
+			{
+				await this._jsObserver.InvokeVoidAsync("disconnect");
+			}
+			catch (JSDisconnectedException) { }
+			await this._jsObserver.DisposeAsync();
+			this._jsObserver = null;
+		}
+
+		this._dotNetRef ??= DotNetObjectReference.Create(this);
+		this._jsModule ??= await this.JS.InvokeAsync<IJSObjectReference>(
 			"import", "./Features/Queue/Pages/QueuePage.razor.js");
 		this._jsObserver = await this._jsModule.InvokeAsync<IJSObjectReference>(
 			"initScrollSentinel", this._scrollSentinel, this._dotNetRef);
