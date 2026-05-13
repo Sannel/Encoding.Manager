@@ -177,15 +177,24 @@ public class JellyfinSyncService : IJellyfinSyncService
 			if (aIsPlayed && !bIsPlayed)
 			{
 				// A is fully played, B is not — played state always wins.
-				// Jellyfin resets PlaybackPositionTicks to 0 server-side when marking as played.
 				await clientB.MarkPlayedAsync(userIdB, itemB.Id, dataA!.LastPlayedDate, ct).ConfigureAwait(false);
 				synced++;
+				// If A still has leftover progress, clear it — played items must have progress 0.
+				if (dataA.PlaybackPositionTicks != 0)
+				{
+					await clientA.UpdatePlaybackPositionAsync(userIdA, itemA.Id, 0, dataA.LastPlayedDate, ct).ConfigureAwait(false);
+				}
 			}
 			else if (bIsPlayed && !aIsPlayed)
 			{
 				// B is fully played, A is not — played state always wins.
 				await clientA.MarkPlayedAsync(userIdA, itemA.Id, dataB!.LastPlayedDate, ct).ConfigureAwait(false);
 				synced++;
+				// If B still has leftover progress, clear it — played items must have progress 0.
+				if (dataB.PlaybackPositionTicks != 0)
+				{
+					await clientB.UpdatePlaybackPositionAsync(userIdB, itemB.Id, 0, dataB.LastPlayedDate, ct).ConfigureAwait(false);
+				}
 			}
 			else if (!aIsPlayed && !bIsPlayed)
 			{
@@ -211,7 +220,26 @@ public class JellyfinSyncService : IJellyfinSyncService
 					synced++;
 				}
 			}
-			// else: both played — nothing to do.
+			else
+			{
+				// Both already played — ensure neither side has leftover non-zero progress.
+				var aHasProgress = (dataA?.PlaybackPositionTicks ?? 0) != 0;
+				var bHasProgress = (dataB?.PlaybackPositionTicks ?? 0) != 0;
+				if (aHasProgress || bHasProgress)
+				{
+					if (aHasProgress)
+					{
+						await clientA.UpdatePlaybackPositionAsync(userIdA, itemA.Id, 0, dataA!.LastPlayedDate, ct).ConfigureAwait(false);
+					}
+
+					if (bHasProgress)
+					{
+						await clientB.UpdatePlaybackPositionAsync(userIdB, itemB.Id, 0, dataB!.LastPlayedDate, ct).ConfigureAwait(false);
+					}
+
+					synced++;
+				}
+			}
 
 			progress?.Report((++processed, total));
 		}
