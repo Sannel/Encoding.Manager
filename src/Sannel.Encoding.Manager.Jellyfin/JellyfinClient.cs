@@ -163,4 +163,11 @@ public class JellyfinClient : IJellyfinClient
 		var response = await this._httpClient.PostAsJsonAsync(url, payload, JsonOptions, ct).ConfigureAwait(false);
 		response.EnsureSuccessStatusCode();
 	}
+
+	public async Task UpdateItemAsync(string itemId, JellyfinSeriesUpdateRequest request, CancellationToken ct = default)
+	{
+		var url = $"Items/{HttpUtility.UrlEncode(itemId)}";
+		var response = await this._httpClient.PostAsJsonAsync(url, request, JsonOptions, ct).ConfigureAwait(false);
+		response.EnsureSuccessStatusCode();
+	}
 }

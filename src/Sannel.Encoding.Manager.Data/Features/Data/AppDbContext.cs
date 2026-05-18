@@ -38,6 +38,7 @@ public class AppDbContext : DbContext
 	public DbSet<JellyfinServer> JellyfinServers => this.Set<JellyfinServer>();
 	public DbSet<JellyfinSyncProfile> JellyfinSyncProfiles => this.Set<JellyfinSyncProfile>();
 	public DbSet<JellyfinDestinationRoot> JellyfinDestinationRoots => this.Set<JellyfinDestinationRoot>();
+	public DbSet<JellyfinMetadataServerPair> JellyfinMetadataServerPairs => this.Set<JellyfinMetadataServerPair>();
 	public DbSet<LogEntry> LogEntries => this.Set<LogEntry>();
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -100,6 +101,19 @@ public class AppDbContext : DbContext
 				.WithMany()
 				.HasForeignKey(e => e.ServerId)
 				.OnDelete(DeleteBehavior.Cascade);
+		});
+
+		modelBuilder.Entity<JellyfinMetadataServerPair>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasOne(e => e.SourceServer)
+				.WithMany()
+				.HasForeignKey(e => e.SourceServerId)
+				.OnDelete(DeleteBehavior.Restrict);
+			entity.HasOne(e => e.DestinationServer)
+				.WithMany()
+				.HasForeignKey(e => e.DestinationServerId)
+				.OnDelete(DeleteBehavior.Restrict);
 		});
 
 		modelBuilder.Entity<LogEntry>(entity =>

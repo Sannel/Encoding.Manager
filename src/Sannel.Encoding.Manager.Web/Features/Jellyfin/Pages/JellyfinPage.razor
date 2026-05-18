@@ -210,4 +210,90 @@
 			</MudTable>
 		}
 	</MudTabPanel>
+
+	<MudTabPanel Text="Metadata Sync">
+		<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+			<MudText Typo="Typo.h5">Metadata Sync</MudText>
+			<MudSpacer />
+			<MudButton Variant="Variant.Filled" Color="Color.Primary"
+				StartIcon="@Icons.Material.Filled.Add"
+				OnClick="OpenAddMetadataPairDialogAsync"
+				Disabled="@(_servers.Count < 2)">
+				Add Pair
+			</MudButton>
+		</MudStack>
+
+		@if (_isLoadingMetadataPairs)
+		{
+			<MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+		}
+		else if (_metadataPairs.Count == 0)
+		{
+			<MudAlert Severity="Severity.Info">No metadata sync pairs configured yet.</MudAlert>
+		}
+		else
+		{
+			<MudTable Items="_metadataPairs" Hover="true" Striped="true" Dense="true">
+				<HeaderContent>
+					<MudTh>Source Server</MudTh>
+					<MudTh>Destination Server</MudTh>
+					<MudTh>Enabled</MudTh>
+					<MudTh>Last Sync</MudTh>
+					<MudTh>Actions</MudTh>
+				</HeaderContent>
+				<RowTemplate>
+					<MudTd DataLabel="Source Server">@context.SourceServer?.Name</MudTd>
+					<MudTd DataLabel="Destination Server">@context.DestinationServer?.Name</MudTd>
+					<MudTd DataLabel="Enabled">
+						<MudChip T="string" Size="Size.Small"
+							Color="@(context.IsEnabled ? Color.Success : Color.Default)"
+							Variant="Variant.Outlined">
+							@(context.IsEnabled ? "Yes" : "No")
+						</MudChip>
+					</MudTd>
+					<MudTd DataLabel="Last Sync">
+						@if (_metadataProgress.TryGetValue(context.Id, out var metaState))
+						{
+							@if (metaState.Total == 0)
+							{
+								<MudText Typo="Typo.caption">Fetching series...</MudText>
+								<MudProgressLinear Indeterminate="true" Color="Color.Primary" Rounded="true" Size="Size.Small" />
+							}
+							else
+							{
+								var pct = metaState.Processed * 100.0 / metaState.Total;
+								<MudText Typo="Typo.caption">Syncing @metaState.Processed / @metaState.Total (@((int)pct)%)</MudText>
+								<MudProgressLinear Value="pct" Color="Color.Primary" Rounded="true" Size="Size.Small" />
+							}
+						}
+						else if (context.LastSyncedAt.HasValue)
+						{
+							<MudText Typo="Typo.caption">@context.LastSyncedAt.Value.ToLocalTime().ToString("g")</MudText>
+							<MudChip T="string" Size="Size.Small"
+								Color="@GetSyncStatusColor(context.LastSyncStatus)"
+								Variant="Variant.Outlined">
+								@context.LastSyncStatus
+							</MudChip>
+						}
+						else
+						{
+							<MudText Typo="Typo.caption" Style="opacity:.5">Never</MudText>
+						}
+					</MudTd>
+					<MudTd DataLabel="Actions">
+						<MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Success"
+							Size="Size.Small" Title="Sync now"
+							Disabled="@_metadataProgress.ContainsKey(context.Id)"
+							OnClick="@(() => RunMetadataSyncNowAsync(context.Id))" />
+						<MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Default"
+							Size="Size.Small" Title="Edit"
+							OnClick="@(() => OpenEditMetadataPairDialogAsync(context))" />
+						<MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+							Size="Size.Small" Title="Delete"
+							OnClick="@(() => DeleteMetadataPairAsync(context.Id))" />
+					</MudTd>
+				</RowTemplate>
+			</MudTable>
+		}
+	</MudTabPanel>
 </MudTabs>

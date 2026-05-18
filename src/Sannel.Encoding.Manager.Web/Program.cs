@@ -232,6 +232,9 @@ builder.Services.AddScoped<Sannel.Encoding.Manager.Web.Features.Jellyfin.Service
     Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.JellyfinEncodeService>();
 builder.Services.AddHostedService<Sannel.Encoding.Manager.Web.Features.Jellyfin.BackgroundServices.PlayStateSyncWorker>();
 builder.Services.AddHostedService<Sannel.Encoding.Manager.Web.Features.Jellyfin.BackgroundServices.JellyfinUploadWorker>();
+builder.Services.AddScoped<Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.IJellyfinMetadataSyncService,
+    Sannel.Encoding.Manager.Web.Features.Jellyfin.Services.JellyfinMetadataSyncService>();
+builder.Services.AddHostedService<Sannel.Encoding.Manager.Web.Features.Jellyfin.BackgroundServices.MetadataSyncWorker>();
 
 // MVC Controllers for API endpoints
 builder.Services.AddControllers();

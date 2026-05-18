@@ -16,6 +16,9 @@ public partial class JellyfinPage : ComponentBase
 	private IJellyfinSyncService SyncService { get; set; } = default!;
 
 	[Inject]
+	private IJellyfinMetadataSyncService MetadataSyncService { get; set; } = default!;
+
+	[Inject]
 	private IDialogService DialogService { get; set; } = default!;
 
 	[Inject]
@@ -30,15 +33,19 @@ public partial class JellyfinPage : ComponentBase
 	private List<JellyfinServer> _servers = [];
 	private List<DestRootViewModel> _destRoots = [];
 	private List<JellyfinSyncProfile> _syncProfiles = [];
+	private List<JellyfinMetadataServerPair> _metadataPairs = [];
 	private readonly Dictionary<Guid, (int Processed, int Total)> _syncProgress = [];
+	private readonly Dictionary<Guid, (int Processed, int Total)> _metadataProgress = [];
 	private bool _isLoadingServers = true;
 	private bool _isLoadingRoots = true;
 	private bool _isLoadingProfiles = true;
+	private bool _isLoadingMetadataPairs = true;
 
 	protected override async Task OnInitializedAsync()
 	{
 		await this.LoadServersAsync();
 		await this.LoadSyncProfilesAsync();
+		await this.LoadMetadataPairsAsync();
 	}
 
 	private async Task LoadServersAsync()
@@ -303,4 +310,100 @@ public partial class JellyfinPage : ComponentBase
 			_ when status?.StartsWith("Failed") == true => Color.Error,
 			_ => Color.Default,
 		};
+
+	// --- Metadata Sync Pairs ---
+
+	private async Task LoadMetadataPairsAsync()
+	{
+		this._isLoadingMetadataPairs = true;
+		try
+		{
+			this._metadataPairs = (await this.MetadataSyncService.GetAllPairsAsync()).ToList();
+		}
+		finally
+		{
+			this._isLoadingMetadataPairs = false;
+		}
+	}
+
+	private async Task OpenAddMetadataPairDialogAsync()
+	{
+		var parameters = new DialogParameters<MetadataPairDialog>
+		{
+			{ x => x.Servers, this._servers }
+		};
+		var dialog = await this.DialogService.ShowAsync<MetadataPairDialog>("Add Metadata Sync Pair", parameters,
+			new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+		var result = await dialog.Result;
+		if (result is not null && !result.Canceled)
+		{
+			await this.LoadMetadataPairsAsync();
+		}
+	}
+
+	private async Task OpenEditMetadataPairDialogAsync(JellyfinMetadataServerPair pair)
+	{
+		var parameters = new DialogParameters<MetadataPairDialog>
+		{
+			{ x => x.Pair, pair },
+			{ x => x.Servers, this._servers }
+		};
+		var dialog = await this.DialogService.ShowAsync<MetadataPairDialog>("Edit Metadata Sync Pair", parameters,
+			new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+		var result = await dialog.Result;
+		if (result is not null && !result.Canceled)
+		{
+			await this.LoadMetadataPairsAsync();
+		}
+	}
+
+	private async Task DeleteMetadataPairAsync(Guid pairId)
+	{
+		var confirmed = await this.DialogService.ShowMessageBoxAsync("Delete Metadata Sync Pair",
+			"Are you sure you want to delete this metadata sync pair?",
+			yesText: "Delete", cancelText: "Cancel");
+		if (confirmed == true)
+		{
+			if (await this.MetadataSyncService.DeletePairAsync(pairId))
+			{
+				this.Snackbar.Add("Metadata sync pair deleted.", Severity.Success);
+				await this.LoadMetadataPairsAsync();
+			}
+		}
+	}
+
+	private async Task RunMetadataSyncNowAsync(Guid pairId)
+	{
+		var pair = await this.MetadataSyncService.GetPairAsync(pairId);
+		if (pair is null)
+		{
+			this.Snackbar.Add("Metadata sync pair not found.", Severity.Warning);
+			return;
+		}
+
+		this._metadataProgress[pairId] = (0, 0);
+		this.StateHasChanged();
+
+		var progress = new Progress<(int Processed, int Total)>(p =>
+		{
+			this._metadataProgress[pairId] = p;
+			this.InvokeAsync(this.StateHasChanged);
+		});
+
+		try
+		{
+			await this.MetadataSyncService.SyncPairAsync(pair, progress);
+			await this.LoadMetadataPairsAsync();
+			this.Snackbar.Add("Metadata sync completed.", Severity.Success);
+		}
+		catch (Exception ex)
+		{
+			this.Snackbar.Add($"Metadata sync failed: {ex.Message}", Severity.Error);
+		}
+		finally
+		{
+			this._metadataProgress.Remove(pairId);
+			this.StateHasChanged();
+		}
+	}
 }
