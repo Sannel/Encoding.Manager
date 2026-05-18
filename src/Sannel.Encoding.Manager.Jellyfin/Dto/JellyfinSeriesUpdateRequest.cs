@@ -18,7 +18,7 @@ public class JellyfinSeriesUpdateRequest
 	public string[]? Genres { get; set; }
 	public string? OfficialRating { get; set; }
 	public string? Status { get; set; }
-	public string[]? Studios { get; set; }
+	public JellyfinStudio[]? Studios { get; set; }
 	public string? PremiereDate { get; set; }
 	public string? EndDate { get; set; }
 	public string[]? Tags { get; set; }
