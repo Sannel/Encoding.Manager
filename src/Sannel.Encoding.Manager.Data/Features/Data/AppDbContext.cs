@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities;
+using Sannel.Encoding.Manager.Web.Features.Logging.Entities;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
 using Sannel.Encoding.Manager.Web.Features.Scan.Entities;
 using Sannel.Encoding.Manager.Web.Features.Settings.Entities;
@@ -33,6 +35,11 @@ public class AppDbContext : DbContext
 	public DbSet<TvdbSeriesCache> TvdbSeriesCache => this.Set<TvdbSeriesCache>();
 	public DbSet<TvdbEpisodeCache> TvdbEpisodeCache => this.Set<TvdbEpisodeCache>();
 	public DbSet<RunnerEntity> Runners => this.Set<RunnerEntity>();
+	public DbSet<JellyfinServer> JellyfinServers => this.Set<JellyfinServer>();
+	public DbSet<JellyfinSyncProfile> JellyfinSyncProfiles => this.Set<JellyfinSyncProfile>();
+	public DbSet<JellyfinDestinationRoot> JellyfinDestinationRoots => this.Set<JellyfinDestinationRoot>();
+	public DbSet<JellyfinMetadataServerPair> JellyfinMetadataServerPairs => this.Set<JellyfinMetadataServerPair>();
+	public DbSet<LogEntry> LogEntries => this.Set<LogEntry>();
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
@@ -67,6 +74,54 @@ public class AppDbContext : DbContext
 		{
 			entity.HasKey(e => e.Id);
 			entity.HasIndex(e => e.Name).IsUnique();
+		});
+
+		modelBuilder.Entity<JellyfinServer>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+		});
+
+		modelBuilder.Entity<JellyfinSyncProfile>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasOne(e => e.ServerA)
+				.WithMany()
+				.HasForeignKey(e => e.ServerAId)
+				.OnDelete(DeleteBehavior.Restrict);
+			entity.HasOne(e => e.ServerB)
+				.WithMany()
+				.HasForeignKey(e => e.ServerBId)
+				.OnDelete(DeleteBehavior.Restrict);
+		});
+
+		modelBuilder.Entity<JellyfinDestinationRoot>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasOne(e => e.Server)
+				.WithMany()
+				.HasForeignKey(e => e.ServerId)
+				.OnDelete(DeleteBehavior.Cascade);
+		});
+
+		modelBuilder.Entity<JellyfinMetadataServerPair>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasOne(e => e.SourceServer)
+				.WithMany()
+				.HasForeignKey(e => e.SourceServerId)
+				.OnDelete(DeleteBehavior.Restrict);
+			entity.HasOne(e => e.DestinationServer)
+				.WithMany()
+				.HasForeignKey(e => e.DestinationServerId)
+				.OnDelete(DeleteBehavior.Restrict);
+		});
+
+		modelBuilder.Entity<LogEntry>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasIndex(e => e.Timestamp);
+			entity.HasIndex(e => e.Level);
+			entity.HasIndex(e => e.Source);
 		});
 	}
 }

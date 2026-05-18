@@ -1,0 +1,92 @@
+<MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h6">
+			<MudIcon Icon="@Icons.Material.Filled.BugReport" Class="mr-2" />
+			Sync Debug: @Profile?.Name
+		</MudText>
+	</TitleContent>
+	<DialogContent>
+		@if (_isLoading)
+		{
+			<MudStack AlignItems="AlignItems.Center" Class="py-8">
+				<MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+				<MudText Typo="Typo.body2">Fetching items from both servers...</MudText>
+			</MudStack>
+		}
+		else if (_error is not null)
+		{
+			<MudAlert Severity="Severity.Error">@_error</MudAlert>
+		}
+		else
+		{
+			<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-3">
+				<MudTextField @bind-Value="_search" Label="Filter" Adornment="Adornment.Start"
+					AdornmentIcon="@Icons.Material.Filled.Search"
+					Immediate="true" DebounceInterval="200" Class="flex-1" />
+				<MudText Typo="Typo.caption" Style="white-space:nowrap">
+					@Filtered.Count shown (of @_rows.Count fetched)
+				</MudText>
+			</MudStack>
+			<MudTable Items="Filtered" Dense="true" Hover="true" FixedHeader="true" Height="60vh" Striped="true">
+				<HeaderContent>
+					<MudTh Style="min-width:340px">Item</MudTh>
+					<MudTh>A Last Played</MudTh>
+					<MudTh>A ✓</MudTh>
+					<MudTh>A %</MudTh>
+					<MudTh>B Last Played</MudTh>
+					<MudTh>B ✓</MudTh>
+					<MudTh>B %</MudTh>
+					<MudTh>Winner</MudTh>
+				</HeaderContent>
+				<RowTemplate>
+					<MudTd DataLabel="Item">@context.DisplayName</MudTd>
+					<MudTd DataLabel="A Last Played">@FormatDate(context.UserDataA?.LastPlayedDate)</MudTd>
+					<MudTd DataLabel="A Played">
+						@if (context.UserDataA?.Played == true)
+						{
+							<MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+						}
+						else
+						{
+							<MudIcon Icon="@Icons.Material.Outlined.RadioButtonUnchecked" Color="Color.Default" Size="Size.Small" />
+						}
+					</MudTd>
+					<MudTd DataLabel="A %">@FormatPct(context.UserDataA?.PlaybackPositionTicks, context.RunTimeTicks)</MudTd>
+					<MudTd DataLabel="B Last Played">@FormatDate(context.UserDataB?.LastPlayedDate)</MudTd>
+					<MudTd DataLabel="B Played">
+						@if (context.UserDataB?.Played == true)
+						{
+							<MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+						}
+						else
+						{
+							<MudIcon Icon="@Icons.Material.Outlined.RadioButtonUnchecked" Color="Color.Default" Size="Size.Small" />
+						}
+					</MudTd>
+					<MudTd DataLabel="B %">@FormatPct(context.UserDataB?.PlaybackPositionTicks, context.RunTimeTicks)</MudTd>
+					<MudTd DataLabel="Winner">
+						@{
+							var dateA = context.UserDataA?.LastPlayedDate;
+							var dateB = context.UserDataB?.LastPlayedDate;
+							if (dateA is null && dateB is null)
+							{
+								<MudText Typo="Typo.caption" Style="opacity:.5">—</MudText>
+							}
+							else if (dateA.HasValue && (!dateB.HasValue || dateA > dateB))
+							{
+								<MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">A</MudChip>
+							}
+							else
+							{
+								<MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Outlined">B</MudChip>
+							}
+						}
+					</MudTd>
+				</RowTemplate>
+			</MudTable>
+		}
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="@(() => MudDialog.Cancel())">Close</MudButton>
+	</DialogActions>
+</MudDialog>

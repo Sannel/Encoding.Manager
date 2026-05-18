@@ -1,0 +1,36 @@
+<MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h6">Log Detail</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudStack Spacing="3">
+			<MudField Label="Timestamp" Variant="Variant.Outlined">
+				@Entry.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss.fff")
+			</MudField>
+			<MudField Label="Level" Variant="Variant.Outlined">
+				@Entry.Level
+			</MudField>
+			<MudField Label="Source" Variant="Variant.Outlined">
+				@(Entry.Source ?? "Server")
+			</MudField>
+			<MudField Label="Category" Variant="Variant.Outlined">
+				@Entry.Category
+			</MudField>
+			<MudField Label="Message" Variant="Variant.Outlined">
+				<MudText Typo="Typo.body2" Style="white-space: pre-wrap; word-break: break-word;">@Entry.Message</MudText>
+			</MudField>
+			@if (!string.IsNullOrWhiteSpace(Entry.Exception))
+			{
+				<MudField Label="Exception" Variant="Variant.Outlined">
+					<MudText Typo="Typo.body2"
+						Style="white-space: pre-wrap; word-break: break-word; font-family: monospace; font-size: 0.8rem;">
+						@Entry.Exception
+					</MudText>
+				</MudField>
+			}
+		</MudStack>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Close">Close</MudButton>
+	</DialogActions>
+</MudDialog>

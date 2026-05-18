@@ -96,6 +96,10 @@ public abstract class NamingComponentBase : ComponentBase
 		return row;
 	}
 
+	/// <summary>Invoked after an item is successfully added to the queue.</summary>
+	[Parameter]
+	public EventCallback OnAddedToQueue { get; set; }
+
 	/// <summary>
 	/// Filters tracks with an empty OutputName, builds one disk-level queue item,
 	/// stamps AudioDefault from settings, persists, and shows a snackbar summary.
@@ -131,6 +135,7 @@ public abstract class NamingComponentBase : ComponentBase
 		await this.EncodeQueueService.AddItemAsync(item);
 		var subject = string.Equals(mode, "Files", StringComparison.OrdinalIgnoreCase) ? "Folder" : "Disc";
 		this.Snackbar.Add($"{subject} added to queue with {toAdd.Count} track(s).", Severity.Success);
+		await this.OnAddedToQueue.InvokeAsync();
 	}
 
 	protected IReadOnlyList<TvdbEpisode> EpisodesForSeason(int? season)

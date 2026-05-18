@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/Sannel.Encoding.Manager.Data/Sannel.Encoding.Manager.Data.csproj" />
     <Project Path="src/Sannel.Encoding.Manager.HandBrake/Sannel.Encoding.Manager.HandBrake.csproj" />
+    <Project Path="src/Sannel.Encoding.Manager.Jellyfin/Sannel.Encoding.Manager.Jellyfin.csproj" />
     <Project Path="src/Sannel.Encoding.Manager.Migrations.Postgres/Sannel.Encoding.Manager.Migrations.Postgres.csproj" />
     <Project Path="src/Sannel.Encoding.Manager.Migrations.Sqlite/Sannel.Encoding.Manager.Migrations.Sqlite.csproj" />
     <Project Path="src/Sannel.Encoding.Manager.Web/Sannel.Encoding.Manager.Web.csproj" />

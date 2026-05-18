@@ -29,6 +29,27 @@ public class ClaimedJobResponse
 
 	/// <summary>Comma-separated ISO 639-2 subtitle language codes.</summary>
 	public string[] SubtitleLanguages { get; set; } = [];
+
+	/// <summary>Jellyfin download URL when the source is a Jellyfin server. Null for local disc jobs.</summary>
+	public string? JellyfinDownloadUrl { get; set; }
+
+	/// <summary>Decrypted Jellyfin API key for downloading the source item.</summary>
+	public string? JellyfinApiKey { get; set; }
+
+	/// <summary>Destination SFTP host for Jellyfin uploads.</summary>
+	public string? JellyfinSftpHost { get; set; }
+
+	/// <summary>Destination SFTP port for Jellyfin uploads.</summary>
+	public int? JellyfinSftpPort { get; set; }
+
+	/// <summary>Destination SFTP username for Jellyfin uploads.</summary>
+	public string? JellyfinSftpUsername { get; set; }
+
+	/// <summary>Decrypted destination SFTP password for Jellyfin uploads.</summary>
+	public string? JellyfinSftpPassword { get; set; }
+
+	/// <summary>Destination SFTP path (including file name) for Jellyfin uploads.</summary>
+	public string? JellyfinSftpRemotePath { get; set; }
 }
 
 /// <summary>Location of a preset file relative to a filesystem root.</summary>

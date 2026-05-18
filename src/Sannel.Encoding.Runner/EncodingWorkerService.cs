@@ -1,6 +1,8 @@
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
+using Renci.SshNet;
 using Sannel.Encoding.Manager.HandBrake;
 using Sannel.Encoding.Runner.Features.Encoding;
 using Sannel.Encoding.Runner.Features.Runner.Dto;
@@ -16,6 +18,7 @@ public class EncodingWorkerService : BackgroundService
 	private readonly PathNormalizer _pathNormalizer;
 	private readonly RunnerOptions _runnerOptions;
 	private readonly FilesystemOptions _fsOptions;
+	private readonly IHttpClientFactory _httpClientFactory;
 	private readonly ILogger<EncodingWorkerService> _logger;
 	private static readonly TimeSpan CancelPollInterval = TimeSpan.FromSeconds(2);
 
@@ -25,6 +28,7 @@ public class EncodingWorkerService : BackgroundService
 		PathNormalizer pathNormalizer,
 		IOptions<RunnerOptions> runnerOptions,
 		IOptions<FilesystemOptions> fsOptions,
+		IHttpClientFactory httpClientFactory,
 		ILogger<EncodingWorkerService> logger)
 	{
 		_api = api;
@@ -32,6 +36,7 @@ public class EncodingWorkerService : BackgroundService
 		_pathNormalizer = pathNormalizer;
 		_runnerOptions = runnerOptions.Value;
 		_fsOptions = fsOptions.Value;
+		_httpClientFactory = httpClientFactory;
 		_logger = logger;
 	}
 
@@ -94,10 +99,40 @@ public class EncodingWorkerService : BackgroundService
 
 	private async Task ProcessJobAsync(ClaimedJobResponse job, CancellationToken ct)
 	{
+		var isJellyfinSourceJob = !string.IsNullOrEmpty(job.JellyfinDownloadUrl) && !string.IsNullOrEmpty(job.JellyfinApiKey);
+		var isJellyfinUploadJob = isJellyfinSourceJob && !string.IsNullOrWhiteSpace(job.JellyfinSftpRemotePath);
+
 		try
 		{
-			var absDiscPath = ResolveDiscPath(job);
-			_logger.LogInformation("Resolved disc path: {Path}", absDiscPath);
+			if (isJellyfinSourceJob && !isJellyfinUploadJob)
+			{
+				var error = "Jellyfin destination upload path is missing for this job.";
+				_logger.LogError("{Error} JobId={JobId}", error, job.JobId);
+				await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
+				return;
+			}
+
+			if (isJellyfinUploadJob && !HasJellyfinSftpCredentials(job))
+			{
+				var error = "Jellyfin SFTP credentials are missing or incomplete for this job.";
+				_logger.LogError("{Error} JobId={JobId}", error, job.JobId);
+				await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
+				return;
+			}
+
+			string absDiscPath;
+
+			// If this is a Jellyfin-sourced job, download the source file to tmp
+			if (isJellyfinSourceJob)
+			{
+				absDiscPath = await DownloadJellyfinSourceAsync(job, ct);
+				_logger.LogInformation("Downloaded Jellyfin source to: {Path}", absDiscPath);
+			}
+			else
+			{
+				absDiscPath = ResolveDiscPath(job);
+				_logger.LogInformation("Resolved disc path: {Path}", absDiscPath);
+			}
 
 			if (!File.Exists(absDiscPath) && !IsDirectoryAccessible(absDiscPath))
 			{
@@ -142,7 +177,9 @@ public class EncodingWorkerService : BackgroundService
 				if (!discScanResult.IsSuccess)
 				{
 					_logger.LogError("Scan failed for {Path}: {Error}", absDiscPath, discScanResult.Error?.Message);
-					await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: $"Scan failed: {discScanResult.Error?.Message}", ct: ct);
+					var scanError = $"Scan failed: {discScanResult.Error?.Message}";
+					scanError = AppendFlatpakTmpPermissionHint(scanError, absDiscPath, discScanResult.Error?.RawOutput);
+					await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: scanError, ct: ct);
 					return;
 				}
 			}
@@ -174,6 +211,7 @@ public class EncodingWorkerService : BackgroundService
 					if (!scanResult.IsSuccess)
 					{
 						var error = $"Scan failed for file '{track.SourceRelativePath}': {scanResult.Error?.Message}";
+						error = AppendFlatpakTmpPermissionHint(error, inputPath, scanResult.Error?.RawOutput);
 						_logger.LogError("{Error}", error);
 						await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
 						return;
@@ -215,7 +253,11 @@ public class EncodingWorkerService : BackgroundService
 				}
 
 				// Resolve output path.
-				var outputPath = ResolveOutputPath(job, track, rootLookup);
+				var outputPath = isJellyfinUploadJob
+					? ResolveJellyfinTempOutputPath(job, track, i, tracks.Count)
+					: ResolveOutputPath(job, track, rootLookup);
+
+				EnsureOutputDirectoryExists(outputPath);
 
 				_logger.LogInformation(
 					"Encoding {Source} title {Title} -> {Output} (preset: {Preset})",
@@ -265,6 +307,7 @@ public class EncodingWorkerService : BackgroundService
 						}
 
 						var error = $"Encode failed for title {track.TitleNumber}: {encodeResult.Error?.Message}";
+						error = AppendFlatpakTmpPermissionHint(error, outputPath, encodeResult.Error?.RawOutput);
 						_logger.LogError("{Error}", error);
 						await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
 						return;
@@ -273,6 +316,20 @@ public class EncodingWorkerService : BackgroundService
 					_logger.LogInformation(
 						"Title {Title} encoded in {Elapsed} (avg {Fps:F1} fps).",
 						track.TitleNumber, encodeResult.ElapsedTime, encodeResult.AverageFps);
+
+					if (isJellyfinUploadJob)
+					{
+						if (await _api.IsCancelRequestedAsync(_runnerOptions.Name, job.JobId, ct))
+						{
+							await _api.UpdateJobStatusAsync(job.JobId, "Canceled", error: "Encoding canceled by request.", ct: ct);
+							_logger.LogInformation("Job {JobId} canceled before Jellyfin upload.", job.JobId);
+							return;
+						}
+
+						var remotePath = ResolveJellyfinRemotePath(job, track, i, tracks.Count);
+						await UploadJellyfinOutputAsync(job, outputPath, remotePath, ct);
+						TryDeleteFile(outputPath);
+					}
 				}
 				catch (OperationCanceledException) when (!ct.IsCancellationRequested)
 				{
@@ -298,6 +355,10 @@ public class EncodingWorkerService : BackgroundService
 		{
 			_logger.LogError(ex, "Unhandled error processing job {JobId}.", job.JobId);
 			await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: ex.Message, ct: ct);
+		}
+		finally
+		{
+			CleanupJellyfinTempArtifacts(job.JobId);
 		}
 	}
 
@@ -567,6 +628,250 @@ public class EncodingWorkerService : BackgroundService
 		return command;
 	}
 
+	private static bool HasJellyfinSftpCredentials(ClaimedJobResponse job)
+	{
+		return !string.IsNullOrWhiteSpace(job.JellyfinSftpHost)
+			&& !string.IsNullOrWhiteSpace(job.JellyfinSftpUsername)
+			&& !string.IsNullOrWhiteSpace(job.JellyfinSftpPassword);
+	}
+
+	private static void EnsureOutputDirectoryExists(string outputPath)
+	{
+		var outputDirectory = Path.GetDirectoryName(outputPath);
+		if (!string.IsNullOrWhiteSpace(outputDirectory))
+		{
+			try
+			{
+				Directory.CreateDirectory(outputDirectory);
+			}
+			catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
+			{
+				var message = $"Failed to create output directory '{outputDirectory}'.";
+				if (IsPathUnderTempDirectory(outputDirectory))
+				{
+					message += " " + BuildFlatpakTmpPermissionHint();
+				}
+
+				throw new InvalidOperationException(message, ex);
+			}
+		}
+	}
+
+	private static string AppendFlatpakTmpPermissionHint(string message, string path, string? rawOutput)
+	{
+		if (!OperatingSystem.IsLinux())
+		{
+			return message;
+		}
+
+		if (!IsPathUnderTempDirectory(path))
+		{
+			return message;
+		}
+
+		if (string.IsNullOrWhiteSpace(rawOutput))
+		{
+			return message;
+		}
+
+		var containsPermissionDenied = rawOutput.Contains("Permission denied", StringComparison.OrdinalIgnoreCase);
+		var containsOpenFailed = rawOutput.Contains("open ", StringComparison.OrdinalIgnoreCase)
+			&& rawOutput.Contains(" failed", StringComparison.OrdinalIgnoreCase);
+
+		if (!containsPermissionDenied && !containsOpenFailed)
+		{
+			return message;
+		}
+
+		return message + " " + BuildFlatpakTmpPermissionHint();
+	}
+
+	private static bool IsPathUnderTempDirectory(string path)
+	{
+		if (string.IsNullOrWhiteSpace(path))
+		{
+			return false;
+		}
+
+		try
+		{
+			var tempRoot = Path.GetFullPath(Path.GetTempPath())
+				.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+			var fullPath = Path.GetFullPath(path)
+				.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+			return fullPath.Equals(tempRoot, StringComparison.Ordinal)
+				|| fullPath.StartsWith(tempRoot + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+				|| fullPath.StartsWith(tempRoot + Path.AltDirectorySeparatorChar, StringComparison.Ordinal);
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
+	private static string BuildFlatpakTmpPermissionHint() =>
+		"If HandBrake is running via Flatpak, grant host tmp access and restart the runner: flatpak override --user --filesystem=/tmp fr.handbrake.ghb (or use --system for system-wide installs).";
+
+	private static string ResolveJellyfinTempOutputPath(
+		ClaimedJobResponse job,
+		EncodeTrackConfig track,
+		int trackIndex,
+		int trackCount)
+	{
+		var tempOutputDir = Path.Combine(GetJellyfinTempDirectory(job.JobId), "encoded");
+		Directory.CreateDirectory(tempOutputDir);
+
+		var baseName = string.IsNullOrWhiteSpace(track.OutputName)
+			? $"title-{track.TitleNumber:D2}"
+			: track.OutputName;
+
+		var safeBaseName = SanitizeFileName(baseName);
+		if (trackCount > 1)
+		{
+			safeBaseName = $"{trackIndex + 1:D2}-{safeBaseName}";
+		}
+
+		return Path.Combine(tempOutputDir, $"{safeBaseName}.mkv");
+	}
+
+	private static string ResolveJellyfinRemotePath(
+		ClaimedJobResponse job,
+		EncodeTrackConfig track,
+		int trackIndex,
+		int trackCount)
+	{
+		var baseRemotePath = NormalizeRemotePath(job.JellyfinSftpRemotePath ?? string.Empty);
+		if (trackCount <= 1)
+		{
+			return baseRemotePath;
+		}
+
+		var remoteDirectory = GetRemoteDirectory(baseRemotePath);
+		var baseName = string.IsNullOrWhiteSpace(track.OutputName)
+			? $"title-{track.TitleNumber:D2}"
+			: track.OutputName;
+		var safeName = SanitizeFileName(baseName);
+		var fileName = $"{trackIndex + 1:D2}-{safeName}.mkv";
+
+		return string.IsNullOrWhiteSpace(remoteDirectory)
+			? fileName
+			: $"{remoteDirectory}/{fileName}";
+	}
+
+	private async Task UploadJellyfinOutputAsync(
+		ClaimedJobResponse job,
+		string localOutputPath,
+		string remotePath,
+		CancellationToken ct)
+	{
+		if (!File.Exists(localOutputPath))
+		{
+			throw new FileNotFoundException("Encoded output file does not exist.", localOutputPath);
+		}
+
+		if (string.IsNullOrWhiteSpace(remotePath))
+		{
+			throw new InvalidOperationException("Jellyfin destination remote path is required.");
+		}
+
+		var host = job.JellyfinSftpHost
+			?? throw new InvalidOperationException("Jellyfin SFTP host is required.");
+		var username = job.JellyfinSftpUsername
+			?? throw new InvalidOperationException("Jellyfin SFTP username is required.");
+		var password = job.JellyfinSftpPassword
+			?? throw new InvalidOperationException("Jellyfin SFTP password is required.");
+		var port = job.JellyfinSftpPort.GetValueOrDefault(22);
+
+		_logger.LogInformation(
+			"Uploading Jellyfin output for job {JobId} to {Host}:{RemotePath}",
+			job.JobId,
+			host,
+			remotePath);
+
+		await Task.Run(() =>
+		{
+			using var sftpClient = new SftpClient(host, port, username, password);
+			sftpClient.Connect();
+			try
+			{
+				var remoteDirectory = GetRemoteDirectory(remotePath);
+				if (!string.IsNullOrWhiteSpace(remoteDirectory))
+				{
+					EnsureRemoteDirectoryExists(sftpClient, remoteDirectory);
+				}
+
+				using var stream = File.OpenRead(localOutputPath);
+				sftpClient.UploadFile(stream, remotePath, canOverride: true);
+			}
+			finally
+			{
+				if (sftpClient.IsConnected)
+				{
+					sftpClient.Disconnect();
+				}
+			}
+		}, ct);
+
+		_logger.LogInformation(
+			"Uploaded Jellyfin output for job {JobId} to {RemotePath}.",
+			job.JobId,
+			remotePath);
+	}
+
+	private static void EnsureRemoteDirectoryExists(SftpClient client, string remoteDirectory)
+	{
+		var parts = remoteDirectory.Split('/', StringSplitOptions.RemoveEmptyEntries);
+		var current = string.Empty;
+		foreach (var part in parts)
+		{
+			current += "/" + part;
+			if (!client.Exists(current))
+			{
+				client.CreateDirectory(current);
+			}
+		}
+	}
+
+	private static string GetRemoteDirectory(string remotePath)
+	{
+		var normalized = NormalizeRemotePath(remotePath).TrimEnd('/');
+		var separatorIndex = normalized.LastIndexOf('/');
+		return separatorIndex <= 0 ? string.Empty : normalized[..separatorIndex];
+	}
+
+	private static string NormalizeRemotePath(string remotePath) =>
+		remotePath.Replace('\\', '/');
+
+	private static string SanitizeFileName(string fileName)
+	{
+		var sanitized = fileName.Trim();
+		foreach (var invalidChar in Path.GetInvalidFileNameChars())
+		{
+			sanitized = sanitized.Replace(invalidChar, '_');
+		}
+
+		return string.IsNullOrWhiteSpace(sanitized) ? "output" : sanitized;
+	}
+
+	private static string GetJellyfinTempDirectory(Guid jobId) =>
+		Path.Combine(Path.GetTempPath(), "encoding-manager", jobId.ToString());
+
+	private static void TryDeleteFile(string filePath)
+	{
+		try
+		{
+			if (File.Exists(filePath))
+			{
+				File.Delete(filePath);
+			}
+		}
+		catch
+		{
+			// Best-effort cleanup.
+		}
+	}
+
 	/// <summary>
 	/// Returns <see langword="true"/> if <paramref name="path"/> exists and is accessible.
 	/// Unlike <see cref="Directory.Exists"/>, this method also returns <see langword="true"/>
@@ -593,6 +898,60 @@ public class EncodingWorkerService : BackgroundService
 		catch
 		{
 			return false;
+		}
+	}
+
+	private async Task<string> DownloadJellyfinSourceAsync(ClaimedJobResponse job, CancellationToken ct)
+	{
+		var tempDir = GetJellyfinTempDirectory(job.JobId);
+		var tempFile = Path.Combine(tempDir, "source.mkv");
+
+		try
+		{
+			Directory.CreateDirectory(tempDir);
+
+			_logger.LogInformation("Downloading Jellyfin source for job {JobId} from {Url}", job.JobId, job.JellyfinDownloadUrl);
+
+			using var client = _httpClientFactory.CreateClient();
+			using var request = new HttpRequestMessage(HttpMethod.Get, job.JellyfinDownloadUrl);
+			request.Headers.Add("X-Emby-Token", job.JellyfinApiKey);
+
+			using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+			response.EnsureSuccessStatusCode();
+
+			await using var fileStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true);
+			await response.Content.CopyToAsync(fileStream, ct);
+
+			_logger.LogInformation("Jellyfin source downloaded ({Size} bytes): {Path}", new FileInfo(tempFile).Length, tempFile);
+			return tempFile;
+		}
+		catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
+		{
+			var message = $"Failed to write Jellyfin temp file '{tempFile}'.";
+			if (IsPathUnderTempDirectory(tempFile))
+			{
+				message += " " + BuildFlatpakTmpPermissionHint();
+			}
+
+			throw new InvalidOperationException(message, ex);
+		}
+	}
+
+	private void CleanupJellyfinTempArtifacts(Guid jobId)
+	{
+		var tempDir = GetJellyfinTempDirectory(jobId);
+		if (!Directory.Exists(tempDir))
+		{
+			return;
+		}
+
+		try
+		{
+			Directory.Delete(tempDir, recursive: true);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogWarning(ex, "Failed to clean up Jellyfin temp artifacts for job {JobId}.", jobId);
 		}
 	}
 }
