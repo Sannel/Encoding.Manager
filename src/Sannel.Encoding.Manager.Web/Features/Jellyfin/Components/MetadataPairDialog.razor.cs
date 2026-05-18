@@ -72,12 +72,12 @@ public partial class MetadataPairDialog : ComponentBase
 
 			if (this.Pair is null)
 			{
-				await this.MetadataSyncService.CreatePairAsync(dto).ConfigureAwait(false);
+				await this.MetadataSyncService.CreatePairAsync(dto);
 				this.Snackbar.Add("Metadata sync pair created.", Severity.Success);
 			}
 			else
 			{
-				await this.MetadataSyncService.UpdatePairAsync(this.Pair.Id, dto).ConfigureAwait(false);
+				await this.MetadataSyncService.UpdatePairAsync(this.Pair.Id, dto);
 				this.Snackbar.Add("Metadata sync pair updated.", Severity.Success);
 			}
 
