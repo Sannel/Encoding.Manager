@@ -29,6 +29,9 @@ public partial class JellyfinBrowsePage : ComponentBase
 	[Inject]
 	private NavigationManager NavigationManager { get; set; } = default!;
 
+	[Inject]
+	private ILogger<JellyfinBrowsePage> Logger { get; set; } = default!;
+
 	private const int PageSize = 50;
 
 	private string _serverName = string.Empty;
@@ -48,6 +51,31 @@ public partial class JellyfinBrowsePage : ComponentBase
 
 	private List<BreadcrumbItem> _breadcrumbs = [];
 	private readonly List<(string Id, string Name, string Type)> _navigationStack = [];
+
+	// Destination movie filtering
+	private bool _hideExistingMovies = true;
+	private bool _isLoadingDestMovies;
+	private HashSet<string> _destMovieKeys = new(StringComparer.OrdinalIgnoreCase);
+
+	private IEnumerable<JellyfinItem> DisplayItems =>
+		this._hideExistingMovies
+			? this._items.Where(i => !string.Equals(i.Type, "Movie", StringComparison.OrdinalIgnoreCase) || !this.IsMovieOnDestination(i))
+			: this._items;
+
+	private int HiddenMovieCount =>
+		this._hideExistingMovies
+			? this._items.Count(i => string.Equals(i.Type, "Movie", StringComparison.OrdinalIgnoreCase) && this.IsMovieOnDestination(i))
+			: 0;
+
+	private bool IsMovieOnDestination(JellyfinItem item)
+	{
+		if (!string.IsNullOrEmpty(item.ProviderIds?.Imdb))
+		{
+			return this._destMovieKeys.Contains($"imdb:{item.ProviderIds.Imdb}");
+		}
+
+		return this._destMovieKeys.Contains($"name:{item.Name.ToLowerInvariant()}|year:{item.ProductionYear}");
+	}
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -71,7 +99,78 @@ public partial class JellyfinBrowsePage : ComponentBase
 			this._libraries = [];
 		}
 
+		if (this._server.IsSource)
+		{
+			_ = this.LoadDestinationMoviesAsync();
+		}
+
 		await this.SearchAsync();
+	}
+
+	private async Task LoadDestinationMoviesAsync()
+	{
+		this._isLoadingDestMovies = true;
+		await this.InvokeAsync(this.StateHasChanged);
+		try
+		{
+			var serverServiceImpl = (JellyfinServerService)this.ServerService;
+			var allServers = await this.ServerService.GetAllServersAsync();
+			var destServers = allServers.Where(s => s.IsDestination).ToList();
+
+			var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+			foreach (var destServer in destServers)
+			{
+				try
+				{
+					var destClient = this.ClientFactory.CreateClient(destServer.BaseUrl, serverServiceImpl.DecryptApiKey(destServer.ApiKey));
+					var startIndex = 0;
+					const int pageSize = 500;
+
+					while (true)
+					{
+						var response = await destClient.GetItemsAsync(new GetItemsRequest
+						{
+							IncludeItemTypes = "Movie",
+							Recursive = true,
+							Fields = "ProviderIds",
+							StartIndex = startIndex,
+							Limit = pageSize,
+						});
+
+						foreach (var movie in response.Items)
+						{
+							if (!string.IsNullOrEmpty(movie.ProviderIds?.Imdb))
+							{
+								keys.Add($"imdb:{movie.ProviderIds.Imdb}");
+							}
+							else
+							{
+								keys.Add($"name:{movie.Name.ToLowerInvariant()}|year:{movie.ProductionYear}");
+							}
+						}
+
+						if (response.Items.Length == 0 || startIndex + response.Items.Length >= response.TotalRecordCount)
+						{
+							break;
+						}
+
+						startIndex += pageSize;
+					}
+				}
+				catch (Exception ex)
+				{
+					this.Logger.LogWarning(ex, "Failed to load movies from destination server '{ServerName}'.", destServer.Name);
+				}
+			}
+
+			this._destMovieKeys = keys;
+		}
+		finally
+		{
+			this._isLoadingDestMovies = false;
+			await this.InvokeAsync(this.StateHasChanged);
+		}
 	}
 
 	private async Task SearchAsync()

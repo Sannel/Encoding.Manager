@@ -35,6 +35,30 @@
 				Search
 			</MudButton>
 		</MudItem>
+		@if (_server?.IsSource == true)
+		{
+			<MudItem xs="12">
+				@if (_isLoadingDestMovies)
+				{
+					<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+						<MudProgressCircular Indeterminate="true" Size="Size.Small" Color="Color.Primary" />
+						<MudText Typo="Typo.caption">Checking destination servers for existing movies...</MudText>
+					</MudStack>
+				}
+				else if (_destMovieKeys.Count > 0)
+				{
+					<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+						<MudCheckBox @bind-Value="_hideExistingMovies" Label="Hide movies already on destination" Color="Color.Primary" />
+						@if (_hideExistingMovies && HiddenMovieCount > 0)
+						{
+							<MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default">
+								@HiddenMovieCount hidden
+							</MudChip>
+						}
+					</MudStack>
+				}
+			</MudItem>
+		}
 	</MudGrid>
 </MudCard>
 
@@ -48,7 +72,7 @@ else if (_items.Count == 0)
 }
 else
 {
-	<MudTable Items="_items" Hover="true" Striped="true" Dense="true">
+	<MudTable Items="DisplayItems" Hover="true" Striped="true" Dense="true">
 		<HeaderContent>
 			<MudTh>Name</MudTh>
 			<MudTh>Type</MudTh>
