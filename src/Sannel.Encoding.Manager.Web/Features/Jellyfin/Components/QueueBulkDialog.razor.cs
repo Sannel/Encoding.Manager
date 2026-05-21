@@ -28,6 +28,12 @@ public partial class QueueBulkDialog : ComponentBase
 	private IJellyfinServerService ServerService { get; set; } = default!;
 
 	[Inject]
+	private IJellyfinClientFactory ClientFactory { get; set; } = default!;
+
+	[Inject]
+	private JellyfinServerService ServerServiceImpl { get; set; } = default!;
+
+	[Inject]
 	private IJellyfinEncodeService EncodeService { get; set; } = default!;
 
 	[Inject]
@@ -41,13 +47,15 @@ public partial class QueueBulkDialog : ComponentBase
 
 	private List<JellyfinItem> _episodes = [];
 	private List<JellyfinServer> _destServers = [];
-	private List<JellyfinDestinationRoot> _destRoots = [];
+	private List<DestinationRootOption> _destOptions = [];
 	private IReadOnlyList<EncodingPreset> _presets = [];
 	private Guid _destServerId;
-	private Guid _destRootId;
+	private DestinationRootOption? _selectedOption;
 	private string _presetLabel = string.Empty;
 	private bool _isLoadingEpisodes = true;
+	private bool _isLoadingOptions;
 	private bool _isQueueing;
+	private int _optionsLoadVersion;
 
 	private string _itemTypeName =>
 		string.Equals(this.ParentItem.Type, "Series", StringComparison.OrdinalIgnoreCase)
@@ -57,7 +65,7 @@ public partial class QueueBulkDialog : ComponentBase
 	private bool CanQueue =>
 		this._episodes.Count > 0 &&
 		this._destServerId != Guid.Empty &&
-		this._destRootId != Guid.Empty &&
+		this._selectedOption is not null &&
 		!string.IsNullOrWhiteSpace(this._presetLabel);
 
 	protected override async Task OnInitializedAsync()
@@ -124,30 +132,134 @@ public partial class QueueBulkDialog : ComponentBase
 		if (this._destServers.Count > 0)
 		{
 			this._destServerId = this._destServers[0].Id;
-			await this.LoadRootsAsync();
+			await this.LoadOptionsAsync();
 		}
 	}
 
 	private async Task OnDestServerChangedAsync(Guid serverId)
 	{
 		this._destServerId = serverId;
-		await this.LoadRootsAsync();
+		this._selectedOption = null;
+		await this.LoadOptionsAsync();
 	}
 
-	private async Task LoadRootsAsync()
+	private async Task LoadOptionsAsync()
 	{
-		this._destRoots = (await this.ServerService.GetDestinationRootsAsync(this._destServerId)).ToList();
-		this._destRootId = this._destRoots.Count > 0 ? this._destRoots[0].Id : Guid.Empty;
+		if (this._destServerId == Guid.Empty)
+		{
+			this._destOptions = [];
+			this._selectedOption = null;
+			return;
+		}
+
+		var version = ++this._optionsLoadVersion;
+		this._isLoadingOptions = true;
+
+		List<DestinationRootOption> options;
+		try
+		{
+			var dbRoots = await this.ServerService.GetDestinationRootsAsync(this._destServerId);
+			options = dbRoots
+				.Select(r => new DestinationRootOption(r.Id, $"{r.Name} — {r.RootPath}", r.RootPath.TrimEnd('/'), r.ServerId, null))
+				.ToList();
+
+			var existingPaths = new HashSet<string>(
+				dbRoots.Select(r => r.RootPath.TrimEnd('/')),
+				StringComparer.OrdinalIgnoreCase);
+
+			try
+			{
+				var server = this._destServers.FirstOrDefault(s => s.Id == this._destServerId);
+				if (server is not null)
+				{
+					var client = this.ClientFactory.CreateClient(
+						server.BaseUrl,
+						this.ServerServiceImpl.DecryptApiKey(server.ApiKey));
+					var virtualFolders = await client.GetVirtualFoldersAsync();
+					foreach (var folder in virtualFolders)
+					{
+						foreach (var location in folder.Locations)
+						{
+							if (string.IsNullOrWhiteSpace(location))
+							{
+								continue;
+							}
+
+							var normalizedPath = location.TrimEnd('/');
+							if (existingPaths.Add(normalizedPath))
+							{
+								options.Add(new DestinationRootOption(
+									null,
+									$"{folder.Name} — {location}",
+									normalizedPath,
+									this._destServerId,
+									folder.Name));
+							}
+						}
+					}
+				}
+			}
+			catch
+			{
+				// If Jellyfin is unreachable, fall back to DB roots only
+			}
+		}
+		catch
+		{
+			options = [];
+		}
+
+		if (version != this._optionsLoadVersion)
+		{
+			return;
+		}
+
+		this._destOptions = options;
+		this._selectedOption = options.Count > 0 ? options[0] : null;
+		this._isLoadingOptions = false;
+	}
+
+	private async Task<Guid> EnsureRootIdAsync(DestinationRootOption option)
+	{
+		if (option.RootId.HasValue)
+		{
+			return option.RootId.Value;
+		}
+
+		// Virtual folder path — find or create a DB root for it
+		var existing = await this.ServerService.GetDestinationRootsAsync(option.ServerId);
+		var match = existing.FirstOrDefault(r =>
+			string.Equals(r.RootPath.TrimEnd('/'), option.RootPath.TrimEnd('/'), StringComparison.OrdinalIgnoreCase));
+		if (match is not null)
+		{
+			return match.Id;
+		}
+
+		var name = option.LibraryName ?? Path.GetFileName(option.RootPath) ?? option.RootPath;
+		var created = await this.ServerService.CreateDestinationRootAsync(new JellyfinDestinationRootDto
+		{
+			Name = name,
+			ServerId = option.ServerId,
+			RootPath = option.RootPath,
+		});
+		return created.Id;
 	}
 
 	private async Task QueueAllAsync()
 	{
+		if (this._selectedOption is null)
+		{
+			return;
+		}
+
 		this._isQueueing = true;
 		var queued = 0;
 		var failed = 0;
 
 		try
 		{
+			var rootId = await this.EnsureRootIdAsync(this._selectedOption);
+
 			foreach (var episode in this._episodes)
 			{
 				try
@@ -158,7 +270,7 @@ public partial class QueueBulkDialog : ComponentBase
 						ItemId = episode.Id,
 						PresetLabel = this._presetLabel,
 						DestServerId = this._destServerId,
-						DestRootId = this._destRootId,
+						DestRootId = rootId,
 					};
 
 					await this.EncodeService.QueueItemAsync(request);

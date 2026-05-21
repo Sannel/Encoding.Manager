@@ -39,13 +39,22 @@
 					}
 				</MudSelect>
 
-				@if (_destRoots.Count > 0)
+				@if (_isLoadingOptions)
 				{
-					<MudSelect @bind-Value="_destRootId" Label="Destination Root" Variant="Variant.Outlined"
+					<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+						<MudProgressCircular Indeterminate="true" Size="Size.Small" Color="Color.Primary" />
+						<MudText Typo="Typo.caption">Loading destination paths...</MudText>
+					</MudStack>
+				}
+				else if (_destOptions.Count > 0)
+				{
+					<MudSelect @bind-Value="_selectedOption" T="DestinationRootOption"
+						Label="Destination Path" Variant="Variant.Outlined"
+						ToStringFunc="@(o => o?.DisplayName ?? string.Empty)"
 						AnchorOrigin="Origin.BottomCenter">
-						@foreach (var root in _destRoots)
+						@foreach (var opt in _destOptions)
 						{
-							<MudSelectItem Value="root.Id">@root.Name — @root.RootPath</MudSelectItem>
+							<MudSelectItem Value="opt">@opt.DisplayName</MudSelectItem>
 						}
 					</MudSelect>
 				}
