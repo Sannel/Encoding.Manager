@@ -6,7 +6,7 @@ namespace Sannel.Encoding.Manager.Web.Features.Jellyfin.Services;
 
 public partial class JellyfinPathBuilder : IJellyfinPathBuilder
 {
-	public string BuildRemotePath(JellyfinDestinationRoot root, JellyfinItem item, string extension = "mkv")
+	public string BuildRelativePath(JellyfinItem item, string extension = "mkv")
 	{
 		if (string.Equals(item.Type, "Episode", StringComparison.OrdinalIgnoreCase))
 		{
@@ -20,6 +20,9 @@ public partial class JellyfinPathBuilder : IJellyfinPathBuilder
 
 		throw new ArgumentException($"Unsupported item type: {item.Type}");
 	}
+
+	public string BuildRemotePath(JellyfinDestinationRoot root, JellyfinItem item, string extension = "mkv") =>
+		this.BuildRelativePath(item, extension);
 
 	private string BuildEpisodePath(JellyfinItem item, string extension)
 	{

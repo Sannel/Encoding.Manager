@@ -64,8 +64,8 @@ public partial class QueueBulkDialog : ComponentBase
 
 	private bool CanQueue =>
 		this._episodes.Count > 0 &&
-		this._destServerId != Guid.Empty &&
 		this._selectedOption is not null &&
+		(this._selectedOption.IsLocal || this._destServerId != Guid.Empty) &&
 		!string.IsNullOrWhiteSpace(this._presetLabel);
 
 	protected override async Task OnInitializedAsync()
@@ -132,8 +132,9 @@ public partial class QueueBulkDialog : ComponentBase
 		if (this._destServers.Count > 0)
 		{
 			this._destServerId = this._destServers[0].Id;
-			await this.LoadOptionsAsync();
 		}
+
+		await this.LoadOptionsAsync();
 	}
 
 	private async Task OnDestServerChangedAsync(Guid serverId)
@@ -145,68 +146,64 @@ public partial class QueueBulkDialog : ComponentBase
 
 	private async Task LoadOptionsAsync()
 	{
-		if (this._destServerId == Guid.Empty)
-		{
-			this._destOptions = [];
-			this._selectedOption = null;
-			return;
-		}
-
 		var version = ++this._optionsLoadVersion;
 		this._isLoadingOptions = true;
 
-		List<DestinationRootOption> options;
-		try
+		var options = new List<DestinationRootOption> { DestinationRootOption.LocalDestination };
+
+		if (this._destServerId != Guid.Empty)
 		{
-			var dbRoots = await this.ServerService.GetDestinationRootsAsync(this._destServerId);
-			options = dbRoots
-				.Select(r => new DestinationRootOption(r.Id, $"{r.Name} — {r.RootPath}", r.RootPath.TrimEnd('/'), r.ServerId, null))
-				.ToList();
-
-			var existingPaths = new HashSet<string>(
-				dbRoots.Select(r => r.RootPath.TrimEnd('/')),
-				StringComparer.OrdinalIgnoreCase);
-
 			try
 			{
-				var server = this._destServers.FirstOrDefault(s => s.Id == this._destServerId);
-				if (server is not null)
-				{
-					var client = this.ClientFactory.CreateClient(
-						server.BaseUrl,
-						this.ServerServiceImpl.DecryptApiKey(server.ApiKey));
-					var virtualFolders = await client.GetVirtualFoldersAsync();
-					foreach (var folder in virtualFolders)
-					{
-						foreach (var location in folder.Locations)
-						{
-							if (string.IsNullOrWhiteSpace(location))
-							{
-								continue;
-							}
+				var dbRoots = await this.ServerService.GetDestinationRootsAsync(this._destServerId);
+				options.AddRange(dbRoots
+					.Select(r => new DestinationRootOption(r.Id, $"{r.Name} — {r.RootPath}", r.RootPath.TrimEnd('/'), r.ServerId, null)));
 
-							var normalizedPath = location.TrimEnd('/');
-							if (existingPaths.Add(normalizedPath))
+				var existingPaths = new HashSet<string>(
+					dbRoots.Select(r => r.RootPath.TrimEnd('/')),
+					StringComparer.OrdinalIgnoreCase);
+
+				try
+				{
+					var server = this._destServers.FirstOrDefault(s => s.Id == this._destServerId);
+					if (server is not null)
+					{
+						var client = this.ClientFactory.CreateClient(
+							server.BaseUrl,
+							this.ServerServiceImpl.DecryptApiKey(server.ApiKey));
+						var virtualFolders = await client.GetVirtualFoldersAsync();
+						foreach (var folder in virtualFolders)
+						{
+							foreach (var location in folder.Locations)
 							{
-								options.Add(new DestinationRootOption(
-									null,
-									$"{folder.Name} — {location}",
-									normalizedPath,
-									this._destServerId,
-									folder.Name));
+								if (string.IsNullOrWhiteSpace(location))
+								{
+									continue;
+								}
+
+								var normalizedPath = location.TrimEnd('/');
+								if (existingPaths.Add(normalizedPath))
+								{
+									options.Add(new DestinationRootOption(
+										null,
+										$"{folder.Name} — {location}",
+										normalizedPath,
+										this._destServerId,
+										folder.Name));
+								}
 							}
 						}
 					}
 				}
+				catch
+				{
+					// If Jellyfin is unreachable, fall back to DB roots only
+				}
 			}
 			catch
 			{
-				// If Jellyfin is unreachable, fall back to DB roots only
+				// Fall back to just the local option
 			}
-		}
-		catch
-		{
-			options = [];
 		}
 
 		if (version != this._optionsLoadVersion)
@@ -258,7 +255,9 @@ public partial class QueueBulkDialog : ComponentBase
 
 		try
 		{
-			var rootId = await this.EnsureRootIdAsync(this._selectedOption);
+			Guid? rootId = this._selectedOption.IsLocal
+				? null
+				: await this.EnsureRootIdAsync(this._selectedOption);
 
 			foreach (var episode in this._episodes)
 			{
@@ -269,7 +268,7 @@ public partial class QueueBulkDialog : ComponentBase
 						ServerId = this.ServerId,
 						ItemId = episode.Id,
 						PresetLabel = this._presetLabel,
-						DestServerId = this._destServerId,
+						DestServerId = this._selectedOption.IsLocal ? null : this._destServerId,
 						DestRootId = rootId,
 					};
 

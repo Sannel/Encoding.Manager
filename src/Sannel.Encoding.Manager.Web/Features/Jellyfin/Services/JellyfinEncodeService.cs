@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Sannel.Encoding.Manager.Jellyfin;
 using Sannel.Encoding.Manager.Web.Features.Data;
 using Sannel.Encoding.Manager.Web.Features.Jellyfin.Dto;
+using Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
 
@@ -43,11 +44,15 @@ public class JellyfinEncodeService : IJellyfinEncodeService
 			.ConfigureAwait(false)
 			?? throw new InvalidOperationException("Source server not found.");
 
-		var destRoot = await ctx.JellyfinDestinationRoots
-			.AsNoTracking()
-			.FirstOrDefaultAsync(r => r.Id == request.DestRootId, ct)
-			.ConfigureAwait(false)
-			?? throw new InvalidOperationException("Destination root not found.");
+		JellyfinDestinationRoot? destRoot = null;
+		if (request.DestRootId.HasValue)
+		{
+			destRoot = await ctx.JellyfinDestinationRoots
+				.AsNoTracking()
+				.FirstOrDefaultAsync(r => r.Id == request.DestRootId.Value, ct)
+				.ConfigureAwait(false)
+				?? throw new InvalidOperationException("Destination root not found.");
+		}
 
 		// Fetch item metadata from Jellyfin
 		var client = this._clientFactory.CreateClient(sourceServer.BaseUrl, this._serverService.DecryptApiKey(sourceServer.ApiKey));
@@ -57,7 +62,7 @@ public class JellyfinEncodeService : IJellyfinEncodeService
 			?? throw new InvalidOperationException($"Item '{request.ItemId}' not found on source server.");
 
 		// Build the remote SFTP path
-		var relativePath = this._pathBuilder.BuildRemotePath(destRoot, item);
+		var relativePath = this._pathBuilder.BuildRelativePath(item);
 
 		// Build a single track config for the Jellyfin source file (always title 1)
 		var outputName = Path.GetFileNameWithoutExtension(relativePath);
@@ -96,7 +101,7 @@ public class JellyfinEncodeService : IJellyfinEncodeService
 			JellyfinSourceItemId = request.ItemId,
 			JellyfinDestServerId = request.DestServerId,
 			JellyfinDestRootId = request.DestRootId,
-			JellyfinDestRelativePath = relativePath,
+			JellyfinDestRelativePath = destRoot is not null ? relativePath : null,
 			JellyfinUploadStatus = "Pending",
 		};
 
