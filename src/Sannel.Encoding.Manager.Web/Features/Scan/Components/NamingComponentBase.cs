@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using Sannel.Encoding.Manager.Web.Features.Omdb.Dto;
 using Sannel.Encoding.Manager.Web.Features.Omdb.Services;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
@@ -35,6 +36,9 @@ public abstract class NamingComponentBase : ComponentBase
 
 	[Inject]
 	private ISettingsService SettingsService { get; set; } = default!;
+
+	[Inject]
+	private IDialogService DialogService { get; set; } = default!;
 
 	protected sealed class NamingRowData
 	{
@@ -163,6 +167,75 @@ public abstract class NamingComponentBase : ComponentBase
 		await this.OnLoadFromTvdbClicked();
 	}
 
+	protected async Task OpenTvdbSearchDialogAsync()
+	{
+		var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+		var dialog = await this.DialogService.ShowAsync<TvdbSearchDialog>("Search for TV Show", options);
+		var result = await dialog.Result;
+		if (result is { Canceled: false, Data: TvdbSeriesSearchResult selected })
+		{
+			this._showId = selected.SeriesId.ToString();
+			this._selectedCachedShow = null;
+			await this.OnLoadFromTvdbClicked();
+			// Refresh the cached-series dropdown so the newly loaded show appears
+			this._cachedSeries = await this.TvdbService.GetCachedSeriesAsync();
+		}
+	}
+
+	protected async Task OpenOmdbSearchDialogAsync()
+	{
+		var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+		var dialog = await this.DialogService.ShowAsync<OmdbSearchDialog>("Search for Movie", options);
+		var result = await dialog.Result;
+		if (result is { Canceled: false, Data: OmdbSearchResult selected })
+		{
+			await this.OnLoadFromOmdbByIdAsync(selected.ImdbId);
+		}
+	}
+
+	protected async Task OnLoadFromOmdbByIdAsync(string imdbId)
+	{
+		if (!this.OmdbService.IsConfigured)
+		{
+			this._omdbErrorMessage = "OMDb is not configured. Set the OMDb API key in application settings.";
+			return;
+		}
+
+		this._isOmdbLoading = true;
+		this._omdbErrorMessage = null;
+
+		try
+		{
+			var movie = await this.OmdbService.GetMovieAsync(imdbId);
+			if (movie is null)
+			{
+				this._omdbErrorMessage = "Movie not found.";
+				this._movieName = null;
+				this._movieYear = null;
+				this._movieGenres = null;
+				return;
+			}
+
+			this._movieTitle = movie.Title;
+			this._movieName = movie.Title;
+			this._movieYear = movie.Year;
+			this._movieGenres = movie.Genres;
+
+			this.Snackbar.Add($"Loaded '{movie.Title}' ({movie.Year}) from OMDb.", Severity.Success);
+		}
+		catch (Exception ex)
+		{
+			this._omdbErrorMessage = $"Failed to load from OMDb: {ex.Message}";
+			this._movieName = null;
+			this._movieYear = null;
+			this._movieGenres = null;
+		}
+		finally
+		{
+			this._isOmdbLoading = false;
+		}
+	}
+
 	protected async Task OnLoadFromTvdbClicked()
 	{
 		if (!int.TryParse(this._showId.Trim(), out var seriesId))
@@ -272,6 +345,12 @@ public abstract class NamingComponentBase : ComponentBase
 
 	protected async Task OnLoadFromOmdbClicked()
 	{
+		if (!this.OmdbService.IsConfigured)
+		{
+			this._omdbErrorMessage = "OMDb is not configured. Set the OMDb API key in application settings.";
+			return;
+		}
+
 		if (string.IsNullOrWhiteSpace(this._movieTitle))
 		{
 			this._omdbErrorMessage = "Enter a movie title to search.";

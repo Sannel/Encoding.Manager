@@ -24,6 +24,8 @@
 	}
 	<MudTextField @bind-Value="_showId" Label="Show ID" Variant="Variant.Outlined"
 		Placeholder="e.g. 73739" Style="max-width: 220px;" />
+	<MudIconButton Icon="@Icons.Material.Filled.Search" Color="Color.Primary"
+		Title="Search for TV show by name" OnClick="OpenTvdbSearchDialogAsync" Size="Size.Medium" />
 	@if (!string.IsNullOrEmpty(_seriesName))
 	{
 		<MudText Typo="Typo.subtitle1"><strong>@_seriesName</strong></MudText>

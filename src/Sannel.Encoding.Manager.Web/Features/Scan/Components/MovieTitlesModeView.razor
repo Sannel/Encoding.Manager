@@ -12,6 +12,8 @@
 <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap" Spacing="2">
 	<MudTextField @bind-Value="_movieTitle" Label="Movie Title" Variant="Variant.Outlined"
 		Placeholder="e.g. The Matrix" Style="max-width: 220px;" />
+	<MudIconButton Icon="@Icons.Material.Filled.Search" Color="Color.Primary"
+		Title="Search for movie by name" OnClick="OpenOmdbSearchDialogAsync" Size="Size.Medium" />
 	@if (!string.IsNullOrEmpty(_movieName))
 	{
 		<MudStack Spacing="0">
