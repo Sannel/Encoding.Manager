@@ -116,12 +116,15 @@ public partial class NamingPanel : ComponentBase
 	private void OnCascadeClicked()
 	{
 		var lastFilledIndex = -1;
-		for (var i = this._rows.Count - 1; i >= 0; i--)
+		for (var i=0; i< this._rows.Count;i++)
 		{
-			if (this._rows[i].Episode is not null)
+			if(string.IsNullOrWhiteSpace(this._rows[i].Name))
+			{
+				break;
+			}
+			else
 			{
 				lastFilledIndex = i;
-				break;
 			}
 		}
 
@@ -146,9 +149,11 @@ public partial class NamingPanel : ComponentBase
 		}
 
 		var nextEpisodeIndex = startIndex + 1;
-		for (var i = lastFilledIndex + 1; i < this._rows.Count && nextEpisodeIndex < sorted.Count; i++, nextEpisodeIndex++)
+		for (var i = lastFilledIndex + 1; 
+			i < this._rows.Count && nextEpisodeIndex < sorted.Count; 
+			i++, nextEpisodeIndex++)
 		{
-			if (this._rows[i].Episode is not null || !string.IsNullOrEmpty(this._rows[i].Name))
+			if (!string.IsNullOrWhiteSpace(this._rows[i].Name))
 			{
 				nextEpisodeIndex--;
 				continue;
