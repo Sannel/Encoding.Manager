@@ -33,7 +33,7 @@ public partial class NamingPanel : ComponentBase
 	private IReadOnlyList<int> _seasons = [];
 
 	private bool CanCascade =>
-		this._rows.Any(r => r.Season is not null && r.Episode is not null);
+		this._rows.Any(r => r.Episode is not null);
 
 	protected override void OnParametersSet()
 	{
@@ -118,7 +118,7 @@ public partial class NamingPanel : ComponentBase
 		var lastFilledIndex = -1;
 		for (var i = this._rows.Count - 1; i >= 0; i--)
 		{
-			if (this._rows[i].Season is not null && this._rows[i].Episode is not null)
+			if (this._rows[i].Episode is not null)
 			{
 				lastFilledIndex = i;
 				break;
@@ -148,7 +148,7 @@ public partial class NamingPanel : ComponentBase
 		var nextEpisodeIndex = startIndex + 1;
 		for (var i = lastFilledIndex + 1; i < this._rows.Count && nextEpisodeIndex < sorted.Count; i++, nextEpisodeIndex++)
 		{
-			if (this._rows[i].Season is not null && this._rows[i].Episode is not null)
+			if (this._rows[i].Episode is not null || !string.IsNullOrEmpty(this._rows[i].Name))
 			{
 				nextEpisodeIndex--;
 				continue;
