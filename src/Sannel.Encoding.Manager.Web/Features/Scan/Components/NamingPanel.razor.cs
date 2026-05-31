@@ -115,21 +115,30 @@ public partial class NamingPanel : ComponentBase
 
 	private void OnCascadeClicked()
 	{
-		var firstFilledIndex = this._rows.FindIndex(r => r.Season is not null && r.Episode is not null);
-		if (firstFilledIndex < 0)
+		var lastFilledIndex = -1;
+		for (var i = this._rows.Count - 1; i >= 0; i--)
+		{
+			if (this._rows[i].Season is not null && this._rows[i].Episode is not null)
+			{
+				lastFilledIndex = i;
+				break;
+			}
+		}
+
+		if (lastFilledIndex < 0)
 		{
 			return;
 		}
 
-		var firstRow = this._rows[firstFilledIndex];
+		var lastRow = this._rows[lastFilledIndex];
 		var sorted = this._allEpisodes
 			.OrderBy(e => e.SeasonNumber)
 			.ThenBy(e => e.EpisodeNumber)
 			.ToList();
 
 		var startIndex = sorted.FindIndex(e =>
-			e.SeasonNumber == firstRow.Episode!.SeasonNumber
-			&& e.EpisodeNumber == firstRow.Episode.EpisodeNumber);
+			e.SeasonNumber == lastRow.Episode!.SeasonNumber
+			&& e.EpisodeNumber == lastRow.Episode.EpisodeNumber);
 
 		if (startIndex < 0)
 		{
@@ -137,8 +146,14 @@ public partial class NamingPanel : ComponentBase
 		}
 
 		var nextEpisodeIndex = startIndex + 1;
-		for (var i = firstFilledIndex + 1; i < this._rows.Count && nextEpisodeIndex < sorted.Count; i++, nextEpisodeIndex++)
+		for (var i = lastFilledIndex + 1; i < this._rows.Count && nextEpisodeIndex < sorted.Count; i++, nextEpisodeIndex++)
 		{
+			if (this._rows[i].Season is not null && this._rows[i].Episode is not null)
+			{
+				nextEpisodeIndex--;
+				continue;
+			}
+
 			var ep = sorted[nextEpisodeIndex];
 			this._rows[i].Season = ep.SeasonNumber;
 			this._rows[i].Episode = ep;
