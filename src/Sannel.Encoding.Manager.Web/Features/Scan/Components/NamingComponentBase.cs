@@ -87,7 +87,7 @@ public abstract class NamingComponentBase : ComponentBase
 	}
 
 	protected bool CanCascade =>
-		this._namingRows.Values.Any(r => r.Season is not null && r.Episode is not null);
+		this._namingRows.Values.Any(r => r.Episode is not null);
 
 	protected NamingRowData GetNamingRow(int key)
 	{
@@ -433,23 +433,23 @@ public abstract class NamingComponentBase : ComponentBase
 
 	protected void CascadeRows(IReadOnlyList<int> orderedKeys)
 	{
-		var firstIndex = -1;
-		for (var i = 0; i < orderedKeys.Count; i++)
+		var lastFilledIndex = -1;
+		for (var i = orderedKeys.Count - 1; i >= 0; i--)
 		{
 			var r = this.GetNamingRow(orderedKeys[i]);
-			if (r.Season is not null && r.Episode is not null)
+			if (r.Episode is not null)
 			{
-				firstIndex = i;
+				lastFilledIndex = i;
 				break;
 			}
 		}
 
-		if (firstIndex < 0)
+		if (lastFilledIndex < 0)
 		{
 			return;
 		}
 
-		var firstRow = this.GetNamingRow(orderedKeys[firstIndex]);
+		var firstRow = this.GetNamingRow(orderedKeys[lastFilledIndex]);
 		var sorted = this._allEpisodes
 			.OrderBy(e => e.SeasonNumber)
 			.ThenBy(e => e.EpisodeNumber)
@@ -465,13 +465,20 @@ public abstract class NamingComponentBase : ComponentBase
 		}
 
 		var nextEpIdx = startIndex + 1;
-		for (var i = firstIndex + 1; i < orderedKeys.Count && nextEpIdx < sorted.Count; i++, nextEpIdx++)
+		for (var i = lastFilledIndex + 1; i < orderedKeys.Count && nextEpIdx < sorted.Count; i++, nextEpIdx++)
 		{
 			var ep = sorted[nextEpIdx];
 			var row = this.GetNamingRow(orderedKeys[i]);
-			row.Season = ep.SeasonNumber;
-			row.Episode = ep;
-			row.Name = ep.Name;
+			if (row.Episode is not null || !string.IsNullOrWhiteSpace(row.Name))
+			{
+				nextEpIdx--;
+			}
+			else
+			{
+				row.Season = ep.SeasonNumber;
+				row.Episode = ep;
+				row.Name = ep.Name;
+			}
 		}
 	}
 }
