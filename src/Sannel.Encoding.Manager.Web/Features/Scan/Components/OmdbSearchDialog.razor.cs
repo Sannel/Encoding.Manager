@@ -14,6 +14,9 @@ public partial class OmdbSearchDialog : ComponentBase
 	[Inject]
 	private IOmdbService OmdbService { get; set; } = default!;
 
+	[Parameter]
+	public string InitialSearchTerm { get; set; } = string.Empty;
+
 	private string _searchTerm = string.Empty;
 	private bool _isSearching;
 	private bool _searched;
@@ -22,6 +25,7 @@ public partial class OmdbSearchDialog : ComponentBase
 
 	protected override void OnInitialized()
 	{
+		this._searchTerm = this.InitialSearchTerm;
 		if (!this.OmdbService.IsConfigured)
 		{
 			this._errorMessage = "OMDb is not configured. Set the OMDb API key in application settings.";

@@ -14,11 +14,19 @@ public partial class TvdbSearchDialog : ComponentBase
 	[Inject]
 	private ITvdbService TvdbService { get; set; } = default!;
 
+	[Parameter]
+	public string InitialSearchTerm { get; set; } = string.Empty;
+
 	private string _searchTerm = string.Empty;
 	private bool _isSearching;
 	private bool _searched;
 	private string? _errorMessage;
 	private IReadOnlyList<TvdbSeriesSearchResult> _results = [];
+
+	protected override void OnInitialized()
+	{
+		this._searchTerm = this.InitialSearchTerm;
+	}
 
 	private async Task SearchAsync()
 	{

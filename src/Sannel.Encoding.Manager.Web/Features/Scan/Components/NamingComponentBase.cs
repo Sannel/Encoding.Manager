@@ -167,10 +167,17 @@ public abstract class NamingComponentBase : ComponentBase
 		await this.OnLoadFromTvdbClicked();
 	}
 
+	protected virtual string? GetDefaultSearchTerm() => null;
+
 	protected async Task OpenTvdbSearchDialogAsync()
 	{
 		var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
-		var dialog = await this.DialogService.ShowAsync<TvdbSearchDialog>("Search for TV Show", options);
+		var defaultTerm = this.GetDefaultSearchTerm();
+		var parameters = new DialogParameters<TvdbSearchDialog>
+		{
+			{ x => x.InitialSearchTerm, defaultTerm ?? string.Empty },
+		};
+		var dialog = await this.DialogService.ShowAsync<TvdbSearchDialog>("Search for TV Show", parameters, options);
 		var result = await dialog.Result;
 		if (result is { Canceled: false, Data: TvdbSeriesSearchResult selected })
 		{
@@ -185,7 +192,12 @@ public abstract class NamingComponentBase : ComponentBase
 	protected async Task OpenOmdbSearchDialogAsync()
 	{
 		var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
-		var dialog = await this.DialogService.ShowAsync<OmdbSearchDialog>("Search for Movie", options);
+		var defaultTerm = this.GetDefaultSearchTerm();
+		var parameters = new DialogParameters<OmdbSearchDialog>
+		{
+			{ x => x.InitialSearchTerm, defaultTerm ?? string.Empty },
+		};
+		var dialog = await this.DialogService.ShowAsync<OmdbSearchDialog>("Search for Movie", parameters, options);
 		var result = await dialog.Result;
 		if (result is { Canceled: false, Data: OmdbSearchResult selected })
 		{
