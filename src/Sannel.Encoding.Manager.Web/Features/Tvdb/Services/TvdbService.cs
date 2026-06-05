@@ -122,6 +122,7 @@ public class TvdbService : ITvdbService
 		}
 
 		var result = episodes
+			.DistinctBy(e => (e.SeasonNumber, e.EpisodeNumber))
 			.OrderBy(e => e.SeasonNumber)
 			.ThenBy(e => e.EpisodeNumber)
 			.ToList();
