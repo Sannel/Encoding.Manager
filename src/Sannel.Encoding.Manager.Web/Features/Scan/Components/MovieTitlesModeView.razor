@@ -71,6 +71,12 @@
 				<MudText>@title.AudioTracks.Count audio track(s)</MudText>
 				<MudText>@title.Subtitles.Count subtitle(s)</MudText>
 				<MudText>@title.Chapters.Count chapter(s)</MudText>
+				@if (title.AngleCount > 1)
+				{
+					<MudChip T="string" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.Videocam">
+						@title.AngleCount angles
+					</MudChip>
+				}
 				<MudSpacer />
 				<MudIconButton Icon="@Icons.Material.Filled.AutoFixHigh" Size="Size.Small"
 					OnClick="@(() => ApplyMovieName(title.TitleNumber))" Title="Auto name" />
