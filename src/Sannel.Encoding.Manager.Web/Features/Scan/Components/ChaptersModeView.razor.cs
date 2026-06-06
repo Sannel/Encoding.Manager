@@ -103,6 +103,7 @@ public partial class ChaptersModeView : NamingComponentBase
 						OutputName = string.IsNullOrWhiteSpace(nr.Name) ? fallback : nr.Name,
 						SeasonNumber = nr.Season,
 						EpisodeNumber = nr.Episode?.EpisodeNumber,
+						AngleCount = this._selectedTitle!.AngleCount,
 					};
 				})
 				.ToList();

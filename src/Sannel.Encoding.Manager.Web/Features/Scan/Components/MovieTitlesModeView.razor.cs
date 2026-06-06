@@ -69,6 +69,7 @@ public partial class MovieTitlesModeView : NamingComponentBase
 						EpisodeNumber = null,
 						MovieYear = string.IsNullOrWhiteSpace(this._movieYear) ? null : this._movieYear.Trim(),
 						Resolution = nr.Resolution,
+						AngleCount = title.AngleCount,
 					};
 				})
 				.ToList();
