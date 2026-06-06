@@ -1,0 +1,55 @@
+@using Sannel.Encoding.Manager.Web.Features.Omdb.Dto
+
+<MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h6">Search for Movie</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudStack Spacing="2">
+			<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+				<MudTextField @bind-Value="_searchTerm" Label="Movie Title" Variant="Variant.Outlined"
+					Placeholder="e.g. The Matrix" FullWidth="true"
+					@onkeydown="OnKeyDown" />
+				<MudButton Variant="Variant.Filled" Color="Color.Primary"
+					OnClick="SearchAsync" Disabled="@(_isSearching || string.IsNullOrWhiteSpace(_searchTerm))">
+					@if (_isSearching)
+					{
+						<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+					}
+					Search
+				</MudButton>
+			</MudStack>
+
+			@if (!string.IsNullOrEmpty(_errorMessage))
+			{
+				<MudAlert Severity="Severity.Error" Dense="true">@_errorMessage</MudAlert>
+			}
+
+			@if (_results.Count > 0)
+			{
+				<MudList T="OmdbSearchResult" Dense="true" Style="max-height: 320px; overflow-y: auto; border: 1px solid var(--mud-palette-lines-default); border-radius: 4px;">
+					@foreach (var result in _results)
+					{
+						var r = result;
+						<MudListItem T="OmdbSearchResult" OnClick="@(() => SelectResult(r))">
+							<MudText Typo="Typo.body1">
+								<strong>@result.Title</strong>
+								@if (!string.IsNullOrEmpty(result.Year))
+								{
+									<span class="ml-1" style="opacity: .7;">(@result.Year)</span>
+								}
+							</MudText>
+						</MudListItem>
+					}
+				</MudList>
+			}
+			else if (_searched && !_isSearching)
+			{
+				<MudAlert Severity="Severity.Info" Dense="true">No results found.</MudAlert>
+			}
+		</MudStack>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancel</MudButton>
+	</DialogActions>
+</MudDialog>

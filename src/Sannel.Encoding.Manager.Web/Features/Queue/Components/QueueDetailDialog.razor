@@ -58,6 +58,10 @@
 					}
 					<MudTh>Output Name</MudTh>
 					<MudTh>S / E</MudTh>
+					@if (ShowAnglesColumn)
+					{
+						<MudTh>Angles</MudTh>
+					}
 					<MudTh Style="min-width:180px;">Preset</MudTh>
 				</HeaderContent>
 				<RowTemplate>
@@ -88,6 +92,21 @@
 							<MudText Typo="Typo.caption" Style="opacity:.5">—</MudText>
 						}
 					</MudTd>
+					@if (ShowAnglesColumn)
+					{
+						<MudTd DataLabel="Angles">
+							@if (context.AngleCount > 1)
+							{
+								<MudChip T="string" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.Videocam">
+									@context.AngleCount
+								</MudChip>
+							}
+							else
+							{
+								<MudText Typo="Typo.caption" Style="opacity:.5">—</MudText>
+							}
+						</MudTd>
+					}
 					<MudTd DataLabel="Preset">
 						<MudSelect T="string?" Value="@context.PresetLabel"
 							ValueChanged="@((v) => context.PresetLabel = v)"

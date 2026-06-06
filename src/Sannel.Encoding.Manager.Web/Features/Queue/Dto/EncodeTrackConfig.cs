@@ -19,4 +19,7 @@ public class EncodeTrackConfig
 
 	/// <summary>Label of the HandBrake preset to use. Null means no preset selected.</summary>
 	public string? PresetLabel { get; set; }
+
+	/// <summary>Number of angles on the source title. 1 means a single angle (no suffix). Values > 1 produce multiple output files.</summary>
+	public int AngleCount { get; set; } = 1;
 }

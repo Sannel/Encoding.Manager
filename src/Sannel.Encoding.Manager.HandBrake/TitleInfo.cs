@@ -12,4 +12,6 @@ public class TitleInfo
 	public double FrameRate { get; init; }
 	public int Width { get; init; }
 	public int Height { get; init; }
+	/// <summary>Number of angles on this title. 1 means a single angle (standard). Values > 1 indicate a multi-angle title.</summary>
+	public int AngleCount { get; init; } = 1;
 }

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using Sannel.Encoding.Manager.Web.Features.Omdb.Dto;
 using Sannel.Encoding.Manager.Web.Features.Omdb.Services;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
@@ -35,6 +36,9 @@ public abstract class NamingComponentBase : ComponentBase
 
 	[Inject]
 	private ISettingsService SettingsService { get; set; } = default!;
+
+	[Inject]
+	private IDialogService DialogService { get; set; } = default!;
 
 	protected sealed class NamingRowData
 	{
@@ -83,7 +87,7 @@ public abstract class NamingComponentBase : ComponentBase
 	}
 
 	protected bool CanCascade =>
-		this._namingRows.Values.Any(r => r.Season is not null && r.Episode is not null);
+		this._namingRows.Values.Any(r => r.Episode is not null);
 
 	protected NamingRowData GetNamingRow(int key)
 	{
@@ -95,6 +99,10 @@ public abstract class NamingComponentBase : ComponentBase
 
 		return row;
 	}
+
+	/// <summary>Invoked after an item is successfully added to the queue.</summary>
+	[Parameter]
+	public EventCallback OnAddedToQueue { get; set; }
 
 	/// <summary>
 	/// Filters tracks with an empty OutputName, builds one disk-level queue item,
@@ -131,6 +139,7 @@ public abstract class NamingComponentBase : ComponentBase
 		await this.EncodeQueueService.AddItemAsync(item);
 		var subject = string.Equals(mode, "Files", StringComparison.OrdinalIgnoreCase) ? "Folder" : "Disc";
 		this.Snackbar.Add($"{subject} added to queue with {toAdd.Count} track(s).", Severity.Success);
+		await this.OnAddedToQueue.InvokeAsync();
 	}
 
 	protected IReadOnlyList<TvdbEpisode> EpisodesForSeason(int? season)
@@ -156,6 +165,87 @@ public abstract class NamingComponentBase : ComponentBase
 
 		this._showId = series.SeriesId.ToString();
 		await this.OnLoadFromTvdbClicked();
+	}
+
+	protected virtual string? GetDefaultSearchTerm() => null;
+
+	protected async Task OpenTvdbSearchDialogAsync()
+	{
+		var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+		var defaultTerm = this.GetDefaultSearchTerm();
+		var parameters = new DialogParameters<TvdbSearchDialog>
+		{
+			{ x => x.InitialSearchTerm, defaultTerm ?? string.Empty },
+		};
+		var dialog = await this.DialogService.ShowAsync<TvdbSearchDialog>("Search for TV Show", parameters, options);
+		var result = await dialog.Result;
+		if (result is { Canceled: false, Data: TvdbSeriesSearchResult selected })
+		{
+			this._showId = selected.SeriesId.ToString();
+			this._selectedCachedShow = null;
+			await this.OnLoadFromTvdbClicked();
+			// Refresh the cached-series dropdown so the newly loaded show appears
+			this._cachedSeries = await this.TvdbService.GetCachedSeriesAsync();
+		}
+	}
+
+	protected async Task OpenOmdbSearchDialogAsync()
+	{
+		var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+		var defaultTerm = this.GetDefaultSearchTerm();
+		var parameters = new DialogParameters<OmdbSearchDialog>
+		{
+			{ x => x.InitialSearchTerm, defaultTerm ?? string.Empty },
+		};
+		var dialog = await this.DialogService.ShowAsync<OmdbSearchDialog>("Search for Movie", parameters, options);
+		var result = await dialog.Result;
+		if (result is { Canceled: false, Data: OmdbSearchResult selected })
+		{
+			await this.OnLoadFromOmdbByIdAsync(selected.ImdbId);
+		}
+	}
+
+	protected async Task OnLoadFromOmdbByIdAsync(string imdbId)
+	{
+		if (!this.OmdbService.IsConfigured)
+		{
+			this._omdbErrorMessage = "OMDb is not configured. Set the OMDb API key in application settings.";
+			return;
+		}
+
+		this._isOmdbLoading = true;
+		this._omdbErrorMessage = null;
+
+		try
+		{
+			var movie = await this.OmdbService.GetMovieAsync(imdbId);
+			if (movie is null)
+			{
+				this._omdbErrorMessage = "Movie not found.";
+				this._movieName = null;
+				this._movieYear = null;
+				this._movieGenres = null;
+				return;
+			}
+
+			this._movieTitle = movie.Title;
+			this._movieName = movie.Title;
+			this._movieYear = movie.Year;
+			this._movieGenres = movie.Genres;
+
+			this.Snackbar.Add($"Loaded '{movie.Title}' ({movie.Year}) from OMDb.", Severity.Success);
+		}
+		catch (Exception ex)
+		{
+			this._omdbErrorMessage = $"Failed to load from OMDb: {ex.Message}";
+			this._movieName = null;
+			this._movieYear = null;
+			this._movieGenres = null;
+		}
+		finally
+		{
+			this._isOmdbLoading = false;
+		}
 	}
 
 	protected async Task OnLoadFromTvdbClicked()
@@ -267,6 +357,12 @@ public abstract class NamingComponentBase : ComponentBase
 
 	protected async Task OnLoadFromOmdbClicked()
 	{
+		if (!this.OmdbService.IsConfigured)
+		{
+			this._omdbErrorMessage = "OMDb is not configured. Set the OMDb API key in application settings.";
+			return;
+		}
+
 		if (string.IsNullOrWhiteSpace(this._movieTitle))
 		{
 			this._omdbErrorMessage = "Enter a movie title to search.";
@@ -349,23 +445,23 @@ public abstract class NamingComponentBase : ComponentBase
 
 	protected void CascadeRows(IReadOnlyList<int> orderedKeys)
 	{
-		var firstIndex = -1;
-		for (var i = 0; i < orderedKeys.Count; i++)
+		var lastFilledIndex = -1;
+		for (var i = orderedKeys.Count - 1; i >= 0; i--)
 		{
 			var r = this.GetNamingRow(orderedKeys[i]);
-			if (r.Season is not null && r.Episode is not null)
+			if (r.Episode is not null)
 			{
-				firstIndex = i;
+				lastFilledIndex = i;
 				break;
 			}
 		}
 
-		if (firstIndex < 0)
+		if (lastFilledIndex < 0)
 		{
 			return;
 		}
 
-		var firstRow = this.GetNamingRow(orderedKeys[firstIndex]);
+		var firstRow = this.GetNamingRow(orderedKeys[lastFilledIndex]);
 		var sorted = this._allEpisodes
 			.OrderBy(e => e.SeasonNumber)
 			.ThenBy(e => e.EpisodeNumber)
@@ -381,13 +477,20 @@ public abstract class NamingComponentBase : ComponentBase
 		}
 
 		var nextEpIdx = startIndex + 1;
-		for (var i = firstIndex + 1; i < orderedKeys.Count && nextEpIdx < sorted.Count; i++, nextEpIdx++)
+		for (var i = lastFilledIndex + 1; i < orderedKeys.Count && nextEpIdx < sorted.Count; i++, nextEpIdx++)
 		{
 			var ep = sorted[nextEpIdx];
 			var row = this.GetNamingRow(orderedKeys[i]);
-			row.Season = ep.SeasonNumber;
-			row.Episode = ep;
-			row.Name = ep.Name;
+			if (row.Episode is not null || !string.IsNullOrWhiteSpace(row.Name))
+			{
+				nextEpIdx--;
+			}
+			else
+			{
+				row.Season = ep.SeasonNumber;
+				row.Episode = ep;
+				row.Name = ep.Name;
+			}
 		}
 	}
 }

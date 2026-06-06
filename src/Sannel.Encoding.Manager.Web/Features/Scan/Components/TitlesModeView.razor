@@ -24,6 +24,8 @@
 	}
 	<MudTextField @bind-Value="_showId" Label="Show ID" Variant="Variant.Outlined"
 		Placeholder="e.g. 73739" Style="max-width: 220px;" />
+	<MudIconButton Icon="@Icons.Material.Filled.Search" Color="Color.Primary"
+		Title="Search for TV show by name" OnClick="OpenTvdbSearchDialogAsync" Size="Size.Medium" />
 	@if (!string.IsNullOrEmpty(_seriesName))
 	{
 		<MudText Typo="Typo.subtitle1"><strong>@_seriesName</strong></MudText>
@@ -74,6 +76,12 @@
 				<MudText>@title.AudioTracks.Count audio track(s)</MudText>
 				<MudText>@title.Subtitles.Count subtitle(s)</MudText>
 				<MudText>@title.Chapters.Count chapter(s)</MudText>
+				@if (title.AngleCount > 1)
+				{
+					<MudChip T="string" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.Videocam">
+						@title.AngleCount angles
+					</MudChip>
+				}
 				<MudSpacer />
 				<MudIconButton Icon="@Icons.Material.Filled.AutoFixHigh" Size="Size.Small"
 					OnClick="@(() => ApplyEpisodeName(title.TitleNumber))" Title="Auto name" />

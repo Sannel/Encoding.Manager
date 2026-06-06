@@ -25,6 +25,25 @@ fi
 
 EXE_PATH="${INSTALL_PATH}/${EXE_NAME}"
 
+configure_handbrake_flatpak_tmp_permission() {
+    local app_id="fr.handbrake.ghb"
+
+    if ! command -v flatpak >/dev/null 2>&1; then
+        return
+    fi
+
+    if ! flatpak info --system "$app_id" >/dev/null 2>&1; then
+        echo "Flatpak HandBrake app '${app_id}' is not installed system-wide; skipping /tmp permission override."
+        return
+    fi
+
+    echo "Granting Flatpak HandBrake access to /tmp..."
+    if ! flatpak override --system --filesystem=/tmp "$app_id"; then
+        echo "Warning: Failed to grant /tmp permission to Flatpak app '${app_id}'." >&2
+        echo "         Run manually: flatpak override --system --filesystem=/tmp ${app_id}" >&2
+    fi
+}
+
 # Ensure the service account exists (system user, no login shell, no home directory).
 if ! id -u "$SERVICE_USER" &>/dev/null; then
     echo "Creating system user '${SERVICE_USER}'..."
@@ -40,6 +59,7 @@ if systemctl list-unit-files "${SERVICE_NAME}.service" &>/dev/null && [ -f "$UNI
     cp -af "${SCRIPT_DIR}/." "$INSTALL_PATH/"
     chmod +x "$EXE_PATH"
     chown -R "${SERVICE_USER}:${SERVICE_USER}" "$INSTALL_PATH"
+    configure_handbrake_flatpak_tmp_permission
 
     echo "Reloading systemd and starting service..."
     systemctl daemon-reload
@@ -54,6 +74,7 @@ else
     cp -af "${SCRIPT_DIR}/." "$INSTALL_PATH/"
     chmod +x "$EXE_PATH"
     chown -R "${SERVICE_USER}:${SERVICE_USER}" "$INSTALL_PATH"
+    configure_handbrake_flatpak_tmp_permission
 
     echo "Creating systemd unit file..."
     cat > "$UNIT_FILE" <<EOF

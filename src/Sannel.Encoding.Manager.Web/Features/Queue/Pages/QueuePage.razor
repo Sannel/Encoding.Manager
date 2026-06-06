@@ -193,4 +193,9 @@ else
 			</ItemRenderer>
 		</MudDropContainer>
 	</MudPaper>
+	<div @ref="_scrollSentinel" style="height: 1px; margin-top: 4px;"></div>
+	@if (_isLoadingMore)
+	{
+		<MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mt-1" />
+	}
 }

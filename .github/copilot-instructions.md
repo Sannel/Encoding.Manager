@@ -1,5 +1,75 @@
 # Sannel Encoding Manager - Copilot Instructions
 
+## Build, Test, and Run Commands
+
+All commands run from the repository root.
+
+```pwsh
+# Restore, build, and test (full CI pass)
+dotnet restore
+dotnet build --configuration Release
+dotnet test --configuration Release --verbosity normal
+
+# Run a single test class or method
+dotnet test tests/Sannel.Encoding.Manager.HandBrake.Tests --filter "FullyQualifiedName~HandBrakeServiceTests"
+dotnet test tests/Sannel.Encoding.Manager.HandBrake.Tests --filter "FullyQualifiedName~HandBrakeServiceTests.SomeMethodName"
+
+# Run the web app locally
+dotnet run --project src/Sannel.Encoding.Manager.Web/Sannel.Encoding.Manager.Web.csproj
+
+# Run the encoding runner locally
+dotnet run --project src/Sannel.Encoding.Runner/Sannel.Encoding.Runner.csproj
+```
+
+## Solution Structure
+
+This is a multi-project .NET 10 solution (`Sannel.Encoding.Manager.slnx`):
+
+| Project | Role |
+|---|---|
+| `Sannel.Encoding.Manager.Web` | Blazor Server web app — UI + API for managing encoding jobs |
+| `Sannel.Encoding.Runner` | Worker service — polls the web API, runs HandBrakeCLI, ships logs back |
+| `Sannel.Encoding.Manager.Data` | EF Core `AppDbContext`, all entity definitions, and the `Features/` data layer |
+| `Sannel.Encoding.Manager.HandBrake` | HandBrakeCLI wrapper — scan, encode, parse JSON output |
+| `Sannel.Encoding.Manager.Jellyfin` | Typed HTTP client for the Jellyfin API |
+| `Sannel.Encoding.Manager.Migrations.Sqlite` | EF Core migrations for SQLite |
+| `Sannel.Encoding.Manager.Migrations.Postgres` | EF Core migrations for PostgreSQL |
+
+`AppDbContext` lives in `Sannel.Encoding.Manager.Data` but is referenced by the Web project via a project reference. Entity classes are co-located with their feature slices inside the Data project (`Features/<Feature>/Entities/`).
+
+## Authentication
+
+The web app uses **Microsoft Identity Web** (Azure AD / Entra ID) with two authentication schemes:
+
+- **OpenIdConnect + Cookie** (`AzureAd` config section) — for interactive Blazor UI users.
+- **`RunnerBearer`** JWT (`AzureAd` config section, `jwtBearerScheme: "RunnerBearer"`) — for the runner service calling `/api/` and `/hubs/` endpoints. Protected by the `"RunnerApi"` authorization policy.
+
+All pages require authentication by default (fallback policy = `RequireAuthenticatedUser`). Use `[AllowAnonymous]` to opt out.
+
+The runner (`Sannel.Encoding.Runner`) acquires tokens via `AzureAd:TenantId`, `AzureAd:ClientId`, `AzureAd:ClientSecret`, and `AzureAd:Scope` config keys.
+
+## Encrypted Configuration
+
+Both projects support an encrypted JSON config overlay that takes precedence over `appsettings.json`. Run the `configure` subcommand to set it up:
+
+```pwsh
+dotnet run --project src/Sannel.Encoding.Manager.Web -- configure
+dotnet run --project src/Sannel.Encoding.Runner -- configure
+```
+
+Values prefixed with `enc:` in the config file are transparently decrypted at startup. This file should be in `.gitignore` (it may contain secrets).
+
+## SignalR
+
+`QueueHub` (`Features/Queue/Hubs/QueueHub.cs`) broadcasts real-time queue updates to connected Blazor UI clients. It is mapped at `/hubs/queue` and requires the `RunnerApi` policy for runner-originated pushes while UI clients use cookie auth.
+
+## Testing
+
+- **Framework**: xUnit + NSubstitute (mocking)
+- Test projects live under `tests/`
+- Use `NSubstitute.Substitute.For<T>()` to create mocks; see `HandBrakeServiceTests` for the established factory-method pattern (`CreateMockRunner`, `CreateService`).
+- No test database setup needed — data-layer tests mock `AppDbContext` or use in-memory providers.
+
 ## Scripting Constraints
 
 - **Do NOT use Python** for any scripting or command-line operations.
@@ -287,6 +357,8 @@ dotnet ef migrations add <MigrationName> `
     --namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
 ```
 
-### How provider routing works at runtime
+### ### Version Management
 
-`Program.cs` selects the correct migration assembly based on the configured `Database:Provider` setting. When `"postgres"` or `"postgresql"` is specified, EF Core uses `Sannel.Encoding.Manager.Migrations.Postgres` as its migration assembly; otherwise it defaults to SQLite using `Sannel.Encoding.Manager.Migrations.Sqlite`. Each migration project contains its own `IDesignTimeDbContextFactory` so that `dotnet ef` can create the correct `DbContext` at design time without needing `--startup-project`.
+The project uses `CHANGELOG.md` to track versions and changes.
+- The current version is **0.0.1**.
+- Always update `CHANGELOG.md` when making changes to reflect the work performed in the current version.
