@@ -77,6 +77,12 @@ public static class HandBrakeArgBuilder
 	}
 
 	/// <summary>
+	/// Builds the angle selection argument: --angle 2
+	/// </summary>
+	public static string BuildAngleArg(int angleNumber) =>
+		$"--angle {angleNumber}";
+
+	/// <summary>
 	/// Combines all additional arguments into a single string for HandBrakeJob.AdditionalArgs.
 	/// </summary>
 	public static string CombineArgs(params string[] args) =>

@@ -208,4 +208,69 @@ public class HandBrakeParserTests
 		Assert.Equal(1080, titles[0].Height);
 		Assert.Equal(2, titles[1].TitleNumber);
 	}
+
+	[Fact]
+	public void ParseScan_JsonWithAngleCount_ParsesAngleCount()
+	{
+		var json = """
+		{
+			"TitleList": [
+				{
+					"Index": 1,
+					"Duration": { "Hours": 1, "Minutes": 30, "Seconds": 0 },
+					"Geometry": { "Width": 1920, "Height": 1080 },
+					"AngleCount": 3
+				}
+			]
+		}
+		""";
+
+		var titles = HandBrakeParser.ParseScan(json);
+
+		Assert.Single(titles);
+		Assert.Equal(3, titles[0].AngleCount);
+	}
+
+	[Fact]
+	public void ParseScan_JsonWithoutAngleCount_DefaultsToOne()
+	{
+		var json = """
+		{
+			"TitleList": [
+				{
+					"Index": 1,
+					"Duration": { "Hours": 1, "Minutes": 30, "Seconds": 0 },
+					"Geometry": { "Width": 1920, "Height": 1080 }
+				}
+			]
+		}
+		""";
+
+		var titles = HandBrakeParser.ParseScan(json);
+
+		Assert.Single(titles);
+		Assert.Equal(1, titles[0].AngleCount);
+	}
+
+	[Fact]
+	public void ParseScan_JsonWithAngleCountOne_ReturnsOne()
+	{
+		var json = """
+		{
+			"TitleList": [
+				{
+					"Index": 1,
+					"Duration": { "Hours": 0, "Minutes": 45, "Seconds": 0 },
+					"Geometry": { "Width": 1920, "Height": 1080 },
+					"AngleCount": 1
+				}
+			]
+		}
+		""";
+
+		var titles = HandBrakeParser.ParseScan(json);
+
+		Assert.Single(titles);
+		Assert.Equal(1, titles[0].AngleCount);
+	}
 }

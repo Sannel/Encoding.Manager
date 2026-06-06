@@ -357,6 +357,8 @@ dotnet ef migrations add <MigrationName> `
     --namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
 ```
 
-### How provider routing works at runtime
+### ### Version Management
 
-`Program.cs` selects the correct migration assembly based on the configured `Database:Provider` setting. When `"postgres"` or `"postgresql"` is specified, EF Core uses `Sannel.Encoding.Manager.Migrations.Postgres` as its migration assembly; otherwise it defaults to SQLite using `Sannel.Encoding.Manager.Migrations.Sqlite`. Each migration project contains its own `IDesignTimeDbContextFactory` so that `dotnet ef` can create the correct `DbContext` at design time without needing `--startup-project`.
+The project uses `CHANGELOG.md` to track versions and changes.
+- The current version is **0.0.1**.
+- Always update `CHANGELOG.md` when making changes to reflect the work performed in the current version.

@@ -148,6 +148,9 @@ public static partial class HandBrakeParser
 					&& geo.TryGetProperty("Width", out var w) ? w.GetInt32() : 0,
 				Height = title.TryGetProperty("Geometry", out var geo2)
 					&& geo2.TryGetProperty("Height", out var h) ? h.GetInt32() : 0,
+				AngleCount = title.TryGetProperty("AngleCount", out var ac) && ac.ValueKind == JsonValueKind.Number
+					? Math.Max(1, ac.GetInt32())
+					: 1,
 				VideoStreams = ParseVideoStreams(title),
 				AudioTracks = ParseAudioTracks(title),
 				Subtitles = ParseSubtitles(title),

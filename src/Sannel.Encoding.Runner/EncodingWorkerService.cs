@@ -233,8 +233,8 @@ public class EncodingWorkerService : BackgroundService
 				var selectedAudio = AudioTrackSelector.SelectTracks(titleInfo.AudioTracks, job.AudioLanguages, job.AudioDefault);
 				var selectedSubtitles = SubtitleTrackSelector.SelectTracks(titleInfo.Subtitles, job.SubtitleLanguages);
 
-				// Build additional CLI args.
-				var additionalArgs = HandBrakeArgBuilder.CombineArgs(
+				// Build base additional CLI args (without angle selection — added per-angle below).
+				var baseAdditionalArgs = HandBrakeArgBuilder.CombineArgs(
 					HandBrakeArgBuilder.BuildTitleArg(track.TitleNumber),
 					HandBrakeArgBuilder.BuildChapterArgs(track.StartChapter, track.EndChapter),
 					HandBrakeArgBuilder.BuildAudioArgs(selectedAudio),
@@ -252,95 +252,114 @@ public class EncodingWorkerService : BackgroundService
 					}
 				}
 
-				// Resolve output path.
-				var outputPath = isJellyfinUploadJob
+				// Resolve base output path.
+				var baseOutputPath = isJellyfinUploadJob
 					? ResolveJellyfinTempOutputPath(job, track, i, tracks.Count)
 					: ResolveOutputPath(job, track, rootLookup);
 
-				EnsureOutputDirectoryExists(outputPath);
+				var angleCount = Math.Max(1, titleInfo.AngleCount);
 
-				_logger.LogInformation(
-					"Encoding {Source} title {Title} -> {Output} (preset: {Preset})",
-					string.IsNullOrWhiteSpace(track.SourceRelativePath) ? absDiscPath : inputPath,
-					track.TitleNumber,
-					outputPath,
-					!string.IsNullOrWhiteSpace(presetName) ? $"{presetName} ({presetFilePath})" : "(no preset)");
-
-				var handBrakeJob = new HandBrakeJob
+				for (var angleIndex = 0; angleIndex < angleCount; angleIndex++)
 				{
-					InputPath = inputPath,
-					OutputPath = outputPath,
-					PresetFilePath = presetFilePath,
-					PresetName = presetName,
-					AdditionalArgs = additionalArgs
-				};
+					var outputPath = BuildAngleOutputPath(baseOutputPath, angleIndex, angleCount);
+					var additionalArgs = angleCount > 1
+						? HandBrakeArgBuilder.CombineArgs(baseAdditionalArgs, HandBrakeArgBuilder.BuildAngleArg(angleIndex + 1))
+						: baseAdditionalArgs;
 
-				// Build sanitized command for logging (replace absolute root paths with labels).
-				var sanitizedCommand = BuildSanitizedCommand(handBrakeJob, rootLookup);
-
-				// Send the command with the first progress update for this track.
-				await _api.UpdateJobStatusAsync(job.JobId, "Encoding", 0, 0, encodingCommand: sanitizedCommand, ct: ct);
-
-				// Progress callback: scale per-track progress across the whole job.
-				var trackIndex = i;
-				var trackCount = tracks.Count;
-				var progress = new Progress<ProgressInfo>(p =>
-				{
-					var overallPercent = (int)(((trackIndex + p.Percent / 100.0) / trackCount) * 100);
-					var currentTrackPercent = (int)Math.Clamp(Math.Round(p.Percent), 0, 100);
-					_ = _api.UpdateJobStatusAsync(job.JobId, "Encoding", overallPercent, currentTrackPercent, ct: ct);
-				});
-
-				using var encodeCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-				var cancelMonitorTask = MonitorCancelRequestAsync(job.JobId, encodeCts, ct);
-
-				try
-				{
-					var encodeResult = await _handBrake.EncodeAsync(handBrakeJob, progress, encodeCts.Token);
-					if (!encodeResult.IsSuccess)
-					{
-						if (await _api.IsCancelRequestedAsync(_runnerOptions.Name, job.JobId, ct))
-						{
-							await _api.UpdateJobStatusAsync(job.JobId, "Canceled", error: "Encoding canceled by request.", ct: ct);
-							_logger.LogInformation("Job {JobId} canceled during encode.", job.JobId);
-							return;
-						}
-
-						var error = $"Encode failed for title {track.TitleNumber}: {encodeResult.Error?.Message}";
-						error = AppendFlatpakTmpPermissionHint(error, outputPath, encodeResult.Error?.RawOutput);
-						_logger.LogError("{Error}", error);
-						await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
-						return;
-					}
+					EnsureOutputDirectoryExists(outputPath);
 
 					_logger.LogInformation(
-						"Title {Title} encoded in {Elapsed} (avg {Fps:F1} fps).",
-						track.TitleNumber, encodeResult.ElapsedTime, encodeResult.AverageFps);
+						"Encoding {Source} title {Title}{AngleSuffix} -> {Output} (preset: {Preset})",
+						string.IsNullOrWhiteSpace(track.SourceRelativePath) ? absDiscPath : inputPath,
+						track.TitleNumber,
+						angleCount > 1 ? $" angle {angleIndex + 1}/{angleCount}" : string.Empty,
+						outputPath,
+						!string.IsNullOrWhiteSpace(presetName) ? $"{presetName} ({presetFilePath})" : "(no preset)");
 
-					if (isJellyfinUploadJob)
+					var handBrakeJob = new HandBrakeJob
 					{
-						if (await _api.IsCancelRequestedAsync(_runnerOptions.Name, job.JobId, ct))
+						InputPath = inputPath,
+						OutputPath = outputPath,
+						PresetFilePath = presetFilePath,
+						PresetName = presetName,
+						AdditionalArgs = additionalArgs
+					};
+
+					// Build sanitized command for logging (replace absolute root paths with labels).
+					var sanitizedCommand = BuildSanitizedCommand(handBrakeJob, rootLookup);
+
+					// Send the command with the first progress update for this track+angle.
+					await _api.UpdateJobStatusAsync(job.JobId, "Encoding", 0, 0, encodingCommand: sanitizedCommand, ct: ct);
+
+					// Progress callback: scale per-angle progress across the whole job.
+					var trackIndex = i;
+					var trackCount = tracks.Count;
+					var capturedAngleIndex = angleIndex;
+					var capturedAngleCount = angleCount;
+					var progress = new Progress<ProgressInfo>(p =>
+					{
+						var angleProgress = (capturedAngleIndex + p.Percent / 100.0) / capturedAngleCount;
+						var overallPercent = (int)(((trackIndex + angleProgress) / trackCount) * 100);
+						var currentTrackPercent = (int)Math.Clamp(Math.Round(p.Percent), 0, 100);
+						_ = _api.UpdateJobStatusAsync(job.JobId, "Encoding", overallPercent, currentTrackPercent, ct: ct);
+					});
+
+					using var encodeCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+					var cancelMonitorTask = MonitorCancelRequestAsync(job.JobId, encodeCts, ct);
+
+					try
+					{
+						var encodeResult = await _handBrake.EncodeAsync(handBrakeJob, progress, encodeCts.Token);
+						if (!encodeResult.IsSuccess)
 						{
-							await _api.UpdateJobStatusAsync(job.JobId, "Canceled", error: "Encoding canceled by request.", ct: ct);
-							_logger.LogInformation("Job {JobId} canceled before Jellyfin upload.", job.JobId);
+							if (await _api.IsCancelRequestedAsync(_runnerOptions.Name, job.JobId, ct))
+							{
+								await _api.UpdateJobStatusAsync(job.JobId, "Canceled", error: "Encoding canceled by request.", ct: ct);
+								_logger.LogInformation("Job {JobId} canceled during encode.", job.JobId);
+								return;
+							}
+
+							var angleLabel = angleCount > 1 ? $" angle {angleIndex + 1}" : string.Empty;
+							var error = $"Encode failed for title {track.TitleNumber}{angleLabel}: {encodeResult.Error?.Message}";
+							error = AppendFlatpakTmpPermissionHint(error, outputPath, encodeResult.Error?.RawOutput);
+							_logger.LogError("{Error}", error);
+							await _api.UpdateJobStatusAsync(job.JobId, "Failed", error: error, ct: ct);
 							return;
 						}
 
-						var remotePath = ResolveJellyfinRemotePath(job, track, i, tracks.Count);
-						await UploadJellyfinOutputAsync(job, outputPath, remotePath, ct);
-						TryDeleteFile(outputPath);
+						_logger.LogInformation(
+							"Title {Title}{AngleSuffix} encoded in {Elapsed} (avg {Fps:F1} fps).",
+							track.TitleNumber,
+							angleCount > 1 ? $" angle {angleIndex + 1}" : string.Empty,
+							encodeResult.ElapsedTime,
+							encodeResult.AverageFps);
+
+						if (isJellyfinUploadJob)
+						{
+							if (await _api.IsCancelRequestedAsync(_runnerOptions.Name, job.JobId, ct))
+							{
+								await _api.UpdateJobStatusAsync(job.JobId, "Canceled", error: "Encoding canceled by request.", ct: ct);
+								_logger.LogInformation("Job {JobId} canceled before Jellyfin upload.", job.JobId);
+								return;
+							}
+
+							var baseRemotePath = ResolveJellyfinRemotePath(job, track, i, tracks.Count);
+							var remotePath = BuildAngleOutputPath(baseRemotePath, angleIndex, angleCount);
+							await UploadJellyfinOutputAsync(job, outputPath, remotePath, ct);
+							TryDeleteFile(outputPath);
+						}
 					}
-				}
-				catch (OperationCanceledException) when (!ct.IsCancellationRequested)
-				{
-					await _api.UpdateJobStatusAsync(job.JobId, "Canceled", error: "Encoding canceled by request.", ct: ct);
-					_logger.LogInformation("Job {JobId} canceled during encode.", job.JobId);
-					return;
-				}
-				finally
-				{
-					encodeCts.Cancel();
-					await WaitForCancelMonitorAsync(cancelMonitorTask);
+					catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+					{
+						await _api.UpdateJobStatusAsync(job.JobId, "Canceled", error: "Encoding canceled by request.", ct: ct);
+						_logger.LogInformation("Job {JobId} canceled during encode.", job.JobId);
+						return;
+					}
+					finally
+					{
+						encodeCts.Cancel();
+						await WaitForCancelMonitorAsync(cancelMonitorTask);
+					}
 				}
 			}
 
@@ -549,6 +568,18 @@ public class EncodingWorkerService : BackgroundService
 		}
 
 		return expanded;
+	}
+
+	private static string BuildAngleOutputPath(string outputPath, int angleIndex, int angleCount)
+	{
+		if (angleCount <= 1)
+		{
+			return outputPath;
+		}
+
+		var ext = Path.GetExtension(outputPath);
+		var withoutExt = outputPath[..^ext.Length];
+		return $"{withoutExt} - a{angleIndex + 1}{ext}";
 	}
 
 	private static string ResolveMovieYear(EncodeTrackConfig track)
