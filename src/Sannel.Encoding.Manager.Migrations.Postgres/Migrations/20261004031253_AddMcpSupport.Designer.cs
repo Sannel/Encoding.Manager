@@ -12,7 +12,7 @@ using Sannel.Encoding.Manager.Web.Features.Data;
 namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261004212941_AddMcpSupport")]
+    [Migration("20261004031253_AddMcpSupport")]
     partial class AddMcpSupport
     {
         /// <inheritdoc />

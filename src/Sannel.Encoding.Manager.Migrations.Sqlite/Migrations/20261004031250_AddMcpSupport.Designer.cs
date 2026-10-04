@@ -11,7 +11,7 @@ using Sannel.Encoding.Manager.Web.Features.Data;
 namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261004212938_AddMcpSupport")]
+    [Migration("20261004031250_AddMcpSupport")]
     partial class AddMcpSupport
     {
         /// <inheritdoc />
