@@ -15,19 +15,20 @@ public static class NativeLibraryResolver
 	private static readonly Dictionary<string, string[]> _linuxNames = new()
 	{
 		[DvdNav] = ["libdvdnav.so.4", "libdvdnav.so"],
-		[Bluray] = ["libbluray.so.3", "libbluray.so.2", "libbluray.so"],
+		[Bluray] = ["libbluray.so.4", "libbluray.so.3", "libbluray.so.2", "libbluray.so"],
 	};
 
 	private static readonly Dictionary<string, string[]> _windowsNames = new()
 	{
 		[DvdNav] = ["libdvdnav-4.dll", "libdvdnav.dll", "dvdnav.dll"],
-		[Bluray] = ["libbluray-3.dll", "libbluray-2.dll", "libbluray.dll", "bluray.dll"],
+		// libbluray 1.5 is ABI 4; the structures read here only gained trailing fields since ABI 2.
+		[Bluray] = ["libbluray-4.dll", "libbluray-3.dll", "libbluray-2.dll", "libbluray.dll", "bluray.dll"],
 	};
 
 	private static readonly Dictionary<string, string[]> _macNames = new()
 	{
 		[DvdNav] = ["libdvdnav.4.dylib", "libdvdnav.dylib"],
-		[Bluray] = ["libbluray.3.dylib", "libbluray.2.dylib", "libbluray.dylib"],
+		[Bluray] = ["libbluray.4.dylib", "libbluray.3.dylib", "libbluray.2.dylib", "libbluray.dylib"],
 	};
 
 	private static string? _searchPath;

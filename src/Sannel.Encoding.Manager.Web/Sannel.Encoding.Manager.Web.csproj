@@ -46,7 +46,7 @@
   </Target>
 
   <Target Name="PublishDiscMenuProbe" AfterTargets="Publish">
-    <MSBuild Projects="$(DiscMenuProbeProject)" Targets="Publish" Properties="Configuration=$(Configuration);PublishDir=$([System.IO.Path]::GetFullPath('$(PublishDir)'))disc-menu-probe/;RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=false" />
+    <MSBuild Projects="$(DiscMenuProbeProject)" Targets="Publish" Properties="Configuration=$(Configuration);PublishDir=$([System.IO.Path]::GetFullPath('$(PublishDir)'))disc-menu-probe/;RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=$(SelfContained)" />
   </Target>
 
 </Project>

@@ -52,10 +52,11 @@ public class DiscMenuProbeRunner : IDiscMenuProbeRunner
 			"--screenshot-width", this._options.ScreenshotWidth.ToString(CultureInfo.InvariantCulture),
 			"--settle-ms", this._options.SettleMilliseconds.ToString(CultureInfo.InvariantCulture),
 		};
-		if (!string.IsNullOrWhiteSpace(this._options.NativeLibraryPath))
+		var nativePath = this.NativeLibraryFolder();
+		if (nativePath is not null)
 		{
 			arguments.Add("--native-path");
-			arguments.Add(this._options.NativeLibraryPath);
+			arguments.Add(nativePath);
 		}
 
 		using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -104,6 +105,12 @@ public class DiscMenuProbeRunner : IDiscMenuProbeRunner
 			environment["LIBBLURAY_CP"] = jar;
 		}
 
+		// Windows resolves a DLL's dependencies through PATH, not the folder the DLL was loaded from.
+		if (OperatingSystem.IsWindows() && this.NativeLibraryFolder() is { } nativePath)
+		{
+			environment["PATH"] = nativePath + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+		}
+
 		// An apphost-less probe started through the dotnet muxer needs to find the same runtime.
 		var dotnetRoot = DotnetRoot();
 		if (dotnetRoot is not null && Environment.GetEnvironmentVariable("DOTNET_ROOT") is null)
@@ -120,7 +127,10 @@ public class DiscMenuProbeRunner : IDiscMenuProbeRunner
 		var candidate = this._options.ProbePath;
 		if (string.IsNullOrWhiteSpace(candidate))
 		{
-			candidate = Path.Combine(AppContext.BaseDirectory, ProbeFolderName, ProbeAssemblyName + ".dll");
+			// Prefer the native launcher: it works for self-contained publishes, where there is no dotnet host.
+			var folder = Path.Combine(AppContext.BaseDirectory, ProbeFolderName);
+			var launcher = Path.Combine(folder, ProbeAssemblyName + (OperatingSystem.IsWindows() ? ".exe" : string.Empty));
+			candidate = File.Exists(launcher) ? launcher : Path.Combine(folder, ProbeAssemblyName + ".dll");
 		}
 
 		if (!File.Exists(candidate))
@@ -158,14 +168,34 @@ public class DiscMenuProbeRunner : IDiscMenuProbeRunner
 		return Directory.Exists(Path.Combine(root, "shared")) ? root : null;
 	}
 
-	private static string? AutoDetectBdjJar()
+	/// <summary>
+	/// The configured native library folder (relative paths are relative to the app folder), or the bundled
+	/// <c>native/</c> folder next to the app when it exists.
+	/// </summary>
+	private string? NativeLibraryFolder()
 	{
-		if (!OperatingSystem.IsLinux() || !Directory.Exists("/usr/share/java"))
+		var configured = this._options.NativeLibraryPath;
+		if (!string.IsNullOrWhiteSpace(configured))
 		{
-			return null;
+			return Path.IsPathRooted(configured) ? configured : Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, configured));
 		}
 
-		return Directory.EnumerateFiles("/usr/share/java", "libbluray-j2se*.jar").Order().LastOrDefault();
+		var bundled = Path.Combine(AppContext.BaseDirectory, "native");
+		return Directory.Exists(bundled) ? bundled : null;
+	}
+
+	/// <summary>
+	/// Linux: the libbluray-bdj package's jar. Windows: the jar libvlc ships next to its bluray plugin
+	/// (it must match the libbluray version, so bundle libbluray 1.4.1 with VideoLAN.LibVLC.Windows 3.0.x).
+	/// </summary>
+	private static string? AutoDetectBdjJar()
+	{
+		var folder = OperatingSystem.IsWindows()
+			? Path.Combine(AppContext.BaseDirectory, ProbeFolderName, "libvlc", "win-x64", "plugins", "access")
+			: "/usr/share/java";
+		return Directory.Exists(folder)
+			? Directory.EnumerateFiles(folder, "libbluray-j2se*.jar").Order().LastOrDefault()
+			: null;
 	}
 
 	private static string? LastLine(string text) =>
