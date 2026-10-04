@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<InvariantGlobalization>true</InvariantGlobalization>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="LibVLCSharp" Version="3.10.1" />
+		<PackageReference Include="SkiaSharp" Version="4.153.1" />
+		<PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.153.1" />
+		<PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.24" Condition="$([MSBuild]::IsOSPlatform('Windows')) Or '$(RuntimeIdentifier)' == 'win-x64'" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Sannel.Encoding.Manager.DiscMenu\Sannel.Encoding.Manager.DiscMenu.csproj" />
+	</ItemGroup>
+
+</Project>

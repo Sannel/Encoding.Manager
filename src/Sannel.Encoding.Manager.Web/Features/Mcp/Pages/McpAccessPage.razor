@@ -1,0 +1,63 @@
+@page "/ai-access"
+@rendermode InteractiveServer
+@using Sannel.Encoding.Manager.Web.Features.Mcp.Components
+
+<PageTitle>AI Access</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">AI Access</MudText>
+<MudText Class="mb-4">
+	Connect an AI assistant (Claude Code, Claude Desktop, VS Code and other MCP clients) so it can browse your media,
+	scan discs, read disc menus and queue encodes for you.
+</MudText>
+
+@if (!_mcpEnabled)
+{
+	<MudAlert Severity="Severity.Info">The MCP server is disabled on this server (<code>Mcp:Enabled</code> is false).</MudAlert>
+}
+else if (_isLoading)
+{
+	<MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+}
+else
+{
+	<MudCard Class="mb-4 pa-4">
+		<MudText Typo="Typo.h6" Class="mb-2">MCP endpoint</MudText>
+		<MudTextField T="string" Value="@EndpointUrl" ReadOnly="true" Variant="Variant.Outlined"
+			Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.ContentCopy"
+			OnAdornmentClick="CopyEndpointAsync" AdornmentAriaLabel="Copy endpoint URL" />
+	</MudCard>
+
+	@if (!string.IsNullOrEmpty(_revealedKey))
+	{
+		<NewKeyRevealCard Key="@_revealedKey" />
+	}
+
+	<MudCard Class="mb-4 pa-4">
+		<MudText Typo="Typo.h6" Class="mb-2">Your API key</MudText>
+		@if (_keyInfo is null)
+		{
+			<MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">You don't have an API key yet.</MudAlert>
+			<MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Key"
+				OnClick="GenerateAsync" Disabled="_isBusy">Generate Key</MudButton>
+		}
+		else
+		{
+			<MudText Typo="Typo.body1" Style="font-family:monospace;">@(_keyInfo.KeyPrefix)••••••••••••••••</MudText>
+			<MudText Typo="Typo.caption" Class="d-block">Created @_keyInfo.CreatedAt.ToLocalTime().ToString("g")</MudText>
+			<MudText Typo="Typo.caption" Class="d-block mb-3">
+				Last used @(_keyInfo.LastUsedAt?.ToLocalTime().ToString("g") ?? "never")
+			</MudText>
+			<MudStack Row="true" Spacing="2">
+				<MudButton Variant="Variant.Outlined" Color="Color.Warning" StartIcon="@Icons.Material.Filled.Autorenew"
+					OnClick="RotateAsync" Disabled="_isBusy">Rotate Key</MudButton>
+				<MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete"
+					OnClick="RevokeAsync" Disabled="_isBusy">Revoke Key</MudButton>
+			</MudStack>
+		}
+		<MudAlert Severity="Severity.Warning" Dense="true" Class="mt-3">
+			Treat this key like a password. Anyone with it can browse your media roots and queue encodes as you.
+		</MudAlert>
+	</MudCard>
+
+	<ClientSetupInstructions EndpointUrl="@EndpointUrl" ApiKey="@_revealedKey" />
+}

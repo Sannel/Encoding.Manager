@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -8,12 +10,22 @@ using Microsoft.Extensions.Logging.EventLog;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using ModelContextProtocol;
+using ModelContextProtocol.Protocol;
 using MudBlazor.Services;
 using Sannel.Encoding.Manager.Web.Components;
 using Sannel.Encoding.Manager.Web.Features.Data;
 using Sannel.Encoding.Manager.Web.Features.Data.Options;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Services;
+using Sannel.Encoding.Manager.Web.Features.DiscMenu.Options;
+using Sannel.Encoding.Manager.Web.Features.DiscMenu.Services;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Options;
+using Sannel.Encoding.Manager.Web.Features.Mcp;
+using Sannel.Encoding.Manager.Web.Features.Mcp.Authentication;
+using Sannel.Encoding.Manager.Web.Features.Mcp.Options;
+using Sannel.Encoding.Manager.Web.Features.Mcp.Services;
+using Sannel.Encoding.Manager.Web.Features.Mcp.Tools;
+using Sannel.Encoding.Manager.Web.Features.Scan.Services;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
 using Sannel.Encoding.Manager.Web.Features.Queue.Hubs;
 using Sannel.Encoding.Manager.Web.Features.Queue.Services;
@@ -77,6 +89,10 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
 builder.Services.AddAuthentication()
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"), jwtBearerScheme: "RunnerBearer");
 
+// Per-user API keys for the MCP endpoint
+builder.Services.AddAuthentication()
+    .AddScheme<ApiKeyAuthenticationOptions, ApiKeyAuthenticationHandler>(ApiKeyDefaults.Scheme, _ => { });
+
 // Require authentication for all pages by default; use [AllowAnonymous] to opt out
 builder.Services.AddAuthorization(options =>
 {
@@ -86,6 +102,10 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy("RunnerApi", policy =>
         policy.AddAuthenticationSchemes("RunnerBearer")
+              .RequireAuthenticatedUser());
+
+    options.AddPolicy(ApiKeyDefaults.Policy, policy =>
+        policy.AddAuthenticationSchemes(ApiKeyDefaults.Scheme)
               .RequireAuthenticatedUser());
 });
 
@@ -97,7 +117,7 @@ builder.Services.Configure<CookieAuthenticationOptions>(CookieAuthenticationDefa
 {
     options.Events.OnRedirectToLogin = context =>
     {
-        if (context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/hubs"))
+        if (context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/hubs") || context.Request.Path.StartsWithSegments("/mcp"))
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return Task.CompletedTask;
@@ -109,7 +129,7 @@ builder.Services.Configure<CookieAuthenticationOptions>(CookieAuthenticationDefa
 
     options.Events.OnRedirectToAccessDenied = context =>
     {
-        if (context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/hubs"))
+        if (context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/hubs") || context.Request.Path.StartsWithSegments("/mcp"))
         {
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return Task.CompletedTask;
@@ -180,6 +200,16 @@ builder.Services.AddSingleton<QueueChangeNotifier>();
 builder.Services.AddScoped<IEncodeQueueService, EncodeQueueService>();
 builder.Services.AddScoped<IPresetService, PresetService>();
 
+// Shared encode-job submission (Scan page + MCP) and background disc scans
+builder.Services.AddScoped<IEncodeJobSubmissionService, EncodeJobSubmissionService>();
+builder.Services.AddSingleton<IBackgroundScanCoordinator, BackgroundScanCoordinator>();
+
+// Disc menu inspection (runs the DiscMenu.Probe child process)
+builder.Services.Configure<DiscMenuOptions>(builder.Configuration.GetSection("DiscMenu"));
+builder.Services.PostConfigure<DiscMenuOptions>(o => o.ContentRootPath = builder.Environment.ContentRootPath);
+builder.Services.AddSingleton<IDiscMenuProbeRunner, DiscMenuProbeRunner>();
+builder.Services.AddSingleton<IDiscMenuService, DiscMenuService>();
+
 // Runner job service
 builder.Services.AddScoped<IRunnerJobService, RunnerJobService>();
 
@@ -211,6 +241,37 @@ builder.Services.AddHttpClient<IOmdbService, OmdbService>();
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
 
+// MCP server (AI clients authenticate with per-user API keys)
+builder.Services.Configure<McpOptions>(builder.Configuration.GetSection("Mcp"));
+var mcpOptions = builder.Configuration.GetSection("Mcp").Get<McpOptions>() ?? new McpOptions();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserApiKeyService, UserApiKeyService>();
+builder.Services.AddSingleton<IForcedRescanLimiter, ForcedRescanLimiter>();
+builder.Services.AddScoped<McpCaller>();
+builder.Services.AddScoped<McpQueueRequestBuilder>();
+if (mcpOptions.Enabled)
+{
+    var mcpJson = new JsonSerializerOptions(McpJsonUtilities.DefaultOptions);
+    mcpJson.Converters.Add(new JsonStringEnumConverter());
+    builder.Services.AddMcpServer(options =>
+        {
+            options.ServerInfo = new Implementation
+            {
+                Name = mcpOptions.ServerName,
+                Title = "Sannel Encoding Manager",
+                Version = typeof(Program).Assembly.GetName().Version?.ToString() ?? "1.0.0",
+            };
+            options.ServerInstructions = McpServerInstructions.Text;
+        })
+        .WithHttpTransport(options => options.Stateless = true)
+        .WithTools<FilesystemTools>(mcpJson)
+        .WithTools<ScanTools>(mcpJson)
+        .WithTools<MetadataTools>(mcpJson)
+        .WithTools<PresetTools>(mcpJson)
+        .WithTools<QueueTools>(mcpJson)
+        .WithTools<DiscMenuTools>(mcpJson);
+}
+
 var app = builder.Build();
 
 // Apply any pending EF Core migrations automatically on startup
@@ -228,7 +289,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 app.UseWhen(
-	context => !context.Request.Path.StartsWithSegments("/api") && !context.Request.Path.StartsWithSegments("/hubs"),
+	context => !context.Request.Path.StartsWithSegments("/api") && !context.Request.Path.StartsWithSegments("/hubs") && !context.Request.Path.StartsWithSegments("/mcp"),
 	branch => branch.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true));
 app.UseHttpsRedirection();
 
@@ -242,6 +303,10 @@ app.MapRazorPages(); // Microsoft Identity login/logout endpoints
 app.MapControllers(); // API controllers
 app.MapHub<QueueHub>("/hubs/queue");
 app.MapHub<RunnerStatusHub>("/hubs/runner-status");
+if (mcpOptions.Enabled)
+{
+    app.MapMcp("/mcp").RequireAuthorization(ApiKeyDefaults.Policy);
+}
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

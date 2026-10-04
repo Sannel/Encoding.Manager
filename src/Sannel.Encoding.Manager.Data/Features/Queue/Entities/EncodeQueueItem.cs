@@ -64,4 +64,13 @@ public class EncodeQueueItem
 	/// User-defined sort position. Lower value = higher priority. Assigned on add; swapped on reorder.
 	/// </summary>
 	public int SortOrder { get; set; }
+
+	/// <summary>Display name of the user who created this item. Null for items created before auditing existed.</summary>
+	public string? CreatedBy { get; set; }
+
+	/// <summary>Entra ID object id (<c>oid</c>) of the user who created this item.</summary>
+	public string? CreatedByObjectId { get; set; }
+
+	/// <summary>How the item was created: "UI" or "MCP". Null for items created before auditing existed.</summary>
+	public string? CreatedVia { get; set; }
 }

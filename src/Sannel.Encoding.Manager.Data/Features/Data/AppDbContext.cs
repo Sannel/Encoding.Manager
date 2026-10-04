@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Sannel.Encoding.Manager.Web.Features.DiscMenu.Entities;
+using Sannel.Encoding.Manager.Web.Features.Mcp.Entities;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
 using Sannel.Encoding.Manager.Web.Features.Scan.Entities;
 using Sannel.Encoding.Manager.Web.Features.Settings.Entities;
@@ -33,6 +35,8 @@ public class AppDbContext : DbContext
 	public DbSet<TvdbSeriesCache> TvdbSeriesCache => this.Set<TvdbSeriesCache>();
 	public DbSet<TvdbEpisodeCache> TvdbEpisodeCache => this.Set<TvdbEpisodeCache>();
 	public DbSet<RunnerEntity> Runners => this.Set<RunnerEntity>();
+	public DbSet<UserApiKey> UserApiKeys => this.Set<UserApiKey>();
+	public DbSet<DiscMenuCache> DiscMenuCache => this.Set<DiscMenuCache>();
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
@@ -67,6 +71,21 @@ public class AppDbContext : DbContext
 		{
 			entity.HasKey(e => e.Id);
 			entity.HasIndex(e => e.Name).IsUnique();
+		});
+
+		modelBuilder.Entity<UserApiKey>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasIndex(e => e.UserObjectId).IsUnique();
+			entity.HasIndex(e => e.KeyHash).IsUnique();
+			entity.Property(e => e.UserObjectId).HasMaxLength(128);
+			entity.Property(e => e.KeyHash).HasMaxLength(64);
+			entity.Property(e => e.KeyPrefix).HasMaxLength(16);
+		});
+
+		modelBuilder.Entity<DiscMenuCache>(entity =>
+		{
+			entity.HasKey(e => e.InputPath);
 		});
 	}
 }

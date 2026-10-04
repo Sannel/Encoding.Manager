@@ -16,6 +16,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="10.0.0" />
     <PackageReference Include="Microsoft.Identity.Web" Version="4.4.0" />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="4.4.0" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
     <PackageReference Include="MudBlazor" Version="9.1.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
   </ItemGroup>
@@ -25,6 +26,27 @@
     <ProjectReference Include="..\Sannel.Encoding.Manager.HandBrake\Sannel.Encoding.Manager.HandBrake.csproj" />
     <ProjectReference Include="..\Sannel.Encoding.Manager.Migrations.Sqlite\Sannel.Encoding.Manager.Migrations.Sqlite.csproj" />
     <ProjectReference Include="..\Sannel.Encoding.Manager.Migrations.Postgres\Sannel.Encoding.Manager.Migrations.Postgres.csproj" />
+    <ProjectReference Include="..\Sannel.Encoding.Manager.DiscMenu\Sannel.Encoding.Manager.DiscMenu.csproj" />
+    <!-- The menu probe runs as a child process; it is built, not referenced, and copied to disc-menu-probe/. -->
+    <ProjectReference Include="..\Sannel.Encoding.Manager.DiscMenu.Probe\Sannel.Encoding.Manager.DiscMenu.Probe.csproj" ReferenceOutputAssembly="false" Private="false" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <DiscMenuProbeProject>$(MSBuildThisFileDirectory)..\Sannel.Encoding.Manager.DiscMenu.Probe\Sannel.Encoding.Manager.DiscMenu.Probe.csproj</DiscMenuProbeProject>
+  </PropertyGroup>
+
+  <Target Name="CopyDiscMenuProbe" AfterTargets="Build">
+    <MSBuild Projects="$(DiscMenuProbeProject)" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" PropertyName="DiscMenuProbeTargetPath" />
+    </MSBuild>
+    <ItemGroup>
+      <DiscMenuProbeFiles Include="$([System.IO.Path]::GetDirectoryName('$(DiscMenuProbeTargetPath)'))/**/*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(DiscMenuProbeFiles)" DestinationFiles="@(DiscMenuProbeFiles->'$(OutDir)disc-menu-probe/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="PublishDiscMenuProbe" AfterTargets="Publish">
+    <MSBuild Projects="$(DiscMenuProbeProject)" Targets="Publish" Properties="Configuration=$(Configuration);PublishDir=$([System.IO.Path]::GetFullPath('$(PublishDir)'))disc-menu-probe/;RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=false" />
+  </Target>
 
 </Project>

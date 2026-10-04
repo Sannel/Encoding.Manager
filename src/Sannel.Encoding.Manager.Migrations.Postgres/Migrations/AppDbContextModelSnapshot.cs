@@ -22,6 +22,80 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.DiscMenu.Entities.DiscMenuCache", b =>
+                {
+                    b.Property<string>("InputPath")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CachedAt")
+                        .IsRequired()
+                        .HasColumnType("character varying(48)");
+
+                    b.Property<string>("DiscType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("MenuJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ProbeVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ScreenshotFolder")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("InputPath");
+
+                    b.ToTable("DiscMenuCache");
+                });
+
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Mcp.Entities.UserApiKey", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedAt")
+                        .IsRequired()
+                        .HasColumnType("character varying(48)");
+
+                    b.Property<string>("KeyHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("KeyPrefix")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("LastUsedAt")
+                        .HasColumnType("character varying(48)");
+
+                    b.Property<string>("UserDisplayName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserObjectId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("UserPrincipalName")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KeyHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserObjectId")
+                        .IsUnique();
+
+                    b.ToTable("UserApiKeys");
+                });
+
             modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -38,6 +112,15 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                     b.Property<string>("CreatedAt")
                         .IsRequired()
                         .HasColumnType("character varying(48)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedByObjectId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedVia")
+                        .HasColumnType("text");
 
                     b.Property<int?>("CurrentTrackProgressPercent")
                         .HasColumnType("integer");

@@ -1,12 +1,14 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using Sannel.Encoding.Manager.Web.Features.Omdb.Services;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
 using Sannel.Encoding.Manager.Web.Features.Queue.Services;
+using Sannel.Encoding.Manager.Web.Features.Scan.Dto;
+using Sannel.Encoding.Manager.Web.Features.Scan.Services;
 using Sannel.Encoding.Manager.Web.Features.Scan.Utilities;
-using Sannel.Encoding.Manager.Web.Features.Settings.Services;
+using Sannel.Encoding.Manager.Web.Features.Shared.Services;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Dto;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Services;
 
@@ -28,13 +30,13 @@ public abstract class NamingComponentBase : ComponentBase
 	private ISnackbar Snackbar { get; set; } = default!;
 
 	[Inject]
-	private IEncodeQueueService EncodeQueueService { get; set; } = default!;
+	private IEncodeJobSubmissionService SubmissionService { get; set; } = default!;
 
 	[Inject]
 	private IPresetService PresetService { get; set; } = default!;
 
-	[Inject]
-	private ISettingsService SettingsService { get; set; } = default!;
+	[CascadingParameter]
+	private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
 
 	protected sealed class NamingRowData
 	{
@@ -102,35 +104,30 @@ public abstract class NamingComponentBase : ComponentBase
 	/// </summary>
 	protected async Task AddDiskToQueueAsync(string discPath, string? discRootLabel, string mode, IReadOnlyList<EncodeTrackConfig> tracks)
 	{
-		var toAdd = tracks.Where(t => !string.IsNullOrWhiteSpace(t.OutputName)).ToList();
-		if (toAdd.Count == 0)
+		var tvdbId = int.TryParse(this._showId.Trim(), out var parsedId) ? parsedId : (int?)null;
+		var user = this.AuthenticationStateTask is null ? null : (await this.AuthenticationStateTask).User;
+		var result = await this.SubmissionService.SubmitAsync(new EncodeJobSubmission
 		{
-			this.Snackbar.Add("No tracks to queue — all track names are empty.", Severity.Warning);
+			DiscPath = discPath,
+			RootLabel = discRootLabel,
+			Mode = mode,
+			PresetLabel = this._selectedPresetLabel,
+			TvdbShowName = this._seriesName,
+			TvdbId = tvdbId,
+			Tracks = tracks,
+			CreatedBy = UserIdentity.GetDisplayName(user),
+			CreatedByObjectId = UserIdentity.GetObjectId(user),
+			CreatedVia = "UI",
+		});
+
+		if (!result.Accepted)
+		{
+			this.Snackbar.Add(result.RejectionReason ?? "Nothing was queued.", Severity.Warning);
 			return;
 		}
 
-		// Stamp the globally selected preset on every track
-		foreach (var track in toAdd)
-		{
-			track.PresetLabel = this._selectedPresetLabel;
-		}
-
-		var settings = await this.SettingsService.GetSettingsAsync();
-		var tvdbId = int.TryParse(this._showId.Trim(), out var parsedId) ? parsedId : (int?)null;
-		var item = new EncodeQueueItem
-		{
-			DiscPath = discPath,
-			DiscRootLabel = discRootLabel,
-			Mode = mode,
-			TvdbShowName = this._seriesName,
-			TvdbId = tvdbId,
-			TracksJson = JsonSerializer.Serialize(toAdd),
-			AudioDefault = settings.AudioDefault,
-		};
-
-		await this.EncodeQueueService.AddItemAsync(item);
 		var subject = string.Equals(mode, "Files", StringComparison.OrdinalIgnoreCase) ? "Folder" : "Disc";
-		this.Snackbar.Add($"{subject} added to queue with {toAdd.Count} track(s).", Severity.Success);
+		this.Snackbar.Add($"{subject} added to queue with {result.TrackCount} track(s).", Severity.Success);
 	}
 
 	protected IReadOnlyList<TvdbEpisode> EpisodesForSeason(int? season)

@@ -4,6 +4,8 @@ namespace Sannel.Encoding.Manager.HandBrake;
 public class TitleInfo
 {
 	public int TitleNumber { get; init; }
+	/// <summary>Blu-ray playlist number (the NNNNN in NNNNN.mpls). Null for DVDs and files.</summary>
+	public int? Playlist { get; init; }
 	public TimeSpan Duration { get; init; }
 	public IReadOnlyList<VideoStreamInfo> VideoStreams { get; init; } = [];
 	public IReadOnlyList<AudioTrackInfo> AudioTracks { get; init; } = [];

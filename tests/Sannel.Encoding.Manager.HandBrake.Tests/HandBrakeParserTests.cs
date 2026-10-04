@@ -188,6 +188,26 @@ public class HandBrakeParserTests
 	}
 
 	[Fact]
+	public void ParseScan_BlurayPlaylist_IsParsed()
+	{
+		var json = """
+		{
+			"TitleList": [
+				{ "Index": 1, "Playlist": 800 },
+				{ "Index": 2, "Playlist": -1 },
+				{ "Index": 3 }
+			]
+		}
+		""";
+
+		var titles = HandBrakeParser.ParseScan(json);
+
+		Assert.Equal(800, titles[0].Playlist);
+		Assert.Null(titles[1].Playlist);
+		Assert.Null(titles[2].Playlist);
+	}
+
+	[Fact]
 	public void ParseScan_TextFallback_ParsesTitleBlock()
 	{
 		var text = """

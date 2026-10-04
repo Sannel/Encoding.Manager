@@ -17,6 +17,80 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
 
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.DiscMenu.Entities.DiscMenuCache", b =>
+                {
+                    b.Property<string>("InputPath")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CachedAt")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DiscType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MenuJson")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ProbeVersion")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ScreenshotFolder")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("InputPath");
+
+                    b.ToTable("DiscMenuCache");
+                });
+
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Mcp.Entities.UserApiKey", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedAt")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("KeyHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("KeyPrefix")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LastUsedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserDisplayName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserObjectId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserPrincipalName")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KeyHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserObjectId")
+                        .IsUnique();
+
+                    b.ToTable("UserApiKeys");
+                });
+
             modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Queue.Entities.EncodeQueueItem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -32,6 +106,15 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
 
                     b.Property<string>("CreatedAt")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedByObjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedVia")
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("CurrentTrackProgressPercent")
