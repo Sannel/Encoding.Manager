@@ -8,6 +8,7 @@ COPY src/Sannel.Encoding.Manager.Data/Sannel.Encoding.Manager.Data.csproj src/Sa
 COPY src/Sannel.Encoding.Manager.HandBrake/Sannel.Encoding.Manager.HandBrake.csproj src/Sannel.Encoding.Manager.HandBrake/
 COPY src/Sannel.Encoding.Manager.Migrations.Sqlite/Sannel.Encoding.Manager.Migrations.Sqlite.csproj src/Sannel.Encoding.Manager.Migrations.Sqlite/
 COPY src/Sannel.Encoding.Manager.Migrations.Postgres/Sannel.Encoding.Manager.Migrations.Postgres.csproj src/Sannel.Encoding.Manager.Migrations.Postgres/
+COPY src/Sannel.Encoding.Manager.Jellyfin/Sannel.Encoding.Manager.Jellyfin.csproj src/Sannel.Encoding.Manager.Jellyfin/
 COPY src/Sannel.Encoding.Manager.DiscMenu/Sannel.Encoding.Manager.DiscMenu.csproj src/Sannel.Encoding.Manager.DiscMenu/
 COPY src/Sannel.Encoding.Manager.DiscMenu.Probe/Sannel.Encoding.Manager.DiscMenu.Probe.csproj src/Sannel.Encoding.Manager.DiscMenu.Probe/
 

@@ -88,6 +88,16 @@ public partial class FolderFilesModeView : NamingComponentBase
 		return $"{size:F2} {units[unitIndex]}";
 	}
 
+	protected override string? GetDefaultSearchTerm()
+	{
+		if (string.IsNullOrEmpty(this.DiscRelativePath))
+		{
+			return null;
+		}
+
+		return Path.GetFileName(this.DiscRelativePath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+	}
+
 	protected override string GetFallbackAutoName(int key)
 	{
 		var item = this.TrackItems.FirstOrDefault(track => track.Key == key);

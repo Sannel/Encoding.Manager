@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Logging.EventLog;
+using Microsoft.Extensions.Options;
 using Sannel.Encoding.Manager.HandBrake;
 using Sannel.Encoding.Runner;
 using Sannel.Encoding.Runner.Features.Configuration;
+using Sannel.Encoding.Runner.Features.Logging.Services;
 using Sannel.Encoding.Runner.Features.Runner.Options;
 using Sannel.Encoding.Runner.Features.Runner.Services;
 
@@ -61,6 +63,17 @@ builder.Services.AddSingleton<IRunnerAccessTokenProvider, RunnerAccessTokenProvi
 builder.Services.AddTransient<RunnerBearerTokenHandler>();
 builder.Services.AddHttpClient<IRunnerApiClient, RunnerApiClient>()
 	.AddHttpMessageHandler<RunnerBearerTokenHandler>();
+builder.Services.AddHttpClient(nameof(IRunnerApiClient), (sp, client) =>
+{
+	var runnerOpts = sp.GetRequiredService<IOptions<RunnerOptions>>().Value;
+	var baseUrl = runnerOpts.ServiceBaseUrl?.Trim().TrimEnd('/') + "/";
+	client.BaseAddress = new Uri(baseUrl);
+}).AddHttpMessageHandler<RunnerBearerTokenHandler>();
+
+// Remote log shipping to server
+var runnerName = builder.Configuration.GetSection("Runner")["Name"] ?? "runner-01";
+builder.Services.AddSingleton<ILoggerProvider>(sp =>
+	new RemoteLoggerProvider(sp.GetRequiredService<IHttpClientFactory>(), runnerName));
 
 // Worker
 builder.Services.AddHostedService<EncodingWorkerService>();

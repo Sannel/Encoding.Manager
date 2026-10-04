@@ -4,6 +4,7 @@
     <Project Path="src/Sannel.Encoding.Manager.DiscMenu.Probe/Sannel.Encoding.Manager.DiscMenu.Probe.csproj" />
     <Project Path="src/Sannel.Encoding.Manager.DiscMenu/Sannel.Encoding.Manager.DiscMenu.csproj" />
     <Project Path="src/Sannel.Encoding.Manager.HandBrake/Sannel.Encoding.Manager.HandBrake.csproj" />
+    <Project Path="src/Sannel.Encoding.Manager.Jellyfin/Sannel.Encoding.Manager.Jellyfin.csproj" />
     <Project Path="src/Sannel.Encoding.Manager.Migrations.Postgres/Sannel.Encoding.Manager.Migrations.Postgres.csproj" />
     <Project Path="src/Sannel.Encoding.Manager.Migrations.Sqlite/Sannel.Encoding.Manager.Migrations.Sqlite.csproj" />
     <Project Path="src/Sannel.Encoding.Manager.Web/Sannel.Encoding.Manager.Web.csproj" />

@@ -65,12 +65,14 @@ public class QueueTools
 	}
 
 	[McpServerTool(Name = "get_queue", ReadOnly = true, Idempotent = true)]
-	[Description("Lists encode queue items in processing order with their status and progress.")]
+	[Description("Lists encode queue items in processing order with their status and progress, one page at a time.")]
 	public async Task<IReadOnlyList<McpQueueItemSummary>> GetQueueAsync(
 		[Description("Include items that were cleared from the queue view.")] bool includeArchived = false,
+		[Description("Number of items to skip (for paging).")] int skip = 0,
+		[Description("Maximum number of items to return (1-200).")] int take = 50,
 		CancellationToken ct = default)
 	{
-		var items = await this._queueService.GetItemsAsync(includeArchived, ct);
+		var items = await this._queueService.GetPagedItemsAsync(Math.Max(0, skip), Math.Clamp(take, 1, 200), includeArchived, ct);
 		return items.Select(i => new McpQueueItemSummary
 		{
 			Id = i.Id,

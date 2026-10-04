@@ -1,0 +1,59 @@
+<MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h6">@(Root is null ? "Add Destination Root" : "Edit Destination Root")</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudStack Spacing="3">
+			<MudTextField @bind-Value="_name" Label="Name" Variant="Variant.Outlined"
+				Placeholder="e.g. Movies Library" />
+			<MudSelect Value="_serverId" Label="Server" Variant="Variant.Outlined"
+				AnchorOrigin="Origin.BottomCenter" ValueChanged="@((Guid v) => OnServerChangedAsync(v))">
+				@foreach (var server in Servers)
+				{
+					<MudSelectItem Value="server.Id">@server.Name</MudSelectItem>
+				}
+			</MudSelect>
+
+			@if (_isLoadingLibraries)
+			{
+				<MudProgressCircular Indeterminate="true" Size="Size.Small" Color="Color.Primary" />
+			}
+			else if (_libraries.Count > 0)
+			{
+				<MudSelect Value="_selectedLibraryName" Label="Library" Variant="Variant.Outlined"
+					AnchorOrigin="Origin.BottomCenter" ValueChanged="@((string v) => OnLibraryChanged(v))">
+					@foreach (var lib in _libraries)
+					{
+						<MudSelectItem Value="@lib.Name">@lib.Name (@lib.CollectionType)</MudSelectItem>
+					}
+				</MudSelect>
+
+				@if (_selectedLocations.Length > 0)
+				{
+					<MudSelect @bind-Value="_rootPath" Label="Root Path" Variant="Variant.Outlined"
+						AnchorOrigin="Origin.BottomCenter">
+						@foreach (var loc in _selectedLocations)
+						{
+							<MudSelectItem Value="@loc">@loc</MudSelectItem>
+						}
+					</MudSelect>
+				}
+			}
+			else if (_serverId != Guid.Empty)
+			{
+				<MudAlert Severity="Severity.Warning">No libraries found on this server.</MudAlert>
+			}
+		</MudStack>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancel</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Primary"
+			OnClick="SaveAsync" Disabled="@(!CanSave || _isSaving)">
+			@if (_isSaving)
+			{
+				<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+			}
+			Save
+		</MudButton>
+	</DialogActions>
+</MudDialog>

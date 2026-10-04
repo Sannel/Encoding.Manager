@@ -8,5 +8,7 @@
   href: thetvdbintegration.md
 - name: 005 - Queue Reordering
   href: 005 - Queue Reordering.md
-- name: 006 - MCP Server for Encoding Setup
-  href: 006 - MCP Server for Encoding Setup.md
+- name: 006 - Jellyfin Sync
+  href: 006 - Jellyfin Sync.md
+- name: 007 - MCP Server for Encoding Setup
+  href: 007 - MCP Server for Encoding Setup.md

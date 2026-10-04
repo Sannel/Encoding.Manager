@@ -26,4 +26,9 @@ public interface ITvdbService
 	/// ordered by name.
 	/// </summary>
 	Task<IReadOnlyList<TvdbCachedSeries>> GetCachedSeriesAsync(CancellationToken ct = default);
+
+	/// <summary>
+	/// Searches TVDB for series matching the given name and returns a list of results.
+	/// </summary>
+	Task<IReadOnlyList<TvdbSeriesSearchResult>> SearchSeriesAsync(string name, CancellationToken ct = default);
 }

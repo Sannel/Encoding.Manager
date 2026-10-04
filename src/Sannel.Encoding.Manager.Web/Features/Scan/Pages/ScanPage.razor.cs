@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Dto;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Services;
@@ -18,6 +19,9 @@ public partial class ScanPage : ComponentBase
 
 	[Inject]
 	private ISnackbar Snackbar { get; set; } = default!;
+
+	[Inject]
+	private IJSRuntime JS { get; set; } = default!;
 
 	[SupplyParameterFromQuery(Name = "root")]
 	private string? Root { get; set; }
@@ -158,4 +162,6 @@ public partial class ScanPage : ComponentBase
 	}
 
 	private async Task ForceRescan() => await this.RunScan(forceRescan: true);
+
+	private async Task OnAddedToQueue() => await this.JS.InvokeVoidAsync("history.back");
 }

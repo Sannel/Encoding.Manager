@@ -1,0 +1,72 @@
+<MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h6">@(Profile is null ? "Add Sync Profile" : "Edit Sync Profile")</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudStack Spacing="3">
+			<MudTextField @bind-Value="_name" Label="Name" Variant="Variant.Outlined"
+				Placeholder="e.g. Adam play-state sync" />
+
+			<MudSelect Value="_serverAId" Label="Server A" Variant="Variant.Outlined"
+				AnchorOrigin="Origin.BottomCenter" ValueChanged="@((Guid v) => OnServerAChanged(v))">
+				@foreach (var server in Servers)
+				{
+					<MudSelectItem Value="server.Id">@server.Name</MudSelectItem>
+				}
+			</MudSelect>
+
+			@if (_usersA.Count > 0)
+			{
+				<MudSelect @bind-Value="_userIdA" Label="User A" Variant="Variant.Outlined"
+					AnchorOrigin="Origin.BottomCenter">
+					@foreach (var user in _usersA)
+					{
+						<MudSelectItem Value="user.Id">@user.Name</MudSelectItem>
+					}
+				</MudSelect>
+			}
+			else if (!string.IsNullOrEmpty(_userIdA))
+			{
+				<MudTextField @bind-Value="_userIdA" Label="User A ID" Variant="Variant.Outlined" />
+			}
+
+			<MudSelect Value="_serverBId" Label="Server B" Variant="Variant.Outlined"
+				AnchorOrigin="Origin.BottomCenter" ValueChanged="@((Guid v) => OnServerBChanged(v))">
+				@foreach (var server in Servers)
+				{
+					<MudSelectItem Value="server.Id">@server.Name</MudSelectItem>
+				}
+			</MudSelect>
+
+			@if (_usersB.Count > 0)
+			{
+				<MudSelect @bind-Value="_userIdB" Label="User B" Variant="Variant.Outlined"
+					AnchorOrigin="Origin.BottomCenter">
+					@foreach (var user in _usersB)
+					{
+						<MudSelectItem Value="user.Id">@user.Name</MudSelectItem>
+					}
+				</MudSelect>
+			}
+			else if (!string.IsNullOrEmpty(_userIdB))
+			{
+				<MudTextField @bind-Value="_userIdB" Label="User B ID" Variant="Variant.Outlined" />
+			}
+
+			<MudNumericField @bind-Value="_syncIntervalMinutes" Label="Sync Interval (minutes)"
+				Variant="Variant.Outlined" Min="5" />
+			<MudCheckBox @bind-Value="_isEnabled" Label="Enabled" Color="Color.Primary" />
+		</MudStack>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancel</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Primary"
+			OnClick="SaveAsync" Disabled="@(!CanSave || _isSaving)">
+			@if (_isSaving)
+			{
+				<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+			}
+			Save
+		</MudButton>
+	</DialogActions>
+</MudDialog>

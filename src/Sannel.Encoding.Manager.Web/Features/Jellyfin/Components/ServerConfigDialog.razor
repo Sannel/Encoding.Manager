@@ -1,0 +1,43 @@
+<MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h6">@(Server is null ? "Add Server" : "Edit Server")</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudStack Spacing="3">
+			<MudTextField @bind-Value="_name" Label="Name" Variant="Variant.Outlined"
+				Placeholder="e.g. Living Room Jellyfin" />
+			<MudTextField @bind-Value="_baseUrl" Label="Base URL" Variant="Variant.Outlined"
+				Placeholder="http://jellyfin.local:8096" />
+			<MudTextField @bind-Value="_apiKey" Label="API Key" Variant="Variant.Outlined"
+				InputType="InputType.Password" />
+			<MudStack Row="true" Spacing="2">
+				<MudCheckBox @bind-Value="_isSource" Label="Source" Color="Color.Primary" />
+				<MudCheckBox @bind-Value="_isDestination" Label="Destination" Color="Color.Primary" />
+			</MudStack>
+
+			@if (_isDestination)
+			{
+				<MudDivider Class="my-2" />
+				<MudText Typo="Typo.subtitle2">SFTP Configuration</MudText>
+				<MudTextField @bind-Value="_sftpHost" Label="SFTP Host" Variant="Variant.Outlined"
+					Placeholder="Leave blank to use hostname from URL" />
+				<MudNumericField @bind-Value="_sftpPort" Label="SFTP Port" Variant="Variant.Outlined"
+					Min="1" Max="65535" />
+				<MudTextField @bind-Value="_sftpUsername" Label="SFTP Username" Variant="Variant.Outlined" />
+				<MudTextField @bind-Value="_sftpPassword" Label="SFTP Password" Variant="Variant.Outlined"
+					InputType="InputType.Password" />
+			}
+		</MudStack>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancel</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Primary"
+			OnClick="SaveAsync" Disabled="@(!CanSave || _isSaving)">
+			@if (_isSaving)
+			{
+				<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+			}
+			Save
+		</MudButton>
+	</DialogActions>
+</MudDialog>

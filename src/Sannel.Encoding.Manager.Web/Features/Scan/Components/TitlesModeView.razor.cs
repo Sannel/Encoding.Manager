@@ -57,6 +57,7 @@ public partial class TitlesModeView : NamingComponentBase
 						OutputName = nr.Name,
 						SeasonNumber = nr.Season,
 						EpisodeNumber = nr.Episode?.EpisodeNumber,
+						AngleCount = title.AngleCount,
 					};
 				})
 				.ToList();
