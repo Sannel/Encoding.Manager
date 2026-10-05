@@ -94,7 +94,8 @@ public class RunnerJobService : IRunnerJobService
 
 		if (item is null)
 		{
-			return false;
+			// The runner is still working on a job that was deleted from the queue: tell it to stop.
+			return true;
 		}
 
 		return string.Equals(item.Status, "CancelRequested", StringComparison.OrdinalIgnoreCase)

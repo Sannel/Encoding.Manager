@@ -10,3 +10,4 @@
 - "Copy for AI" button in the Filesystem Browser copies an item's root, path and suggested MCP steps.
 - New `Mcp` and `DiscMenu` configuration sections; `AddMcpSupport` migration for SQLite and PostgreSQL.
 - Disc menu fixes from the first real-disc runs: BD-J menus are detected from their graphics overlay (they never raise the HDMV menu event); the JRE's `bin` folders are put on the probe's PATH on Windows so `jvm.dll` loads; Blu-ray and screenshot failures now report the actual reason; DVD screenshots no longer give up when libvlc never reports a menu title; relative `DiscMenu:OutputPath` defaults under `%ProgramData%\SannelEncodingManager` on Windows. Probe version bumped to 2 so cached menu maps are rebuilt.
+- Deleting a queue item while a runner is encoding it now stops the runner (its cancel-requested poll returns true for the deleted job) and its remaining status reports are ignored instead of failing with "Queue item was not found".
