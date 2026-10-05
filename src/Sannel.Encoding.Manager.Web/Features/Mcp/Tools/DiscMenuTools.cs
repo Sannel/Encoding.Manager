@@ -68,26 +68,37 @@ public class DiscMenuTools
 	}
 
 	[McpServerTool(Name = "get_disc_menu_screenshot", ReadOnly = true, Idempotent = true)]
-	[Description("Returns a screenshot of one disc menu (from inspect_disc_menus) as an image. With annotated=true every button is outlined and numbered with its button number, so you can read each button's label and match it to its action.")]
+	[Description("""
+		Returns a screenshot of one disc menu (from inspect_disc_menus) as an image. With annotated=true every button
+		is outlined and numbered with its button number. Pass buttonNumber to get the menu with that button
+		highlighted (outlined in cyan) plus exactly what that button does — use it to read each button's label
+		with certainty when the highlight changes how the label is drawn.
+		""")]
 	public async Task<CallToolResult> GetDiscMenuScreenshotAsync(
 		[Description("Root label from list_roots.")] string root,
 		[Description("Root-relative path of the disc folder.")] string path,
 		[Description("Menu id from the menu map, e.g. \"m0\".")] string menuId,
 		[Description("Draw numbered button outlines on the image.")] bool annotated = true,
+		[Description("Optional button number: return the screenshot taken with this button highlighted.")] int? buttonNumber = null,
 		CancellationToken ct = default)
 	{
-		var screenshot = await McpToolHelpers.GuardAsync(() => this._discMenuService.GetScreenshotAsync(root, McpToolHelpers.NormalizePath(path), menuId, annotated, ct));
+		var screenshot = await McpToolHelpers.GuardAsync(() => this._discMenuService.GetScreenshotAsync(root, McpToolHelpers.NormalizePath(path), menuId, annotated, buttonNumber, ct));
 		if (screenshot is not { } shot)
 		{
-			throw new McpException($"No screenshot is available for menu \"{menuId}\". Check the menu's screenshot.error in the menu map.");
+			throw new McpException(buttonNumber is null
+				? $"No screenshot is available for menu \"{menuId}\". Check the menu's screenshot.error in the menu map."
+				: $"No screenshot is available for button {buttonNumber} of menu \"{menuId}\". Check that button's screenshot.error in the menu map.");
 		}
 
+		var text = buttonNumber is { } number && shot.Menu.Buttons.FirstOrDefault(b => b.Number == number) is { } button
+			? $"Menu {shot.Menu.Id}, button #{button.Number} highlighted (cyan outline): {DescribeAction(button.Action)}"
+			: Describe(shot.Menu);
 		return new CallToolResult
 		{
 			Content =
 			[
 				ImageContentBlock.FromBytes(shot.Png, "image/png"),
-				new TextContentBlock { Text = Describe(shot.Menu) },
+				new TextContentBlock { Text = text },
 			],
 		};
 	}
@@ -104,19 +115,21 @@ public class DiscMenuTools
 		var text = new StringBuilder($"Menu {menu.Id} ({menu.Kind}, {menu.Domain}). Buttons:");
 		foreach (var button in menu.Buttons)
 		{
-			var a = button.Action;
-			var what = a.Type switch
-			{
-				ButtonActionType.OpenMenu => $"opens menu {a.MenuId}",
-				ButtonActionType.PlayTitle => $"plays title {a.HandBrakeTitle?.ToString() ?? "?"}"
-					+ (a.CoversWholeTitle == true ? " (whole title)" : $" chapters {a.StartChapter}-{a.EndChapter?.ToString() ?? "end"}")
-					+ (a.Then is null ? string.Empty : $", then {a.Then}{(a.ThenMenuId is null ? string.Empty : " " + a.ThenMenuId)}"),
-				ButtonActionType.ChangeSetting => $"changes {a.Setting} to {a.Value}",
-				_ => $"unknown ({a.Reason})",
-			};
-			text.Append($"\n#{button.Number}{(button.IsDefault ? " (default)" : string.Empty)}: {what}");
+			var shot = button.Screenshot?.Available == true ? " [per-button screenshot available]" : string.Empty;
+			text.Append($"\n#{button.Number}{(button.IsDefault ? " (default)" : string.Empty)}: {DescribeAction(button.Action)}{shot}");
 		}
 
 		return text.ToString();
 	}
+
+	private static string DescribeAction(ButtonAction a) => a.Type switch
+	{
+		ButtonActionType.OpenMenu => $"opens menu {a.MenuId}",
+		ButtonActionType.PlayTitle => $"plays title {a.HandBrakeTitle?.ToString() ?? "?"}"
+			+ (a.Playlist is { } playlist ? $" (playlist {playlist})" : string.Empty)
+			+ (a.CoversWholeTitle == true ? " (whole title)" : $" chapters {a.StartChapter}-{a.EndChapter?.ToString() ?? "end"}")
+			+ (a.Then is null ? string.Empty : $", then {a.Then}{(a.ThenMenuId is null ? string.Empty : " " + a.ThenMenuId)}"),
+		ButtonActionType.ChangeSetting => $"changes {a.Setting} to {a.Value}",
+		_ => $"unknown ({a.Reason})",
+	};
 }

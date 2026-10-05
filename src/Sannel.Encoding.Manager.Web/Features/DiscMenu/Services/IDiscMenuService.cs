@@ -17,6 +17,9 @@ public interface IDiscMenuService
 	/// <exception cref="ArgumentException">Unknown root or a path outside the root.</exception>
 	Task<DiscMenuJobStatus?> GetStatusAsync(string rootLabel, string relativePath, CancellationToken ct = default);
 
-	/// <summary>The PNG of a menu screenshot and its menu, or null when not available.</summary>
-	Task<(byte[] Png, MenuNode Menu)?> GetScreenshotAsync(string rootLabel, string relativePath, string menuId, bool annotated, CancellationToken ct = default);
+	/// <summary>
+	/// The PNG of a menu screenshot (or, with <paramref name="buttonNumber"/>, of the menu with that button
+	/// highlighted) and its menu, or null when not available.
+	/// </summary>
+	Task<(byte[] Png, MenuNode Menu)?> GetScreenshotAsync(string rootLabel, string relativePath, string menuId, bool annotated, int? buttonNumber = null, CancellationToken ct = default);
 }

@@ -51,6 +51,8 @@ public class DiscMenuProbeRunner : IDiscMenuProbeRunner
 			"--menu-language", this._options.MenuLanguage,
 			"--screenshot-width", this._options.ScreenshotWidth.ToString(CultureInfo.InvariantCulture),
 			"--settle-ms", this._options.SettleMilliseconds.ToString(CultureInfo.InvariantCulture),
+			// Leave the probe time to write its map before the hard timeout kills it.
+			"--max-seconds", Math.Max(30, this._options.ProbeTimeoutSeconds - 20).ToString(CultureInfo.InvariantCulture),
 		};
 		var nativePath = this.NativeLibraryFolder();
 		if (nativePath is not null)

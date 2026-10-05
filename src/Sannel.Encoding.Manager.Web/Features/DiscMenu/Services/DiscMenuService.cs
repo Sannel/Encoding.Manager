@@ -108,7 +108,7 @@ public sealed class DiscMenuService : IDiscMenuService, IDisposable
 	}
 
 	/// <inheritdoc />
-	public async Task<(byte[] Png, MenuNode Menu)?> GetScreenshotAsync(string rootLabel, string relativePath, string menuId, bool annotated, CancellationToken ct = default)
+	public async Task<(byte[] Png, MenuNode Menu)?> GetScreenshotAsync(string rootLabel, string relativePath, string menuId, bool annotated, int? buttonNumber = null, CancellationToken ct = default)
 	{
 		var status = await this.GetStatusAsync(rootLabel, relativePath, ct);
 		if (status is not { State: DiscMenuJobState.Completed, Map: { } map, ScreenshotFolder: { } folder })
@@ -117,7 +117,10 @@ public sealed class DiscMenuService : IDiscMenuService, IDisposable
 		}
 
 		var menu = map.Menus.FirstOrDefault(m => string.Equals(m.Id, menuId, StringComparison.OrdinalIgnoreCase));
-		var file = menu is null ? null : (annotated ? menu.Screenshot.AnnotatedFile : menu.Screenshot.File);
+		var screenshot = buttonNumber is { } number
+			? menu?.Buttons.FirstOrDefault(b => b.Number == number)?.Screenshot
+			: menu?.Screenshot;
+		var file = screenshot is null ? null : (annotated ? screenshot.AnnotatedFile : screenshot.File);
 		if (menu is null || file is null)
 		{
 			return null;

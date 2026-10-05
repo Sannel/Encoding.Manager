@@ -8,6 +8,7 @@ using Sannel.Encoding.Manager.DiscMenu.Probe.Rendering;
 
 // Disc menu probe: crawls one disc's menus in an isolated process and writes a DiscMenuMap as JSON to --json.
 // Exit codes: 0 = map written, 1 = failure, 2 = unsupported disc or native library missing.
+var startedUtc = DateTime.UtcNow;
 ProbeArguments arguments;
 try
 {
@@ -56,7 +57,11 @@ if (arguments.Screenshots && map.Menus.Count > 0)
 	try
 	{
 		Directory.CreateDirectory(arguments.OutputFolder);
-		using var renderer = new MenuScreenshotRenderer(arguments.ScreenshotWidth, TimeSpan.FromMilliseconds(arguments.SettleMilliseconds), Log);
+		using var renderer = new MenuScreenshotRenderer(
+			arguments.ScreenshotWidth,
+			TimeSpan.FromMilliseconds(arguments.SettleMilliseconds),
+			startedUtc.AddSeconds(arguments.MaxSeconds),
+			Log);
 		renderer.Render(arguments.Input, arguments.DiscType, map, arguments.OutputFolder);
 	}
 	catch (Exception ex)

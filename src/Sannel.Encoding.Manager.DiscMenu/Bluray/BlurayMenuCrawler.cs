@@ -341,6 +341,7 @@ public sealed class BlurayMenuCrawler
 				Number = i + 1,
 				IsDefault = i == 0,
 				Rect = rects[i],
+				FocusPath = [.. s.Keys],
 				Neighbours = new ButtonNeighbours
 				{
 					Up = Neighbour(edges, i, NavKey.Up),

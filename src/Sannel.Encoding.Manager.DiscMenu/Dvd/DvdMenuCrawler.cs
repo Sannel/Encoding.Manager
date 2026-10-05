@@ -425,6 +425,11 @@ public sealed class DvdMenuCrawler
 			}
 
 			menu.Node.ReachPath = keys;
+			foreach (var button in menu.Node.Buttons)
+			{
+				button.FocusPath = KeyPathPlanner.Plan(menu.Node.Buttons, menu.DefaultButton, button.Number)?.ToList();
+			}
+
 			if (keys.Count == 0 && menu.Path.Count > 0)
 			{
 				menu.Node.Screenshot.Error = menu.Path.Any(p => p.AfterPlayback)

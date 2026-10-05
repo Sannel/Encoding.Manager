@@ -14,4 +14,10 @@ public class MenuButton
 	public bool IsDefault { get; set; }
 
 	public ButtonAction Action { get; set; } = new() { Type = ButtonActionType.Unknown };
+
+	/// <summary>Arrow keys from the menu's default highlight to this button (null when unreachable by keys).</summary>
+	public List<NavKey>? FocusPath { get; set; }
+
+	/// <summary>Screenshot of the menu with this button highlighted.</summary>
+	public MenuScreenshot? Screenshot { get; set; }
 }

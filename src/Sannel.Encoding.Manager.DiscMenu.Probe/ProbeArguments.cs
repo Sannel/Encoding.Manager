@@ -8,7 +8,7 @@ internal sealed class ProbeArguments
 	public const string Usage =
 		"usage: probe --input <disc folder> --type dvd|bluray --json <map file> --out <screenshot folder> [--no-screenshots] " +
 		"[--max-menus N] [--max-actions N] [--time-budget SECONDS] [--menu-language en] " +
-		"[--screenshot-width PX] [--settle-ms MS] [--native-path DIR]";
+		"[--screenshot-width PX] [--settle-ms MS] [--max-seconds N] [--native-path DIR]";
 
 	public string Input { get; private set; } = string.Empty;
 
@@ -34,6 +34,9 @@ internal sealed class ProbeArguments
 
 	public int SettleMilliseconds { get; private set; } = 1500;
 
+	/// <summary>Total run time the probe allows itself; per-button screenshots stop before this.</summary>
+	public int MaxSeconds { get; private set; } = 280;
+
 	public string? NativePath { get; private set; }
 
 	public static ProbeArguments Parse(string[] args)
@@ -57,6 +60,7 @@ internal sealed class ProbeArguments
 				case "--menu-language": result.MenuLanguage = Next(); break;
 				case "--screenshot-width": result.ScreenshotWidth = NextInt(); break;
 				case "--settle-ms": result.SettleMilliseconds = NextInt(); break;
+				case "--max-seconds": result.MaxSeconds = NextInt(); break;
 				case "--native-path": result.NativePath = Next(); break;
 				default: throw new ArgumentException($"Unknown argument {args[i]}.");
 			}

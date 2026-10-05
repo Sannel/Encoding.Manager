@@ -7,6 +7,7 @@ namespace Sannel.Encoding.Manager.DiscMenu.Probe.Rendering;
 internal static class ButtonAnnotator
 {
 	private static readonly SKColor _outline = new(255, 214, 0);
+	private static readonly SKColor _focus = new(0, 229, 255);
 	private static readonly SKColor _badge = new(20, 20, 20, 230);
 
 	/// <summary>
@@ -14,7 +15,7 @@ internal static class ButtonAnnotator
 	/// and returns the saved size.
 	/// </summary>
 	public static (int Width, int Height) Save(
-		byte[] bgra, int frameWidth, int frameHeight, MenuNode menu, int width, string rawPath, string annotatedPath)
+		byte[] bgra, int frameWidth, int frameHeight, MenuNode menu, int width, string rawPath, string annotatedPath, int? highlightedButton = null)
 	{
 		var aspect = menu.DisplayAspectRatio > 0 ? menu.DisplayAspectRatio : (double)frameWidth / frameHeight;
 		var height = (int)Math.Round(width / aspect);
@@ -38,7 +39,16 @@ internal static class ButtonAnnotator
 			foreach (var button in menu.Buttons)
 			{
 				var rect = new SKRect(button.Rect.X * sx, button.Rect.Y * sy, (button.Rect.X + button.Rect.W) * sx, (button.Rect.Y + button.Rect.H) * sy);
-				canvas.DrawRect(rect, stroke);
+				if (button.Number == highlightedButton)
+				{
+					// The button this screenshot is about: a thick cyan outline so it stands out from the others.
+					using var focus = new SKPaint { Color = _focus, Style = SKPaintStyle.Stroke, StrokeWidth = 6, IsAntialias = true };
+					canvas.DrawRect(rect, focus);
+				}
+				else
+				{
+					canvas.DrawRect(rect, stroke);
+				}
 
 				var label = button.Number.ToString(System.Globalization.CultureInfo.InvariantCulture);
 				var badge = new SKRect(rect.Left, rect.Top - 30, rect.Left + 10 + (label.Length * DigitAdvance), rect.Top);

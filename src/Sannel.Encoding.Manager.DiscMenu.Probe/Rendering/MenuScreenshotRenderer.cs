@@ -17,6 +17,9 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 	private const double MinimumContentFraction = 0.05;
 
 	private readonly int _screenshotWidth;
+
+	/// <summary>Per-button screenshots stop here so the probe finishes (and writes its map) before it is killed.</summary>
+	private readonly DateTime _deadline;
 	private readonly TimeSpan _settle;
 	private readonly Action<string> _log;
 	private readonly LibVLC _libVlc;
@@ -32,8 +35,9 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 	private byte[] _latest = [];
 	private long _frames;
 
-	public MenuScreenshotRenderer(int screenshotWidth, TimeSpan settle, Action<string> log)
+	public MenuScreenshotRenderer(int screenshotWidth, TimeSpan settle, DateTime deadlineUtc, Action<string> log)
 	{
+		this._deadline = deadlineUtc;
 		this._screenshotWidth = screenshotWidth;
 		this._settle = settle;
 		this._log = log;
@@ -72,70 +76,178 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 
 	private void RenderMenu(string mrl, string discType, MenuNode menu, string outputFolder)
 	{
+		var player = this.OpenAtMenu(mrl, discType, menu, out var failure);
+		if (player is null)
+		{
+			menu.Screenshot.Error = failure;
+			return;
+		}
+
+		try
+		{
+			menu.Screenshot = this.Capture(menu, null, outputFolder, menu.Id);
+			if (menu.Screenshot.Available)
+			{
+				this._log($"menu {menu.Id}: screenshot saved");
+			}
+
+			if (discType == "dvd")
+			{
+				// DVD: walk the highlight from button to button in this one session using the neighbour links.
+				var current = menu.Buttons.FirstOrDefault(b => b.IsDefault)?.Number ?? menu.Buttons.FirstOrDefault()?.Number ?? 0;
+				foreach (var button in menu.Buttons)
+				{
+					if (this.PastDeadline(button))
+					{
+						continue;
+					}
+
+					var keys = KeyPathPlanner.Plan(menu.Buttons, current, button.Number);
+					if (keys is null)
+					{
+						button.Screenshot = new MenuScreenshot { Error = "Not reachable with arrow keys from the previous button." };
+						continue;
+					}
+
+					this.Press(player, keys);
+					current = button.Number;
+					button.Screenshot = this.Capture(menu, button.Number, outputFolder, $"{menu.Id}-b{button.Number}");
+				}
+			}
+		}
+		finally
+		{
+			Close(player);
+		}
+
+		if (discType == "dvd")
+		{
+			return;
+		}
+
+		// Blu-ray: focus states are only known as key paths from the menu's start, so each gets a fresh session.
+		foreach (var button in menu.Buttons)
+		{
+			if (this.PastDeadline(button))
+			{
+				continue;
+			}
+
+			if (button.FocusPath is null)
+			{
+				button.Screenshot = new MenuScreenshot { Error = "No key path to this button." };
+				continue;
+			}
+
+			var session = this.OpenAtMenu(mrl, discType, menu, out var sessionFailure);
+			if (session is null)
+			{
+				button.Screenshot = new MenuScreenshot { Error = sessionFailure };
+				continue;
+			}
+
+			try
+			{
+				this.Press(session, button.FocusPath);
+				button.Screenshot = this.Capture(menu, button.Number, outputFolder, $"{menu.Id}-b{button.Number}");
+			}
+			finally
+			{
+				Close(session);
+			}
+		}
+	}
+
+	/// <summary>Starts playback, waits for the first menu and replays the menu's key path. Null on failure.</summary>
+	private MediaPlayer? OpenAtMenu(string mrl, string discType, MenuNode menu, out string? failure)
+	{
 		var width = menu.FrameWidth > 0 ? menu.FrameWidth : 720;
 		var height = menu.FrameHeight > 0 ? menu.FrameHeight : 480;
 		this.AllocateBuffer(width * height * 4);
 
-		using var player = new MediaPlayer(this._libVlc);
+		var player = new MediaPlayer(this._libVlc);
 		player.SetVideoFormat("RV32", (uint)width, (uint)height, (uint)(width * 4));
 		player.SetVideoCallbacks(this._lock, this._unlock, this._display);
-		using var media = new Media(this._libVlc, mrl, FromType.FromLocation);
-		Interlocked.Exchange(ref this._frames, 0);
-		player.Play(media);
-
-		try
+		using (var media = new Media(this._libVlc, mrl, FromType.FromLocation))
 		{
-			if (this.WaitForFirstMenu(player, discType) is { } failure)
-			{
-				menu.Screenshot.Error = failure;
-				return;
-			}
+			Interlocked.Exchange(ref this._frames, 0);
+			player.Play(media);
+		}
 
-			if (discType != "dvd")
-			{
-				// Let a Blu-ray menu's intro finish before pressing keys or capturing: BD-J menus show the background
-				// first and slide the menu bar in a few seconds later.
-				Thread.Sleep(TimeSpan.FromSeconds(8));
-			}
+		failure = this.WaitForFirstMenu(player, discType);
+		if (failure is not null)
+		{
+			Close(player);
+			return null;
+		}
 
-			foreach (var key in menu.ReachPath)
-			{
-				player.Navigate((uint)ToNavigationMode(key));
-				Thread.Sleep(this._settle);
-			}
+		if (discType != "dvd")
+		{
+			// Let a Blu-ray menu's intro finish before pressing keys or capturing: BD-J menus show the background
+			// first and slide the menu bar in a few seconds later.
+			Thread.Sleep(TimeSpan.FromSeconds(8));
+		}
 
+		this.Press(player, menu.ReachPath);
+		return player;
+	}
+
+	private void Press(MediaPlayer player, IEnumerable<NavKey> keys)
+	{
+		foreach (var key in keys)
+		{
+			player.Navigate((uint)ToNavigationMode(key));
 			Thread.Sleep(this._settle);
-			byte[] frame;
-			lock (this._gate)
-			{
-				frame = this._latest.ToArray();
-			}
-
-			if (Interlocked.Read(ref this._frames) == 0 || frame.Length == 0)
-			{
-				menu.Screenshot.Error = "No video frame was rendered.";
-				return;
-			}
-
-			var raw = $"{menu.Id}.png";
-			var annotated = $"{menu.Id}-annotated.png";
-			var (savedWidth, savedHeight) = ButtonAnnotator.Save(
-				frame, width, height, menu, this._screenshotWidth,
-				Path.Combine(outputFolder, raw), Path.Combine(outputFolder, annotated));
-			menu.Screenshot = new MenuScreenshot
-			{
-				Available = true,
-				Width = savedWidth,
-				Height = savedHeight,
-				File = raw,
-				AnnotatedFile = annotated,
-			};
-			this._log($"menu {menu.Id}: screenshot saved");
 		}
-		finally
+	}
+
+	/// <summary>Captures the current frame as {name}.png and {name}-annotated.png.</summary>
+	private MenuScreenshot Capture(MenuNode menu, int? highlightedButton, string outputFolder, string name)
+	{
+		Thread.Sleep(this._settle);
+		byte[] frame;
+		lock (this._gate)
 		{
-			player.Stop();
+			frame = this._latest.ToArray();
 		}
+
+		if (Interlocked.Read(ref this._frames) == 0 || frame.Length == 0)
+		{
+			return new MenuScreenshot { Error = "No video frame was rendered." };
+		}
+
+		var width = menu.FrameWidth > 0 ? menu.FrameWidth : 720;
+		var height = menu.FrameHeight > 0 ? menu.FrameHeight : 480;
+		var raw = $"{name}.png";
+		var annotated = $"{name}-annotated.png";
+		var (savedWidth, savedHeight) = ButtonAnnotator.Save(
+			frame, width, height, menu, this._screenshotWidth,
+			Path.Combine(outputFolder, raw), Path.Combine(outputFolder, annotated), highlightedButton);
+		return new MenuScreenshot
+		{
+			Available = true,
+			Width = savedWidth,
+			Height = savedHeight,
+			File = raw,
+			AnnotatedFile = annotated,
+		};
+	}
+
+	private bool PastDeadline(MenuButton button)
+	{
+		if (DateTime.UtcNow < this._deadline)
+		{
+			return false;
+		}
+
+		button.Screenshot = new MenuScreenshot { Error = "Skipped: the probe's time limit was reached." };
+		return true;
+	}
+
+	private static void Close(MediaPlayer player)
+	{
+		player.Stop();
+		player.Dispose();
 	}
 
 	/// <summary>
