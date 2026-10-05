@@ -13,6 +13,9 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 {
 	private static readonly TimeSpan _firstMenuTimeout = TimeSpan.FromSeconds(90);
 
+	/// <summary>A Blu-ray frame counts as "showing something" once this share of it is not black.</summary>
+	private const double MinimumContentFraction = 0.05;
+
 	private readonly int _screenshotWidth;
 	private readonly TimeSpan _settle;
 	private readonly Action<string> _log;
@@ -88,6 +91,12 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 				return;
 			}
 
+			if (discType != "dvd")
+			{
+				// Let a Blu-ray menu's intro animation finish before pressing keys or capturing.
+				Thread.Sleep(this._settle * 2);
+			}
+
 			foreach (var key in menu.ReachPath)
 			{
 				player.Navigate((uint)ToNavigationMode(key));
@@ -142,7 +151,8 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 			var hasFrames = Interlocked.Read(ref this._frames) > 0;
 			var title = player.Title;
 			titlesSeen.Add(title);
-			var atMenu = discType != "dvd" || title == 0;
+			// Blu-ray (especially BD-J) shows black frames while the Java menu starts; wait for real picture content.
+			var atMenu = discType == "dvd" ? title == 0 : this.ContentFraction() >= MinimumContentFraction;
 			if (hasFrames && atMenu)
 			{
 				Thread.Sleep(this._settle);
@@ -232,6 +242,32 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 			this._buffer = Marshal.AllocHGlobal(bytes);
 			this._bufferBytes = bytes;
 			this._latest = new byte[bytes];
+		}
+	}
+
+	/// <summary>Share of sampled pixels that are not near-black in the latest frame (0 when there is no frame).</summary>
+	private double ContentFraction()
+	{
+		lock (this._gate)
+		{
+			if (this._latest.Length < 4 || Interlocked.Read(ref this._frames) == 0)
+			{
+				return 0;
+			}
+
+			var sampled = 0;
+			var lit = 0;
+			for (var i = 0; i + 3 < this._latest.Length; i += 4 * 97)
+			{
+				sampled++;
+				// BGRA: a pixel counts as content when any channel is clearly above black.
+				if (this._latest[i] > 24 || this._latest[i + 1] > 24 || this._latest[i + 2] > 24)
+				{
+					lit++;
+				}
+			}
+
+			return sampled == 0 ? 0 : (double)lit / sampled;
 		}
 	}
 

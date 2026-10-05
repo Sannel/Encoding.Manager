@@ -158,6 +158,7 @@ public sealed class BlurayMenuCrawler
 			usedTopMenu = true;
 		}
 
+		this.SettleIntro(session);
 		this.Settle(session);
 		foreach (var key in keys)
 		{
@@ -239,8 +240,24 @@ public sealed class BlurayMenuCrawler
 		this.Settle(session);
 	}
 
+	/// <summary>
+	/// Reads until the graphics stop changing. BD-J menus react on a Java thread and animate their highlight, so they
+	/// get a longer quiet period than HDMV.
+	/// </summary>
 	private void Settle(BluraySession session) =>
-		session.Pump(null, 24, this._bdj ? TimeSpan.FromMilliseconds(600) : TimeSpan.Zero, 4_000, this.Remaining(TimeSpan.FromSeconds(10)));
+		session.Pump(null, 24, this._bdj ? TimeSpan.FromMilliseconds(1500) : TimeSpan.Zero, 8_000, this.Remaining(TimeSpan.FromSeconds(this._bdj ? 15 : 10)));
+
+	/// <summary>
+	/// After a menu first appears, BD-J discs usually play an intro animation (graphics sliding in, highlight fading
+	/// up). Exploring before it finishes records animation frames as "buttons", so wait for ~2s with no new graphics.
+	/// </summary>
+	private void SettleIntro(BluraySession session)
+	{
+		if (this._bdj)
+		{
+			session.Pump(null, 24, TimeSpan.FromSeconds(2), 40_000, this.Remaining(TimeSpan.FromSeconds(30)));
+		}
+	}
 
 	/// <summary>Reaches a menu, walks its focus states with the arrow keys and records it as a node.</summary>
 	private MenuInfo? DiscoverMenu(List<NavKey> path, MenuInfo? parent)
@@ -355,6 +372,9 @@ public sealed class BlurayMenuCrawler
 		var playlistBefore = session.Playlist;
 		var audioBefore = session.AudioStream;
 		var subtitleBefore = session.SubtitleStream;
+		var flushBefore = session.Overlay.FlushCount;
+		var fingerprintBefore = session.Overlay.Fingerprint();
+		var clock = Stopwatch.StartNew();
 		session.Press(BlurayNative.KeyEnter);
 		session.Pump(
 			() => session.Playlist != playlistBefore && !session.MenuActive,
@@ -362,6 +382,12 @@ public sealed class BlurayMenuCrawler
 			this._bdj ? TimeSpan.FromSeconds(1.5) : TimeSpan.FromMilliseconds(200),
 			8_000,
 			this.Remaining(TimeSpan.FromSeconds(20)));
+
+		// Java menus often answer Enter with a transition animation before anything else changes.
+		if (this._bdj && session.Playlist == playlistBefore)
+		{
+			this.Settle(session);
+		}
 
 		if (session.Playlist is { } playlist && playlist != playlistBefore && !session.MenuActive)
 		{
@@ -388,7 +414,12 @@ public sealed class BlurayMenuCrawler
 			return new ButtonAction { Type = ButtonActionType.ChangeSetting, Setting = "Subtitle", Value = subtitle, Confidence = ActionConfidence.Observed };
 		}
 
-		return Unknown("No playback or menu change was observed.");
+		var redraws = session.Overlay.FlushCount - flushBefore;
+		return Unknown(
+			$"No playback or menu change was observed in {clock.Elapsed.TotalSeconds:0}s after Enter " +
+			$"(playlist {playlistBefore?.ToString() ?? "none"} -> {session.Playlist?.ToString() ?? "none"}, " +
+			$"graphics redrawn {redraws} time(s){(redraws > 0 && session.Overlay.Fingerprint() == fingerprintBefore ? " but ended unchanged" : string.Empty)}, " +
+			$"overlay {(session.Overlay.IsVisible ? "visible" : "hidden")}{(session.Failed ? $", playback failed: {session.FailureReason}" : string.Empty)}).");
 	}
 
 	private ButtonAction FollowPlaylist(BluraySession session, int playlist)
