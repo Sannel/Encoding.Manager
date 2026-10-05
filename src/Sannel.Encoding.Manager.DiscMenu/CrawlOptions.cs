@@ -15,6 +15,12 @@ public class CrawlOptions
 	/// <summary>Preferred menu language (ISO 639-1, e.g. "en").</summary>
 	public string MenuLanguage { get; set; } = "en";
 
+	/// <summary>
+	/// Folder for BD-J graphics planes ({menuId}-s{button}-overlay.png, one per focus state), which the screenshot
+	/// renderer draws over the menu's video because libvlc cannot blend BD-J graphics itself. Null = not saved.
+	/// </summary>
+	public string? OverlayFolder { get; set; }
+
 	/// <summary>Maximum blocks/events read while waiting for one navigation step to settle.</summary>
 	public int MaxStepsPerRun { get; set; } = 200_000;
 }

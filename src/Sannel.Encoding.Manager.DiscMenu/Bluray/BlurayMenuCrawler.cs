@@ -12,12 +12,21 @@ namespace Sannel.Encoding.Manager.DiscMenu.Bluray;
 /// </summary>
 public sealed class BlurayMenuCrawler
 {
-	private const int MaxButtonsPerMenu = 36;
+	private const int MaxButtonsPerMenu = 96;
+
+	/// <summary>
+	/// Fresh sessions one menu's focus walk may open after leaving the menu. Each BD-J restart takes ~20s and leaves
+	/// threads behind in the shared JVM (which eventually wedges libbluray), so the number is kept small.
+	/// </summary>
+	private const int MaxReopensPerMenu = 12;
 	private static readonly NavKey[] _directions = [NavKey.Down, NavKey.Right, NavKey.Up, NavKey.Left];
 
 	private readonly CrawlOptions _options;
 	private readonly Action<string> _log;
 	private readonly List<MenuInfo> _menus = [];
+
+	/// <summary>Submenus found by activating a button, mapped once the current menu's buttons are done.</summary>
+	private readonly Queue<PendingMenu> _pendingMenus = new();
 	private readonly Dictionary<ulong, MenuInfo> _menusByFingerprint = [];
 	private DiscMenuMap _map = new();
 	private Stopwatch _clock = new();
@@ -89,7 +98,10 @@ public sealed class BlurayMenuCrawler
 		for (var i = 0; i < this._menus.Count; i++)
 		{
 			var menu = this._menus[i];
-			for (var b = 0; b < menu.States.Count; b++)
+
+			// Buttons closest to the menu's start first (menu bar, lists, first chapter pages), so that when the
+			// time budget runs out it is the deep, repetitive ones that are left without an action.
+			foreach (var b in Enumerable.Range(0, menu.States.Count).OrderBy(s => menu.States[s].Keys.Count))
 			{
 				if (!this.HasBudget())
 				{
@@ -98,14 +110,57 @@ public sealed class BlurayMenuCrawler
 
 				this._actions++;
 				menu.Node.Buttons[b].Action = this.Activate(menu, menu.States[b]);
+				this.ReportProgress();
+			}
+
+			// Now map the submenus this menu's buttons opened; their own buttons follow in later iterations.
+			while (this._pendingMenus.Count > 0)
+			{
+				if (!this.HasBudget())
+				{
+					return this.Finish();
+				}
+
+				var pending = this._pendingMenus.Dequeue();
+				var action = pending.Parent.Node.Buttons[pending.Button].Action;
+				if (this.DiscoverMenu(pending.Path, pending.Parent, pending.OpenedFrom) is { } target)
+				{
+					action.MenuId = target.Node.Id;
+					action.Reason = null;
+				}
+				else
+				{
+					pending.Parent.Node.Buttons[pending.Button].Action = Unknown("Opens a menu that could not be recorded.");
+				}
+
+				this.ReportProgress();
 			}
 		}
 
 		return this.Finish();
 	}
 
+	/// <summary>
+	/// Called (on the crawl thread) with the map so far after each menu is recorded and each button is followed, so a
+	/// host can save progress — a BD-J crawl can wedge in native code and have to be killed.
+	/// </summary>
+	public Action<DiscMenuMap>? Progress { get; set; }
+
+	private void ReportProgress() => this.Progress?.Invoke(this.Finish());
+
 	private DiscMenuMap Finish()
 	{
+		foreach (var title in this._map.Titles)
+		{
+			title.ReachedFromButtons.Clear();
+		}
+
+		// Buttons the crawl did not get to are marked as such, not left looking like "pressed, nothing happened".
+		foreach (var button in this._map.Menus.SelectMany(m => m.Buttons).Where(b => b.Action.Type == ButtonActionType.Unknown && b.Action.Reason is null))
+		{
+			button.Action.Reason = "Not followed: the crawl's time budget ran out first. Use the button's screenshot to see what it is.";
+		}
+
 		foreach (var menu in this._map.Menus)
 		{
 			foreach (var button in menu.Buttons.Where(b => b.Action.Type == ButtonActionType.PlayTitle))
@@ -120,47 +175,50 @@ public sealed class BlurayMenuCrawler
 	}
 
 	/// <summary>
-	/// Opens a session and gets to the first menu, then replays <paramref name="keys"/>. The first attempt lets first
-	/// play run (pressing Title Menu if it never shows a menu); if that fails — e.g. the first-play title errors out —
-	/// a fresh session presses Title Menu immediately, like VLC's "Title Menu". Whichever works is reused.
+	/// Opens a session and gets to the first menu, then replays <paramref name="keys"/>. The first attempt presses
+	/// Title Menu straight away, like VLC's "Title Menu" — the screenshot renderer does the same, so both skip the
+	/// same logos and trailers and land on the same menu. If that shows no menu, a fresh session lets first play run
+	/// (pressing Title Menu if it never shows a menu). Whichever works is reused.
 	/// </summary>
 	private BluraySession? Reach(List<NavKey> keys, out bool usedTopMenu)
 	{
 		usedTopMenu = false;
 		BluraySession? session = null;
-		string? firstPlayFailure = null;
-		if (this._directTopMenu != true)
+		string? titleMenuFailure = null;
+		if (this._directTopMenu != false)
 		{
-			session = this.TryReach(directTopMenu: false, out usedTopMenu, out firstPlayFailure);
+			session = this.TryReach(directTopMenu: true, out usedTopMenu, out titleMenuFailure);
 			if (session is not null)
 			{
-				this._directTopMenu ??= false;
+				this._directTopMenu ??= true;
 			}
-			else if (this._directTopMenu == false)
+			else if (this._directTopMenu == true)
 			{
-				this._reachFailure = firstPlayFailure;
+				this._reachFailure = titleMenuFailure;
 				return null;
 			}
 		}
 
 		if (session is null)
 		{
-			session = this.TryReach(directTopMenu: true, out _, out var titleMenuFailure);
+			session = this.TryReach(directTopMenu: false, out usedTopMenu, out var firstPlayFailure);
 			if (session is null)
 			{
-				this._reachFailure = firstPlayFailure is null
-					? titleMenuFailure
-					: $"first play: {firstPlayFailure} Title menu: {titleMenuFailure}";
+				this._reachFailure = titleMenuFailure is null
+					? firstPlayFailure
+					: $"Title menu: {titleMenuFailure} First play: {firstPlayFailure}";
 				return null;
 			}
 
-			this._directTopMenu = true;
-			usedTopMenu = true;
+			this._directTopMenu = false;
 		}
 
 		this.SettleIntro(session);
-		this.Settle(session);
-		foreach (var key in keys)
+		this._log($"reach settle: {this.Settle(session)}, playlist {session.Playlist}, overlay {session.Overlay.IsVisible}, flushes {session.Overlay.FlushCount}");
+
+		// Paths recorded from a Title Menu start begin with that key; it was just pressed.
+		var replay = usedTopMenu && keys.Count > 0 && keys[0] == NavKey.TitleMenu ? keys.Skip(1) : keys;
+		foreach (var key in replay)
 		{
 			this.Press(session, key);
 		}
@@ -242,10 +300,11 @@ public sealed class BlurayMenuCrawler
 
 	/// <summary>
 	/// Reads until the graphics stop changing. BD-J menus react on a Java thread and animate their highlight, so they
-	/// get a longer quiet period than HDMV.
+	/// get a longer quiet period than HDMV; HDMV still needs a short one, as menu video reads arrive faster than the
+	/// highlight is drawn.
 	/// </summary>
-	private void Settle(BluraySession session) =>
-		session.Pump(null, 24, this._bdj ? TimeSpan.FromMilliseconds(1500) : TimeSpan.Zero, 8_000, this.Remaining(TimeSpan.FromSeconds(this._bdj ? 15 : 10)));
+	private string Settle(BluraySession session) =>
+		session.Pump(null, 4, this._bdj ? TimeSpan.FromMilliseconds(1500) : TimeSpan.FromMilliseconds(400), 8_000, this.Remaining(TimeSpan.FromSeconds(this._bdj ? 15 : 10)));
 
 	/// <summary>
 	/// After a menu first appears, BD-J discs usually play an intro animation (graphics sliding in, highlight fading
@@ -255,20 +314,27 @@ public sealed class BlurayMenuCrawler
 	{
 		if (this._bdj)
 		{
-			session.Pump(null, 24, TimeSpan.FromSeconds(2), 40_000, this.Remaining(TimeSpan.FromSeconds(30)));
+			session.Pump(null, 4, TimeSpan.FromSeconds(2), 40_000, this.Remaining(TimeSpan.FromSeconds(30)));
 		}
 	}
 
 	/// <summary>Reaches a menu, walks its focus states with the arrow keys and records it as a node.</summary>
-	private MenuInfo? DiscoverMenu(List<NavKey> path, MenuInfo? parent)
+	private MenuInfo? DiscoverMenu(List<NavKey> path, MenuInfo? parent, uint[]? openedFrom = null)
 	{
 		using var session = this.Reach(path, out var usedTopMenu);
-		if (session is null)
-		{
-			return null;
-		}
+		return session is null
+			? null
+			: this.DiscoverIn(session, usedTopMenu && path.Count == 0 ? [NavKey.TitleMenu] : path, parent, openedFrom);
+	}
 
-		var reachPath = usedTopMenu && path.Count == 0 ? [NavKey.TitleMenu] : path;
+	/// <summary>
+	/// Records the menu <paramref name="session"/> is showing (reached with <paramref name="reachPath"/>). When
+	/// <paramref name="openedFrom"/> (the graphics plane before Enter) is given, the menu may be a panel that opened
+	/// on the same screen, and the focus walk stays inside the area that changed when it opened (a full-screen
+	/// page change makes that area the whole screen, so nothing is excluded).
+	/// </summary>
+	private MenuInfo? DiscoverIn(BluraySession session, List<NavKey> reachPath, MenuInfo? parent, uint[]? openedFrom = null)
+	{
 		var fingerprint = session.Overlay.Fingerprint();
 		if (this._menusByFingerprint.TryGetValue(fingerprint, out var known))
 		{
@@ -284,36 +350,145 @@ public sealed class BlurayMenuCrawler
 		// Walk focus states in this one session: from the current state try each arrow key, moving back to
 		// known states through edges already discovered.
 		var states = new List<FocusState> { new(fingerprint, [], session.Overlay.Snapshot()) };
+		var menuId = $"m{this._menus.Count}";
+		this.SaveOverlay(session, menuId, 1);
+		var sampledWidth = session.Overlay.SampledSize.Width;
+		var panel = openedFrom is null ? null : DiffBox(openedFrom, states[0].Plane, sampledWidth)?.Inflate(2);
 		var edges = new Dictionary<(int From, NavKey Key), int>();
 		var current = 0;
 		var pending = new Queue<(int State, NavKey Key)>(_directions.Select(d => (0, d)));
-		while (pending.Count > 0 && states.Count < MaxButtonsPerMenu && this._clock.Elapsed < this._options.TimeBudget)
+
+		// The walk may leave this menu (a key that closes a panel, an auto-action button); it then continues in a
+		// fresh session reached the same way. The old session is closed first — two BD-J sessions in one JVM
+		// deadlock. (Disposing is idempotent, so the caller's own dispose of the first session is harmless.)
+		var active = session;
+		var reopens = 0;
+		var deferred = 0;
+		bool Reopen()
+		{
+			active.Dispose();
+			active = session;
+			if (this.Reach(reachPath, out _) is not { } fresh)
+			{
+				return false;
+			}
+
+			active = fresh;
+			current = 0;
+			return fresh.Overlay.Fingerprint() == states[0].Fingerprint;
+		}
+
+		// Moves to a known state and checks it got there: some menus remember their last focus (a BD-J list reopens
+		// on the item focused before), so a recorded route can land elsewhere. Re-routes from where it landed.
+		// Every key press is checked: landing on an unrecorded state is a discovery (recorded, its directions queued),
+		// landing on a known one updates the edge to what the menu really did.
+		bool RouteTo(int target)
+		{
+			for (var attempt = 0; attempt < 4; attempt++)
+			{
+				if (current == target)
+				{
+					return true;
+				}
+
+				if (Route(edges, current, target) is not { } route)
+				{
+					return false;
+				}
+
+				foreach (var step in route)
+				{
+					var expected = edges.GetValueOrDefault((current, step), -1);
+					this.Press(active, step);
+					var landed = active.Overlay.Fingerprint();
+					var at = states.FindIndex(s => s.Fingerprint == landed);
+					if (at < 0)
+					{
+						var plane = active.Overlay.Snapshot();
+						if (!active.Overlay.IsVisible || (panel is { } area && LeftPanel(states[0].Plane, plane, area, sampledWidth)) || states.Count >= MaxButtonsPerMenu)
+						{
+							return false;
+						}
+
+						states.Add(new FocusState(landed, [.. states[current].Keys, step], plane));
+						at = states.Count - 1;
+						this.SaveOverlay(active, menuId, states.Count);
+						foreach (var d in _directions)
+						{
+							pending.Enqueue((at, d));
+						}
+					}
+
+					edges[(current, step)] = at;
+					current = at;
+					if (at != expected)
+					{
+						// Off the planned route: plan again from here.
+						break;
+					}
+				}
+			}
+
+			return current == target;
+		}
+
+		// One menu's walk may use at most half of the remaining budget, leaving time to activate its buttons; a
+		// submenu (often settings panels) gets at most two minutes.
+		var walkTime = (this._options.TimeBudget - this._clock.Elapsed) / 2;
+		var walkEnds = this._clock.Elapsed + (parent is null ? walkTime : TimeSpan.FromTicks(Math.Min(walkTime.Ticks, TimeSpan.FromMinutes(2).Ticks)));
+		while (pending.Count > 0 && states.Count < MaxButtonsPerMenu && this._clock.Elapsed < walkEnds)
 		{
 			var (from, key) = pending.Dequeue();
-			var route = Route(edges, current, from);
-			if (route is null)
+			if (Route(edges, current, from) is null && deferred < pending.Count)
+			{
+				// Not reachable from here with the edges known so far: try the other pending moves first, and start
+				// over from the menu's first state only when none of them can be reached either.
+				pending.Enqueue((from, key));
+				deferred++;
+				continue;
+			}
+
+			deferred = 0;
+			if (!RouteTo(from) && (++reopens > MaxReopensPerMenu || !Reopen() || !RouteTo(from)))
 			{
 				continue;
 			}
 
-			foreach (var step in route)
-			{
-				this.Press(session, step);
-			}
-
-			this.Press(session, key);
-			var now = session.Overlay.Fingerprint();
-			if (!session.MenuActive && !session.Overlay.IsVisible)
-			{
-				// The key left the menu (e.g. an auto-action button); stop walking this session.
-				break;
-			}
-
+			this.Press(active, key);
+			var now = active.Overlay.Fingerprint();
 			var index = states.FindIndex(s => s.Fingerprint == now);
+			var plane = active.Overlay.Snapshot();
+			var left = !active.MenuActive && !active.Overlay.IsVisible;
+			if (!left && index < 0 && panel is { } area)
+			{
+				left = LeftPanel(states[0].Plane, plane, area, sampledWidth);
+			}
+
+			if (left)
+			{
+				// The key left this menu (e.g. a panel closed and focus went back to the menu bar): what it shows
+				// belongs to another menu. Do not record it; step back, or start again from this menu.
+				this._log($"walk: {key} from state {from + 1} left the menu");
+				// Even when the graphics went away: a BD-J menu bar hidden by one key usually comes back with the opposite.
+				this.Press(active, Opposite(key));
+
+				if (active.Overlay.Fingerprint() == states[from].Fingerprint)
+				{
+					current = from;
+				}
+				else if (++reopens > MaxReopensPerMenu || !Reopen())
+				{
+					break;
+				}
+
+				continue;
+			}
+
 			if (index < 0)
 			{
-				states.Add(new FocusState(now, [.. states[from].Keys, key], session.Overlay.Snapshot()));
+				states.Add(new FocusState(now, [.. states[from].Keys, key], plane));
 				index = states.Count - 1;
+				this.SaveOverlay(active, menuId, states.Count);
 				foreach (var d in _directions)
 				{
 					pending.Enqueue((index, d));
@@ -324,11 +499,22 @@ public sealed class BlurayMenuCrawler
 			current = index;
 		}
 
-		var (sampledWidth, sampledHeight) = session.Overlay.SampledSize;
+		if (active != session)
+		{
+			active.Dispose();
+		}
+
+		if (pending.Count > 0)
+		{
+			this.MarkIncomplete($"Menu {menuId}: not every button was explored (time or button limit); its screenshots may show more buttons than were mapped.");
+		}
+
+		var sampledHeight = session.Overlay.SampledSize.Height;
+		DumpStates(menuId, states, sampledWidth, sampledHeight);
 		var rects = InferRects(states, sampledWidth, sampledHeight);
 		var node = new MenuNode
 		{
-			Id = $"m{this._menus.Count}",
+			Id = menuId,
 			Kind = session.PopupAvailable && !session.MenuActive ? MenuKind.PopUp : (this._menus.Count == 0 ? MenuKind.Title : MenuKind.Other),
 			Domain = this._bdj ? "BD-J" : "HDMV",
 			ReachPath = reachPath,
@@ -352,45 +538,92 @@ public sealed class BlurayMenuCrawler
 			}).ToList(),
 		};
 
-		var menu = new MenuInfo(node, reachPath, states);
+		var menu = new MenuInfo(node, reachPath, states, edges);
 		this._menus.Add(menu);
 		this._menusByFingerprint[fingerprint] = menu;
 		this._map.Menus.Add(node);
 		this._log($"menu {node.Id}: {node.Domain}, {node.Buttons.Count} focus state(s)");
+		this.ReportProgress();
 		return menu;
 	}
 
 	private ButtonAction Activate(MenuInfo menu, FocusState state)
 	{
-		var keys = new List<NavKey>(menu.ReachPath);
-		keys.AddRange(state.Keys);
-		using var session = this.Reach(keys, out _);
+		using var session = this.Reach(menu.ReachPath, out _);
 		if (session is null)
 		{
 			return Unknown("The menu could not be reached again.");
 		}
+
+		// Move the focus by fingerprint rather than replaying the walk's key path: menus that remember their last
+		// focus make that path land elsewhere in a fresh session. The keys that verifiably worked become the
+		// button's focus path.
+		var pressed = new List<NavKey>();
+		var stateIndex = menu.States.IndexOf(state);
+		if (!this.NavigateTo(session, menu, stateIndex, pressed))
+		{
+			return Unknown("The button could not be focused again from the start of its menu.");
+		}
+
+		menu.Node.Buttons[stateIndex].FocusPath = pressed;
+		var keys = new List<NavKey>(menu.ReachPath);
+		keys.AddRange(pressed);
 
 		var playlistBefore = session.Playlist;
 		var audioBefore = session.AudioStream;
 		var subtitleBefore = session.SubtitleStream;
 		var flushBefore = session.Overlay.FlushCount;
 		var fingerprintBefore = session.Overlay.Fingerprint();
+		var planeBefore = session.Overlay.Snapshot();
 		var clock = Stopwatch.StartNew();
 		session.Press(BlurayNative.KeyEnter);
-		session.Pump(
-			() => session.Playlist != playlistBefore && !session.MenuActive,
-			48,
-			this._bdj ? TimeSpan.FromSeconds(1.5) : TimeSpan.FromMilliseconds(200),
-			8_000,
-			this.Remaining(TimeSpan.FromSeconds(20)));
 
-		// Java menus often answer Enter with a transition animation before anything else changes.
-		if (this._bdj && session.Playlist == playlistBefore)
+		// Done when playback starts, or when the graphics changed and then stayed still (a submenu or a setting).
+		// BD-J menus never clear BD_EVENT_MENU, so for them any playlist change counts as "playback started".
+		var quiet = this._bdj ? TimeSpan.FromSeconds(2) : TimeSpan.FromMilliseconds(500);
+		var lastFlush = flushBefore;
+		var lastChange = clock.Elapsed;
+		bool Started() => session.Playlist != playlistBefore && (this._bdj || !session.MenuActive);
+		var pumped = session.Pump(
+			() =>
+			{
+				if (Started())
+				{
+					return true;
+				}
+
+				var flush = session.Overlay.FlushCount;
+				if (flush != lastFlush)
+				{
+					lastFlush = flush;
+					lastChange = clock.Elapsed;
+					return false;
+				}
+
+				// A hidden overlay means the menu is going away: keep waiting for the playlist.
+				return flush != flushBefore && session.Overlay.IsVisible && clock.Elapsed - lastChange >= quiet;
+			},
+			0,
+			TimeSpan.Zero,
+			40_000,
+			this.Remaining(TimeSpan.FromSeconds(this._bdj ? 15 : 10)));
+		this._log($"{menu.Node.Id} [{string.Join(",", state.Keys)}] Enter: {pumped}, playlist {playlistBefore} -> {session.Playlist}");
+
+		if (this._bdj && Started() && !this.IsFeaturePlaylist(session.Playlist))
 		{
-			this.Settle(session);
+			// BD-J discs often play a short transition / black playlist before the real one; wait for a playlist
+			// that is long enough to be a title, or for the menu to come back.
+			var transition = session.Playlist;
+			var waited = session.Pump(
+				() => this.IsFeaturePlaylist(session.Playlist) || (session.Playlist != transition && session.Overlay.IsVisible),
+				0,
+				TimeSpan.Zero,
+				40_000,
+				this.Remaining(TimeSpan.FromSeconds(15)));
+			this._log($"{menu.Node.Id} transition from playlist {transition}: {waited}, now {session.Playlist}");
 		}
 
-		if (session.Playlist is { } playlist && playlist != playlistBefore && !session.MenuActive)
+		if (session.Playlist is { } playlist && Started() && (!this._bdj || this.IsFeaturePlaylist(playlist)))
 		{
 			return this.FollowPlaylist(session, playlist);
 		}
@@ -398,11 +631,15 @@ public sealed class BlurayMenuCrawler
 		var fingerprint = session.Overlay.Fingerprint();
 		if (session.Overlay.IsVisible && !menu.States.Any(s => s.Fingerprint == fingerprint))
 		{
-			var target = this._menusByFingerprint.GetValueOrDefault(fingerprint)
-				?? this.DiscoverMenu([.. keys, NavKey.Enter], menu);
-			return target is null
-				? Unknown("Opens a menu that could not be recorded.")
-				: new ButtonAction { Type = ButtonActionType.OpenMenu, MenuId = target.Node.Id, Confidence = ActionConfidence.Observed };
+			if (this._menusByFingerprint.GetValueOrDefault(fingerprint) is { } known)
+			{
+				return new ButtonAction { Type = ButtonActionType.OpenMenu, MenuId = known.Node.Id, Confidence = ActionConfidence.Observed };
+			}
+
+			// Mapped after this menu's own buttons (see Crawl), so a submenu's walk cannot use up the time this
+			// menu's buttons need.
+			this._pendingMenus.Enqueue(new PendingMenu(menu, stateIndex, [.. keys, NavKey.Enter], planeBefore));
+			return new ButtonAction { Type = ButtonActionType.OpenMenu, Confidence = ActionConfidence.Observed, Reason = "Opens a menu that was not mapped (the crawl's time budget ran out first)." };
 		}
 
 		if (session.AudioStream != audioBefore && session.AudioStream is { } audio)
@@ -423,10 +660,53 @@ public sealed class BlurayMenuCrawler
 			$"overlay {(session.Overlay.IsVisible ? "visible" : "hidden")}{(session.Failed ? $", playback failed: {session.FailureReason}" : string.Empty)}).");
 	}
 
+	/// <summary>
+	/// Moves the focus of a session showing <paramref name="menu"/> to focus state <paramref name="target"/> using
+	/// the walk's edges, checking each landing by fingerprint and re-routing from where it actually landed.
+	/// </summary>
+	private bool NavigateTo(BluraySession session, MenuInfo menu, int target, List<NavKey> pressed)
+	{
+		int Where()
+		{
+			var fingerprint = session.Overlay.Fingerprint();
+			return menu.States.FindIndex(s => s.Fingerprint == fingerprint);
+		}
+
+		var current = Where();
+		for (var attempt = 0; attempt < 4 && current >= 0; attempt++)
+		{
+			if (current == target)
+			{
+				return true;
+			}
+
+			if (Route(menu.Edges, current, target) is not { } route)
+			{
+				return false;
+			}
+
+			foreach (var step in route)
+			{
+				this.Press(session, step);
+				pressed.Add(step);
+			}
+
+			current = Where();
+		}
+
+		return current == target;
+	}
+
+	/// <summary>True for a playlist libbluray lists as a title (at least a minute long, duplicates removed).</summary>
+	private bool IsFeaturePlaylist(int? playlist) =>
+		playlist is { } p && this._map.Titles.Any(t => t.Playlist == p);
+
 	private ButtonAction FollowPlaylist(BluraySession session, int playlist)
 	{
-		// Let the first chapter event arrive.
+		// Let the first chapter event arrive, then keep reading briefly: a button that plays from a chapter mark
+		// starts the playlist (chapter 1 is reported) and then seeks to the mark, reporting the real chapter.
 		session.Pump(() => session.Chapter is not null, 0, TimeSpan.Zero, 400, this.Remaining(TimeSpan.FromSeconds(5)));
+		session.Pump(null, 8, TimeSpan.FromMilliseconds(500), 2_000, this.Remaining(TimeSpan.FromSeconds(3)));
 		var start = session.Chapter ?? 1;
 		var info = this._map.Titles.FirstOrDefault(t => t.Playlist == playlist);
 		var chapterCount = info?.ChapterCount ?? session.ReadPlaylist(playlist)?.ChapterCount ?? 0;
@@ -438,7 +718,7 @@ public sealed class BlurayMenuCrawler
 			0,
 			TimeSpan.Zero,
 			20_000,
-			this.Remaining(TimeSpan.FromSeconds(30)));
+			this.Remaining(TimeSpan.FromSeconds(this._bdj ? 10 : 30)));
 
 		string then;
 		string? thenMenu = null;
@@ -576,6 +856,133 @@ public sealed class BlurayMenuCrawler
 		return null;
 	}
 
+	/// <summary>Saves the BD-J graphics plane of a focus state for the screenshot renderer (see CrawlOptions.OverlayFolder).</summary>
+	private void SaveOverlay(BluraySession session, string menuId, int button)
+	{
+		if (!this._bdj || this._options.OverlayFolder is not { } folder)
+		{
+			return;
+		}
+
+		try
+		{
+			Directory.CreateDirectory(folder);
+			session.Overlay.SaveArgbPlane(Path.Combine(folder, $"{menuId}-s{button}-overlay.png"));
+		}
+		catch (IOException ex)
+		{
+			this._log($"overlay {menuId}-s{button} not saved: {ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// Diagnostics: when DISC_MENU_DUMP_DIR is set, writes each focus state's graphics plane as a PPM image (on
+	/// white, so transparent areas are visible) for checking what the crawler saw.
+	/// </summary>
+	private static void DumpStates(string menuId, List<FocusState> states, int width, int height)
+	{
+		if (Environment.GetEnvironmentVariable("DISC_MENU_DUMP_DIR") is not { Length: > 0 } folder || width <= 0 || height <= 0)
+		{
+			return;
+		}
+
+		Directory.CreateDirectory(folder);
+		for (var i = 0; i < states.Count; i++)
+		{
+			// One filter byte (0 = none) per row, then RGB.
+			var raw = new byte[height * ((width * 3) + 1)];
+			var plane = states[i].Plane;
+			for (var p = 0; p < Math.Min(plane.Length, width * height); p++)
+			{
+				var argb = plane[p];
+				var a = (argb >> 24) & 0xFF;
+				var offset = ((p / width) * ((width * 3) + 1)) + 1 + ((p % width) * 3);
+				for (var c = 0; c < 3; c++)
+				{
+					var value = (argb >> (16 - (c * 8))) & 0xFF;
+					raw[offset + c] = (byte)(((value * a) + (255 * (255 - a))) / 255);
+				}
+			}
+
+			File.WriteAllBytes(Path.Combine(folder, $"{menuId}-s{i + 1}.png"), PngWriter.Encode(width, height, 2, raw));
+		}
+	}
+
+	/// <summary>Bounding box (in sampled pixels) of where two planes differ, or null when they are identical.</summary>
+	private static Box? DiffBox(uint[] a, uint[] b, int width)
+	{
+		if (width <= 0)
+		{
+			return null;
+		}
+
+		int minX = int.MaxValue, minY = int.MaxValue, maxX = -1, maxY = -1;
+		for (var p = 0; p < Math.Min(a.Length, b.Length); p++)
+		{
+			if (a[p] == b[p])
+			{
+				continue;
+			}
+
+			var x = p % width;
+			var y = p / width;
+			minX = Math.Min(minX, x);
+			minY = Math.Min(minY, y);
+			maxX = Math.Max(maxX, x);
+			maxY = Math.Max(maxY, y);
+		}
+
+		return maxX < 0 ? null : new Box(minX, minY, maxX, maxY);
+	}
+
+	/// <summary>
+	/// True when <paramref name="now"/> no longer shows the panel that <paramref name="start"/> showed: the change
+	/// reaches outside the panel's area, or most of the panel's visible pixels disappeared (it closed). Moving the
+	/// highlight only recolours a small part of the panel.
+	/// </summary>
+	private static bool LeftPanel(uint[] start, uint[] now, Box area, int width)
+	{
+		if (DiffBox(start, now, width) is not { } moved)
+		{
+			return false;
+		}
+
+		if (!area.Contains(moved))
+		{
+			return true;
+		}
+
+		var shown = 0;
+		var gone = 0;
+		for (var y = Math.Max(0, area.MinY); y <= area.MaxY; y++)
+		{
+			for (var x = Math.Max(0, area.MinX); x <= area.MaxX && x < width; x++)
+			{
+				var p = (y * width) + x;
+				if (p >= start.Length || p >= now.Length || start[p] == 0)
+				{
+					continue;
+				}
+
+				shown++;
+				if (now[p] == 0)
+				{
+					gone++;
+				}
+			}
+		}
+
+		return shown > 0 && gone * 2 > shown;
+	}
+
+	private static NavKey Opposite(NavKey key) => key switch
+	{
+		NavKey.Up => NavKey.Down,
+		NavKey.Down => NavKey.Up,
+		NavKey.Left => NavKey.Right,
+		_ => NavKey.Left,
+	};
+
 	private static int? Neighbour(Dictionary<(int From, NavKey Key), int> edges, int state, NavKey key) =>
 		edges.TryGetValue((state, key), out var target) && target != state ? target + 1 : null;
 
@@ -613,7 +1020,17 @@ public sealed class BlurayMenuCrawler
 
 	private static ButtonAction Unknown(string reason) => new() { Type = ButtonActionType.Unknown, Reason = reason };
 
+	private sealed record PendingMenu(MenuInfo Parent, int Button, List<NavKey> Path, uint[] OpenedFrom);
+
+	private sealed record Box(int MinX, int MinY, int MaxX, int MaxY)
+	{
+		public Box Inflate(int by) => new(this.MinX - by, this.MinY - by, this.MaxX + by, this.MaxY + by);
+
+		public bool Contains(Box other) =>
+			other.MinX >= this.MinX && other.MinY >= this.MinY && other.MaxX <= this.MaxX && other.MaxY <= this.MaxY;
+	}
+
 	private sealed record FocusState(ulong Fingerprint, List<NavKey> Keys, uint[] Plane);
 
-	private sealed record MenuInfo(MenuNode Node, List<NavKey> ReachPath, List<FocusState> States);
+	private sealed record MenuInfo(MenuNode Node, List<NavKey> ReachPath, List<FocusState> States, Dictionary<(int From, NavKey Key), int> Edges);
 }

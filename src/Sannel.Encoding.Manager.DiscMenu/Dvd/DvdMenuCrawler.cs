@@ -395,8 +395,18 @@ public sealed class DvdMenuCrawler
 	private void BuildReachPaths()
 	{
 		var byId = this._menus.ToDictionary(m => m.Node.Id);
+		var buttonPaths = this.ShortestButtonPaths();
 		foreach (var menu in this._menus)
 		{
+			if (buttonPaths.TryGetValue(menu.Node.Id, out var viaButtons))
+			{
+				// Arrow keys + Enter only: renderers (libvlc) cannot send the remote's Title / Root menu keys.
+				menu.Node.ReachPath = viaButtons.Keys;
+				menu.Node.ParentMenuId = viaButtons.Parent;
+				this.SetFocusPaths(menu);
+				continue;
+			}
+
 			var keys = new List<NavKey>();
 			foreach (var step in menu.Path)
 			{
@@ -425,10 +435,7 @@ public sealed class DvdMenuCrawler
 			}
 
 			menu.Node.ReachPath = keys;
-			foreach (var button in menu.Node.Buttons)
-			{
-				button.FocusPath = KeyPathPlanner.Plan(menu.Node.Buttons, menu.DefaultButton, button.Number)?.ToList();
-			}
+			this.SetFocusPaths(menu);
 
 			if (keys.Count == 0 && menu.Path.Count > 0)
 			{
@@ -437,6 +444,58 @@ public sealed class DvdMenuCrawler
 					: "Not reachable with arrow keys from the previous menu; no screenshot.";
 			}
 		}
+	}
+
+	private void SetFocusPaths(MenuState menu)
+	{
+		foreach (var button in menu.Node.Buttons)
+		{
+			button.FocusPath = KeyPathPlanner.Plan(menu.Node.Buttons, menu.DefaultButton, button.Number)?.ToList();
+		}
+	}
+
+	/// <summary>
+	/// Breadth-first search from the first menu over "opens menu" buttons: the shortest arrow-key + Enter path to
+	/// every menu reachable that way, with the menu it is reached from.
+	/// </summary>
+	private Dictionary<string, (List<NavKey> Keys, string? Parent)> ShortestButtonPaths()
+	{
+		var result = new Dictionary<string, (List<NavKey> Keys, string? Parent)>(StringComparer.Ordinal);
+		var root = this._menus.FirstOrDefault(m => m.Path.Count == 0);
+		if (root is null)
+		{
+			return result;
+		}
+
+		var byId = this._menus.ToDictionary(m => m.Node.Id);
+		result[root.Node.Id] = ([], null);
+		var queue = new Queue<MenuState>([root]);
+		while (queue.Count > 0)
+		{
+			var from = queue.Dequeue();
+			var fromKeys = result[from.Node.Id].Keys;
+			foreach (var button in from.Node.Buttons)
+			{
+				if (button.Action.Type != ButtonActionType.OpenMenu
+					|| button.Action.MenuId is not { } targetId
+					|| result.ContainsKey(targetId)
+					|| !byId.TryGetValue(targetId, out var target))
+				{
+					continue;
+				}
+
+				var arrows = KeyPathPlanner.Plan(from.Node.Buttons, from.DefaultButton, button.Number);
+				if (arrows is null)
+				{
+					continue;
+				}
+
+				result[targetId] = ([.. fromKeys, .. arrows, NavKey.Enter], from.Node.Id);
+				queue.Enqueue(target);
+			}
+		}
+
+		return result;
 	}
 
 	private void FillReverseIndex()

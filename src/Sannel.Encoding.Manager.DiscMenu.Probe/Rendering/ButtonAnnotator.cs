@@ -30,9 +30,10 @@ internal static class ButtonAnnotator
 			WritePng(scaled, rawPath);
 
 			using var canvas = new SKCanvas(scaled);
-			var sx = (float)width / frameWidth;
-			var sy = (float)height / frameHeight;
-			using var stroke = new SKPaint { Color = _outline, Style = SKPaintStyle.Stroke, StrokeWidth = 3, IsAntialias = true };
+			// Button rects are in the menu's own frame coordinates, which can differ from the rendered buffer size.
+			var sx = (float)width / (menu.FrameWidth > 0 ? menu.FrameWidth : frameWidth);
+			var sy = (float)height / (menu.FrameHeight > 0 ? menu.FrameHeight : frameHeight);
+			using var stroke = new SKPaint { Color = _outline, Style = SKPaintStyle.Stroke, StrokeWidth = 2, IsAntialias = true };
 			using var fill = new SKPaint { Color = _badge, Style = SKPaintStyle.Fill, IsAntialias = true };
 			using var digitPaint = new SKPaint { Color = _outline, Style = SKPaintStyle.Stroke, StrokeWidth = 3, StrokeCap = SKStrokeCap.Round, IsAntialias = true };
 
@@ -42,19 +43,27 @@ internal static class ButtonAnnotator
 				if (button.Number == highlightedButton)
 				{
 					// The button this screenshot is about: a thick cyan outline so it stands out from the others.
-					using var focus = new SKPaint { Color = _focus, Style = SKPaintStyle.Stroke, StrokeWidth = 6, IsAntialias = true };
-					canvas.DrawRect(rect, focus);
+					using var focus = new SKPaint { Color = _focus, Style = SKPaintStyle.Stroke, StrokeWidth = 4, IsAntialias = true };
+					var outer = rect;
+					outer.Inflate(4, 4);
+					canvas.DrawRect(outer, focus);
 				}
 				else
 				{
 					canvas.DrawRect(rect, stroke);
 				}
 
+				// Badge to the left of the box (so it never covers the label of a button stacked above), else above it,
+				// else below it.
 				var label = button.Number.ToString(System.Globalization.CultureInfo.InvariantCulture);
-				var badge = new SKRect(rect.Left, rect.Top - 30, rect.Left + 10 + (label.Length * DigitAdvance), rect.Top);
+				var badgeWidth = 10 + (label.Length * DigitAdvance);
+				var middle = rect.MidY;
+				var badge = rect.Left - badgeWidth - 4 >= 0
+					? new SKRect(rect.Left - badgeWidth - 4, middle - 15, rect.Left - 4, middle + 15)
+					: new SKRect(rect.Left, rect.Top - 30, rect.Left + badgeWidth, rect.Top);
 				if (badge.Top < 0)
 				{
-					badge.Offset(0, rect.Height + 30);
+					badge.Offset(0, -badge.Top);
 				}
 
 				canvas.DrawRoundRect(badge, 4, 4, fill);

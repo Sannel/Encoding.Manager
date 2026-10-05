@@ -23,7 +23,7 @@ public class DiscMenuOptions
 	/// </summary>
 	public string OutputPath { get; set; } = "disc-menus";
 
-	public int ProbeTimeoutSeconds { get; set; } = 300;
+	public int ProbeTimeoutSeconds { get; set; } = 1800;
 
 	public int MaxConcurrentProbes { get; set; } = 1;
 
@@ -31,7 +31,7 @@ public class DiscMenuOptions
 
 	public int MaxActions { get; set; } = 500;
 
-	public int TimeBudgetSeconds { get; set; } = 240;
+	public int TimeBudgetSeconds { get; set; } = 1350;
 
 	public string MenuLanguage { get; set; } = "en";
 

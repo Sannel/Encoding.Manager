@@ -8,7 +8,7 @@ internal sealed class ProbeArguments
 	public const string Usage =
 		"usage: probe --input <disc folder> --type dvd|bluray --json <map file> --out <screenshot folder> [--no-screenshots] " +
 		"[--max-menus N] [--max-actions N] [--time-budget SECONDS] [--menu-language en] " +
-		"[--screenshot-width PX] [--settle-ms MS] [--max-seconds N] [--native-path DIR]";
+		"[--screenshot-width PX] [--settle-ms MS] [--max-seconds N] [--native-path DIR] [--render-only]";
 
 	public string Input { get; private set; } = string.Empty;
 
@@ -22,11 +22,23 @@ internal sealed class ProbeArguments
 
 	public bool Screenshots { get; private set; } = true;
 
+	/// <summary>
+	/// Child-process mode: read the map from --json, render its screenshots and write it back. The probe renders
+	/// Blu-ray menus this way so a Java VM wedged by the crawl cannot stall libvlc.
+	/// </summary>
+	public bool RenderOnly { get; private set; }
+
+	/// <summary>
+	/// Child-process mode: crawl a Blu-ray and keep writing the map so far to --json. The parent kills the child when
+	/// it overruns (a wedged BD-J Java VM can stop the whole process) and keeps the last map written.
+	/// </summary>
+	public bool CrawlOnly { get; private set; }
+
 	public int MaxMenus { get; private set; } = 64;
 
 	public int MaxActions { get; private set; } = 500;
 
-	public int TimeBudgetSeconds { get; private set; } = 240;
+	public int TimeBudgetSeconds { get; private set; } = 1350;
 
 	public string MenuLanguage { get; private set; } = "en";
 
@@ -35,7 +47,7 @@ internal sealed class ProbeArguments
 	public int SettleMilliseconds { get; private set; } = 1500;
 
 	/// <summary>Total run time the probe allows itself; per-button screenshots stop before this.</summary>
-	public int MaxSeconds { get; private set; } = 280;
+	public int MaxSeconds { get; private set; } = 1780;
 
 	public string? NativePath { get; private set; }
 
@@ -54,6 +66,8 @@ internal sealed class ProbeArguments
 				case "--out": result.OutputFolder = Next(); break;
 				case "--json": result.JsonPath = Next(); break;
 				case "--no-screenshots": result.Screenshots = false; break;
+				case "--render-only": result.RenderOnly = true; break;
+				case "--crawl-only": result.CrawlOnly = true; break;
 				case "--max-menus": result.MaxMenus = NextInt(); break;
 				case "--max-actions": result.MaxActions = NextInt(); break;
 				case "--time-budget": result.TimeBudgetSeconds = NextInt(); break;

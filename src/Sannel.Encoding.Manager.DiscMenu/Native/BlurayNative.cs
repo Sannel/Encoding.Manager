@@ -164,4 +164,8 @@ internal static unsafe partial class BlurayNative
 
 	[LibraryImport(NativeLibraryResolver.Bluray)]
 	public static partial uint bd_get_current_chapter(IntPtr bd);
+
+	/// <summary>Current playback position in 90 kHz ticks.</summary>
+	[LibraryImport(NativeLibraryResolver.Bluray)]
+	public static partial ulong bd_tell_time(IntPtr bd);
 }

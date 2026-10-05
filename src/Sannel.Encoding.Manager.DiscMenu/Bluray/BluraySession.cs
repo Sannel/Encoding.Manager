@@ -27,8 +27,15 @@ internal sealed record BlurayPlaylistInfo(int Playlist, int DurationSeconds, int
 internal sealed unsafe class BluraySession : IDisposable
 {
 	private readonly byte[] _buffer = new byte[BlurayNative.AlignedUnit * 32];
+
+	/// <summary>Wall-clock time since playback started, against which reads are paced.</summary>
+	private readonly Stopwatch _wall = new();
 	private GCHandle _self;
 	private IntPtr _bd;
+
+	/// <summary>Stream time played so far (seconds, seeks and loops excluded) and the last position read.</summary>
+	private double _streamSeconds;
+	private ulong _lastTime;
 
 	private BluraySession(IntPtr bd)
 	{
@@ -134,6 +141,7 @@ internal sealed unsafe class BluraySession : IDisposable
 
 	public bool Play()
 	{
+		this._wall.Restart();
 		if (BlurayNative.bd_play(this._bd) != 0)
 		{
 			return true;
@@ -168,13 +176,16 @@ internal sealed unsafe class BluraySession : IDisposable
 	/// Reads (and handles events) until <paramref name="until"/> is true, the plane stops changing for
 	/// <paramref name="quietReads"/> reads and <paramref name="quietTime"/>, or a limit is hit.
 	/// </summary>
-	public void Pump(Func<bool>? until, int quietReads, TimeSpan quietTime, int maxReads, TimeSpan maxTime)
+	public string Pump(Func<bool>? until, int quietReads, TimeSpan quietTime, int maxReads, TimeSpan maxTime)
 	{
 		var clock = Stopwatch.StartNew();
 		var lastFlush = this.Overlay.FlushCount;
 		var lastChangeRead = 0;
 		var lastChangeTime = TimeSpan.Zero;
-		for (var reads = 0; reads < maxReads && clock.Elapsed < maxTime && !this.Failed; reads++)
+		var reads = 0;
+		var seen = new Dictionary<string, int>();
+		string Result(string why) => $"{why} after {reads} read(s) in {clock.Elapsed.TotalSeconds:0.0}s [{string.Join(" ", seen.Select(kv => $"{kv.Key}x{kv.Value}"))}]";
+		for (; reads < maxReads && clock.Elapsed < maxTime && !this.Failed; reads++)
 		{
 			int read;
 			BlurayNative.BdEvent ev;
@@ -189,17 +200,25 @@ internal sealed unsafe class BluraySession : IDisposable
 				break;
 			}
 
+			var tag = $"{(read > 0 ? "data" : "0")}/e{ev.Event}";
+			seen[tag] = seen.GetValueOrDefault(tag) + 1;
 			this.Handle(ev);
-			if (read == 0 && ev.Event is BlurayNative.EventNone or BlurayNative.EventIdle)
+			if (read > 0)
 			{
-				// Still frame / BD-J idle: libbluray answers instantly, so without a pause a read-count limit is used
-				// up in milliseconds and the Java menu never gets time to react. Pausing keeps every wait time-based.
-				Thread.Sleep(10);
+				this.Pace();
+			}
+			else
+			{
+				// No video data: a still frame (menu backgrounds end on an endless still), BD-J idle, or a stopped
+				// playlist waiting for the Java menu's next move — libbluray answers these instantly and repeatedly, so
+				// without a pause a read-count limit is used up in milliseconds and the Java menu never gets time to
+				// react. Pausing keeps every wait time-based.
+				Thread.Sleep(5);
 			}
 
 			if (until?.Invoke() == true)
 			{
-				return;
+				return Result("condition met");
 			}
 
 			var flush = this.Overlay.FlushCount;
@@ -211,8 +230,33 @@ internal sealed unsafe class BluraySession : IDisposable
 			}
 			else if (until is null && reads - lastChangeRead >= quietReads && clock.Elapsed - lastChangeTime >= quietTime)
 			{
-				return;
+				return Result("quiet");
 			}
+		}
+
+		return Result(this.Failed ? "failed" : clock.Elapsed >= maxTime ? "time limit" : "read limit");
+	}
+
+	/// <summary>
+	/// Keeps playback at about real-time speed. HDMV menus run their timeouts (page and selection time-outs, which
+	/// close a submenu or jump back to the top page) on stream time; reading as fast as the disk allows makes those
+	/// fire within a second or two of wall time, in the middle of exploring the menu.
+	/// </summary>
+	private void Pace()
+	{
+		var now = BlurayNative.bd_tell_time(this._bd);
+		if (this._lastTime != 0 && now > this._lastTime && now - this._lastTime < 90_000)
+		{
+			// Forward progress below one second per read is playback; larger jumps and going backwards are seeks
+			// or a looping clip.
+			this._streamSeconds += (now - this._lastTime) / 90_000.0;
+		}
+
+		this._lastTime = now;
+		var ahead = this._streamSeconds - this._wall.Elapsed.TotalSeconds;
+		if (ahead > 0.25)
+		{
+			Thread.Sleep(TimeSpan.FromSeconds(Math.Min(ahead, 0.5)));
 		}
 	}
 

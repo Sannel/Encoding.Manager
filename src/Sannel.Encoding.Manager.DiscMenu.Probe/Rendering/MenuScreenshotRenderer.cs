@@ -26,6 +26,7 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 
 	/// <summary>The address that opened the disc; reused for every later session.</summary>
 	private string? _workingMrl;
+	private string _discType = "dvd";
 	private readonly TimeSpan _settle;
 	private readonly Action<string> _log;
 	private readonly LibVLC _libVlc;
@@ -49,7 +50,9 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 		this._log = log;
 		InstallLinuxResolver();
 		Core.Initialize();
-		this._libVlc = new LibVLC("--no-audio", "--no-video-title-show", "--no-osd", "--no-snapshot-preview", "--quiet", "--intf=dummy", "--no-xlib");
+		// DISC_MENU_VLC_VERBOSE=1 lets libvlc log to stderr (diagnostics for discs whose menus do not render).
+		var verbose = Environment.GetEnvironmentVariable("DISC_MENU_VLC_VERBOSE") == "1";
+		this._libVlc = new LibVLC("--no-audio", "--no-video-title-show", "--no-osd", "--no-snapshot-preview", verbose ? "--verbose=2" : "--quiet", "--intf=dummy", "--no-xlib");
 		this._lock = this.Lock;
 		this._unlock = this.Unlock;
 		this._display = this.Display;
@@ -58,6 +61,7 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 	/// <summary>Renders every menu that has a key path; failures are recorded on the menu, never thrown.</summary>
 	public void Render(string input, string discType, DiscMenuMap map, string outputFolder)
 	{
+		this._discType = discType;
 		var scheme = discType == "dvd" ? "dvd" : "bluray";
 		var full = Path.GetFullPath(input).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 		var forward = full.Replace('\\', '/');
@@ -91,6 +95,11 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 
 	private void RenderMenu(string discType, MenuNode menu, string outputFolder)
 	{
+		if (discType != "dvd" && this.RenderComposited(discType, menu, outputFolder))
+		{
+			return;
+		}
+
 		var player = this.OpenAtMenu(discType, menu, out var failure);
 		if (player is null)
 		{
@@ -98,6 +107,7 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 			return;
 		}
 
+		var leftOver = new List<MenuButton>();
 		try
 		{
 			menu.Screenshot = this.Capture(menu, null, outputFolder, menu.Id);
@@ -106,28 +116,34 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 				this._log($"menu {menu.Id}: screenshot saved");
 			}
 
-			if (discType == "dvd")
+			// Walk the highlight from button to button in this one session using the neighbour links (starting a
+			// Blu-ray Java menu again for every button would take far too long).
+			var current = menu.Buttons.FirstOrDefault(b => b.IsDefault)?.Number ?? menu.Buttons.FirstOrDefault()?.Number ?? 0;
+			foreach (var button in menu.Buttons)
 			{
-				// DVD: walk the highlight from button to button in this one session using the neighbour links.
-				var current = menu.Buttons.FirstOrDefault(b => b.IsDefault)?.Number ?? menu.Buttons.FirstOrDefault()?.Number ?? 0;
-				foreach (var button in menu.Buttons)
+				if (this.PastDeadline(button))
 				{
-					if (this.PastDeadline(button))
-					{
-						continue;
-					}
+					continue;
+				}
 
-					var keys = KeyPathPlanner.Plan(menu.Buttons, current, button.Number);
-					if (keys is null)
+				var keys = KeyPathPlanner.Plan(menu.Buttons, current, button.Number);
+				if (keys is null)
+				{
+					if (discType == "dvd")
 					{
 						button.Screenshot = new MenuScreenshot { Error = "Not reachable with arrow keys from the previous button." };
-						continue;
+					}
+					else
+					{
+						leftOver.Add(button);
 					}
 
-					this.Press(player, keys);
-					current = button.Number;
-					button.Screenshot = this.Capture(menu, button.Number, outputFolder, $"{menu.Id}-b{button.Number}");
+					continue;
 				}
+
+				this.Press(player, keys);
+				current = button.Number;
+				button.Screenshot = this.Capture(menu, button.Number, outputFolder, $"{menu.Id}-b{button.Number}");
 			}
 		}
 		finally
@@ -135,13 +151,8 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 			Close(player);
 		}
 
-		if (discType == "dvd")
-		{
-			return;
-		}
-
-		// Blu-ray: focus states are only known as key paths from the menu's start, so each gets a fresh session.
-		foreach (var button in menu.Buttons)
+		// Blu-ray buttons the neighbour links do not connect: replay each one's key path from the menu's start.
+		foreach (var button in leftOver)
 		{
 			if (this.PastDeadline(button))
 			{
@@ -176,8 +187,7 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 	/// <summary>Starts playback, waits for the first menu and replays the menu's key path. Null on failure.</summary>
 	private MediaPlayer? OpenAtMenu(string discType, MenuNode menu, out string? failure)
 	{
-		var width = menu.FrameWidth > 0 ? menu.FrameWidth : 720;
-		var height = menu.FrameHeight > 0 ? menu.FrameHeight : 480;
+		var (width, height) = this.BufferSize(menu);
 		this.AllocateBuffer(width * height * 4);
 
 		// Until one address has worked, try each form: VLC's DVD/Blu-ray modules differ by platform in how they
@@ -226,24 +236,50 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 			return null;
 		}
 
-		if (discType != "dvd")
+		if (discType != "dvd" && menu.ReachPath is not [NavKey.TitleMenu or NavKey.RootMenu, ..])
 		{
 			// Let a Blu-ray menu's intro finish before pressing keys or capturing: BD-J menus show the background
 			// first and slide the menu bar in a few seconds later.
-			Thread.Sleep(TimeSpan.FromSeconds(8));
+			Thread.Sleep(_menuIntro);
 		}
 
 		this.Press(player, menu.ReachPath);
 		return player;
 	}
 
+	/// <summary>How long a Blu-ray menu gets to finish its intro animation after it starts.</summary>
+	private static readonly TimeSpan _menuIntro = TimeSpan.FromSeconds(8);
+
 	private void Press(MediaPlayer player, IEnumerable<NavKey> keys)
 	{
 		foreach (var key in keys)
 		{
+			if (key is NavKey.TitleMenu or NavKey.RootMenu)
+			{
+				this.CallMenu(player);
+				continue;
+			}
+
 			player.Navigate((uint)ToNavigationMode(key));
 			Thread.Sleep(this._settle);
 		}
+	}
+
+	/// <summary>
+	/// The remote's Title Menu (Blu-ray) / Root Menu (DVD) key: libvlc has no navigate mode for it, but VLC's disc
+	/// modules treat "set title 0" as that menu call. Waits for the menu to draw and finish its intro.
+	/// </summary>
+	private void CallMenu(MediaPlayer player)
+	{
+		player.Title = 0;
+		Thread.Sleep(TimeSpan.FromSeconds(1));
+		var clock = Stopwatch.StartNew();
+		while (clock.Elapsed < TimeSpan.FromSeconds(30) && this.ContentFraction() < MinimumContentFraction)
+		{
+			Thread.Sleep(100);
+		}
+
+		Thread.Sleep(this._discType == "dvd" ? this._settle : _menuIntro);
 	}
 
 	/// <summary>Captures the current frame as {name}.png and {name}-annotated.png.</summary>
@@ -261,8 +297,12 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 			return new MenuScreenshot { Error = "No video frame was rendered." };
 		}
 
-		var width = menu.FrameWidth > 0 ? menu.FrameWidth : 720;
-		var height = menu.FrameHeight > 0 ? menu.FrameHeight : 480;
+		return this.SaveFrame(frame, menu, highlightedButton, outputFolder, name);
+	}
+
+	private MenuScreenshot SaveFrame(byte[] frame, MenuNode menu, int? highlightedButton, string outputFolder, string name)
+	{
+		var (width, height) = this.BufferSize(menu);
 		var raw = $"{name}.png";
 		var annotated = $"{name}-annotated.png";
 		var (savedWidth, savedHeight) = ButtonAnnotator.Save(
@@ -276,6 +316,57 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 			File = raw,
 			AnnotatedFile = annotated,
 		};
+	}
+
+	/// <summary>The video buffer libvlc renders into: the menu's frame size.</summary>
+	private (int Width, int Height) BufferSize(MenuNode menu) =>
+		(menu.FrameWidth > 0 ? menu.FrameWidth : 720, menu.FrameHeight > 0 ? menu.FrameHeight : 480);
+
+	/// <summary>
+	/// BD-J menus: libvlc cannot blend BD-J graphics into its video ("no matching alpha blending routine (chroma:
+	/// BGRA -> I420)"), so its frames show only the menu's background. The crawler saved each focus state's graphics
+	/// plane; draw them over one background frame. Returns false when the overlays are not there.
+	/// </summary>
+	private bool RenderComposited(string discType, MenuNode menu, string outputFolder)
+	{
+		string OverlayPath(int state) => Path.Combine(outputFolder, $"{menu.Id}-s{state}-overlay.png");
+		if (!File.Exists(OverlayPath(1)))
+		{
+			return false;
+		}
+
+		var player = this.OpenAtMenu(discType, menu, out var failure);
+		if (player is null)
+		{
+			menu.Screenshot.Error = failure;
+			return true;
+		}
+
+		byte[] background;
+		try
+		{
+			Thread.Sleep(this._settle);
+			lock (this._gate)
+			{
+				background = this._latest.ToArray();
+			}
+		}
+		finally
+		{
+			Close(player);
+		}
+
+		var (width, height) = this.BufferSize(menu);
+		menu.Screenshot = this.SaveFrame(OverlayBlender.Blend(background, width, height, OverlayPath(1)), menu, null, outputFolder, menu.Id);
+		this._log($"menu {menu.Id}: screenshot saved (video + BD-J graphics)");
+		foreach (var button in menu.Buttons)
+		{
+			button.Screenshot = File.Exists(OverlayPath(button.Number))
+				? this.SaveFrame(OverlayBlender.Blend(background, width, height, OverlayPath(button.Number)), menu, button.Number, outputFolder, $"{menu.Id}-b{button.Number}")
+				: new MenuScreenshot { Error = "The menu graphics for this button were not captured." };
+		}
+
+		return true;
 	}
 
 	private bool PastDeadline(MenuButton button)
