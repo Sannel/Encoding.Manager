@@ -24,6 +24,9 @@ public sealed class BlurayMenuCrawler
 	private string _path = string.Empty;
 	private bool _bdj;
 	private string? _reachFailure;
+
+	/// <summary>Null until known; true when menus are only reachable by pressing Title Menu straight away.</summary>
+	private bool? _directTopMenu;
 	private int _actions;
 
 	public BlurayMenuCrawler(CrawlOptions options, Action<string>? log = null)
@@ -116,35 +119,43 @@ public sealed class BlurayMenuCrawler
 		return this._map;
 	}
 
-	/// <summary>Opens a session and plays until a menu is showing, then replays <paramref name="keys"/>.</summary>
+	/// <summary>
+	/// Opens a session and gets to the first menu, then replays <paramref name="keys"/>. The first attempt lets first
+	/// play run (pressing Title Menu if it never shows a menu); if that fails — e.g. the first-play title errors out —
+	/// a fresh session presses Title Menu immediately, like VLC's "Title Menu". Whichever works is reused.
+	/// </summary>
 	private BluraySession? Reach(List<NavKey> keys, out bool usedTopMenu)
 	{
 		usedTopMenu = false;
-		var session = BluraySession.Open(this._path, this._options.MenuLanguage);
-		if (!session.Play())
+		BluraySession? session = null;
+		string? firstPlayFailure = null;
+		if (this._directTopMenu != true)
 		{
-			this._reachFailure = session.FailureReason;
-			session.Dispose();
-			return null;
+			session = this.TryReach(directTopMenu: false, out usedTopMenu, out firstPlayFailure);
+			if (session is not null)
+			{
+				this._directTopMenu ??= false;
+			}
+			else if (this._directTopMenu == false)
+			{
+				this._reachFailure = firstPlayFailure;
+				return null;
+			}
 		}
 
-		// BD-J (Java) needs time to start its JVM and Xlet before anything is drawn.
-		var wait = this.Remaining(TimeSpan.FromSeconds(this._bdj ? 60 : 30));
-		session.Pump(() => this.IsMenuShowing(session), 0, TimeSpan.Zero, 40_000, wait);
-		if (!this.IsMenuShowing(session) && !session.Failed)
+		if (session is null)
 		{
-			// Trailers / an auto-playing feature: jump to the top menu.
-			session.TopMenu();
+			session = this.TryReach(directTopMenu: true, out _, out var titleMenuFailure);
+			if (session is null)
+			{
+				this._reachFailure = firstPlayFailure is null
+					? titleMenuFailure
+					: $"first play: {firstPlayFailure} Title menu: {titleMenuFailure}";
+				return null;
+			}
+
+			this._directTopMenu = true;
 			usedTopMenu = true;
-			session.Pump(() => this.IsMenuShowing(session), 0, TimeSpan.Zero, 40_000, this.Remaining(TimeSpan.FromSeconds(30)));
-		}
-
-		if (!this.IsMenuShowing(session))
-		{
-			this._reachFailure = session.FailureReason
-				?? $"No menu graphics appeared (playlist {session.Playlist?.ToString() ?? "none"}, menu event {(session.MenuActive ? "on" : "off")}, {session.IdleEvents} idle event(s), overlay {(session.Overlay.FlushCount > 0 ? $"drew {session.Overlay.FlushCount} frame(s)" : "never drew")}).";
-			session.Dispose();
-			return null;
 		}
 
 		this.Settle(session);
@@ -154,6 +165,45 @@ public sealed class BlurayMenuCrawler
 		}
 
 		return session;
+	}
+
+	private BluraySession? TryReach(bool directTopMenu, out bool usedTopMenu, out string? failure)
+	{
+		usedTopMenu = directTopMenu;
+		failure = null;
+		var session = BluraySession.Open(this._path, this._options.MenuLanguage);
+		if (!session.Play())
+		{
+			failure = session.FailureReason;
+			session.Dispose();
+			return null;
+		}
+
+		// BD-J (Java) needs time to start its JVM and Xlet before anything is drawn.
+		var wait = this.Remaining(TimeSpan.FromSeconds(this._bdj ? 60 : 30));
+		if (directTopMenu)
+		{
+			session.TopMenu();
+		}
+
+		session.Pump(() => this.IsMenuShowing(session), 0, TimeSpan.Zero, 40_000, wait);
+		if (!directTopMenu && !this.IsMenuShowing(session) && !session.Failed)
+		{
+			// Trailers / an auto-playing feature: jump to the top menu.
+			session.TopMenu();
+			usedTopMenu = true;
+			session.Pump(() => this.IsMenuShowing(session), 0, TimeSpan.Zero, 40_000, this.Remaining(TimeSpan.FromSeconds(30)));
+		}
+
+		if (this.IsMenuShowing(session))
+		{
+			return session;
+		}
+
+		failure = session.FailureReason
+			?? $"No menu graphics appeared (playlist {session.Playlist?.ToString() ?? "none"}, menu event {(session.MenuActive ? "on" : "off")}, {session.IdleEvents} idle event(s), overlay {(session.Overlay.FlushCount > 0 ? $"drew {session.Overlay.FlushCount} frame(s)" : "never drew")}).";
+		session.Dispose();
+		return null;
 	}
 
 	/// <summary>
