@@ -190,10 +190,11 @@ internal sealed unsafe class BluraySession : IDisposable
 			}
 
 			this.Handle(ev);
-			if (read == 0 && ev.Event == BlurayNative.EventNone)
+			if (read == 0 && ev.Event is BlurayNative.EventNone or BlurayNative.EventIdle)
 			{
-				// Still frame / idle: give BD-J threads a moment instead of spinning.
-				Thread.Sleep(5);
+				// Still frame / BD-J idle: libbluray answers instantly, so without a pause a read-count limit is used
+				// up in milliseconds and the Java menu never gets time to react. Pausing keeps every wait time-based.
+				Thread.Sleep(10);
 			}
 
 			if (until?.Invoke() == true)

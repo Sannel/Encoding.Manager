@@ -93,8 +93,9 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 
 			if (discType != "dvd")
 			{
-				// Let a Blu-ray menu's intro animation finish before pressing keys or capturing.
-				Thread.Sleep(this._settle * 2);
+				// Let a Blu-ray menu's intro finish before pressing keys or capturing: BD-J menus show the background
+				// first and slide the menu bar in a few seconds later.
+				Thread.Sleep(TimeSpan.FromSeconds(8));
 			}
 
 			foreach (var key in menu.ReachPath)
