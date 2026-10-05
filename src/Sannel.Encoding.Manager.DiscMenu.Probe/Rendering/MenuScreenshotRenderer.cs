@@ -20,6 +20,12 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 
 	/// <summary>Per-button screenshots stop here so the probe finishes (and writes its map) before it is killed.</summary>
 	private readonly DateTime _deadline;
+
+	/// <summary>libvlc addresses (MRLs) for the disc, tried in order until one opens.</summary>
+	private readonly List<string> _mrlCandidates = [];
+
+	/// <summary>The address that opened the disc; reused for every later session.</summary>
+	private string? _workingMrl;
 	private readonly TimeSpan _settle;
 	private readonly Action<string> _log;
 	private readonly LibVLC _libVlc;
@@ -53,7 +59,16 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 	public void Render(string input, string discType, DiscMenuMap map, string outputFolder)
 	{
 		var scheme = discType == "dvd" ? "dvd" : "bluray";
-		var mrl = scheme + new Uri(Path.GetFullPath(input)).AbsoluteUri["file".Length..];
+		var full = Path.GetFullPath(input).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+		var forward = full.Replace('\\', '/');
+		this._mrlCandidates.Clear();
+		this._mrlCandidates.Add(scheme + new Uri(full).AbsoluteUri["file".Length..]); // dvd:///H:/a%20b (encoded)
+		this._mrlCandidates.Add($"{scheme}://{(forward.StartsWith('/') ? string.Empty : "/")}{forward}"); // dvd:///H:/a b
+		if (OperatingSystem.IsWindows())
+		{
+			this._mrlCandidates.Add($"{scheme}://{full}"); // dvd://H:\a b
+		}
+
 
 		foreach (var menu in map.Menus)
 		{
@@ -64,7 +79,7 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 
 			try
 			{
-				this.RenderMenu(mrl, discType, menu, outputFolder);
+				this.RenderMenu(discType, menu, outputFolder);
 			}
 			catch (Exception ex)
 			{
@@ -74,9 +89,9 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 		}
 	}
 
-	private void RenderMenu(string mrl, string discType, MenuNode menu, string outputFolder)
+	private void RenderMenu(string discType, MenuNode menu, string outputFolder)
 	{
-		var player = this.OpenAtMenu(mrl, discType, menu, out var failure);
+		var player = this.OpenAtMenu(discType, menu, out var failure);
 		if (player is null)
 		{
 			menu.Screenshot.Error = failure;
@@ -139,7 +154,7 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 				continue;
 			}
 
-			var session = this.OpenAtMenu(mrl, discType, menu, out var sessionFailure);
+			var session = this.OpenAtMenu(discType, menu, out var sessionFailure);
 			if (session is null)
 			{
 				button.Screenshot = new MenuScreenshot { Error = sessionFailure };
@@ -159,25 +174,55 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 	}
 
 	/// <summary>Starts playback, waits for the first menu and replays the menu's key path. Null on failure.</summary>
-	private MediaPlayer? OpenAtMenu(string mrl, string discType, MenuNode menu, out string? failure)
+	private MediaPlayer? OpenAtMenu(string discType, MenuNode menu, out string? failure)
 	{
 		var width = menu.FrameWidth > 0 ? menu.FrameWidth : 720;
 		var height = menu.FrameHeight > 0 ? menu.FrameHeight : 480;
 		this.AllocateBuffer(width * height * 4);
 
-		var player = new MediaPlayer(this._libVlc);
-		player.SetVideoFormat("RV32", (uint)width, (uint)height, (uint)(width * 4));
-		player.SetVideoCallbacks(this._lock, this._unlock, this._display);
-		using (var media = new Media(this._libVlc, mrl, FromType.FromLocation))
+		// Until one address has worked, try each form: VLC's DVD/Blu-ray modules differ by platform in how they
+		// parse the path (percent-encoding, a leading slash before a Windows drive letter).
+		var candidates = this._workingMrl is { } known ? [known] : this._mrlCandidates;
+		MediaPlayer? player = null;
+		failure = null;
+		var tried = new List<string>();
+		foreach (var candidate in candidates)
 		{
-			Interlocked.Exchange(ref this._frames, 0);
-			player.Play(media);
+			player = new MediaPlayer(this._libVlc);
+			player.SetVideoFormat("RV32", (uint)width, (uint)height, (uint)(width * 4));
+			player.SetVideoCallbacks(this._lock, this._unlock, this._display);
+			using (var media = new Media(this._libVlc, candidate, FromType.FromLocation))
+			{
+				Interlocked.Exchange(ref this._frames, 0);
+				player.Play(media);
+			}
+
+			failure = this.WaitForFirstMenu(player, discType);
+			if (failure is null)
+			{
+				if (this._workingMrl is null)
+				{
+					this._workingMrl = candidate;
+					this._log($"libvlc opened the disc as {candidate}");
+				}
+
+				break;
+			}
+
+			// Only an instant "could not open" (no video at all) is worth trying another address for.
+			var openFailed = Interlocked.Read(ref this._frames) == 0 && player.State is VLCState.Ended or VLCState.Error or VLCState.Stopped;
+			tried.Add(candidate);
+			Close(player);
+			player = null;
+			if (!openFailed)
+			{
+				break;
+			}
 		}
 
-		failure = this.WaitForFirstMenu(player, discType);
-		if (failure is not null)
+		if (player is null)
 		{
-			Close(player);
+			failure = tried.Count > 1 ? $"{failure} Addresses tried: {string.Join(" | ", tried)}" : failure;
 			return null;
 		}
 
