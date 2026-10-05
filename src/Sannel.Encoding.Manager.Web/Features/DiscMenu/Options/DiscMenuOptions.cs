@@ -17,7 +17,10 @@ public class DiscMenuOptions
 	/// <summary>Probe assembly (.dll) or executable. Null = the copy published next to the web app.</summary>
 	public string? ProbePath { get; set; }
 
-	/// <summary>Screenshot root, relative to the content root unless absolute.</summary>
+	/// <summary>
+	/// Screenshot root. Relative paths are under %ProgramData%\SannelEncodingManager on Windows and under the
+	/// content root elsewhere.
+	/// </summary>
 	public string OutputPath { get; set; } = "disc-menus";
 
 	public int ProbeTimeoutSeconds { get; set; } = 300;

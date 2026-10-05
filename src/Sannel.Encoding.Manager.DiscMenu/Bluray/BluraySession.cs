@@ -50,6 +50,12 @@ internal sealed unsafe class BluraySession : IDisposable
 
 	public bool Failed { get; private set; }
 
+	/// <summary>Why playback failed, when <see cref="Failed"/> is true.</summary>
+	public string? FailureReason { get; private set; }
+
+	/// <summary>Number of BD_EVENT_IDLE events seen (BD-J title running but no playlist yet).</summary>
+	public int IdleEvents { get; private set; }
+
 	public int? AudioStream { get; private set; }
 
 	public int? SubtitleStream { get; private set; }
@@ -126,7 +132,22 @@ internal sealed unsafe class BluraySession : IDisposable
 		return result;
 	}
 
-	public bool Play() => BlurayNative.bd_play(this._bd) != 0;
+	public bool Play()
+	{
+		if (BlurayNative.bd_play(this._bd) != 0)
+		{
+			return true;
+		}
+
+		this.Fail("bd_play failed: libbluray could not start first play / the top menu.");
+		return false;
+	}
+
+	private void Fail(string reason)
+	{
+		this.Failed = true;
+		this.FailureReason ??= reason;
+	}
 
 	public bool TopMenu() => BlurayNative.bd_menu_call(this._bd, -1) != 0;
 
@@ -164,7 +185,7 @@ internal sealed unsafe class BluraySession : IDisposable
 
 			if (read < 0)
 			{
-				this.Failed = true;
+				this.Fail("libbluray returned a read error.");
 				break;
 			}
 
@@ -199,8 +220,16 @@ internal sealed unsafe class BluraySession : IDisposable
 		switch (ev.Event)
 		{
 			case BlurayNative.EventError:
+				// BD_ERROR_HDMV = 1, BD_ERROR_BDJ = 2 (the Java VM or the disc's Xlet failed to start).
+				this.Fail(ev.Param switch
+				{
+					1 => "libbluray reported a fatal HDMV navigation error.",
+					2 => "libbluray could not start the BD-J (Java) menu: the JVM or the disc's Java application failed to start. Check DiscMenu:JavaHome (Java 17/21, 64-bit) and the libbluray-j2se jar version.",
+					_ => $"libbluray reported a fatal error (code {ev.Param}).",
+				});
+				break;
 			case BlurayNative.EventEncrypted:
-				this.Failed = true;
+				this.Fail("The disc is encrypted (AACS/BD+); libbluray cannot play it.");
 				break;
 			case BlurayNative.EventPlaylist:
 				this.Playlist = (int)ev.Param;
@@ -218,6 +247,9 @@ internal sealed unsafe class BluraySession : IDisposable
 			case BlurayNative.EventEndOfTitle:
 			case BlurayNative.EventPlaylistStop:
 				this.EndOfTitleCount++;
+				break;
+			case BlurayNative.EventIdle:
+				this.IdleEvents++;
 				break;
 			case BlurayNative.EventAudioStream:
 				this.AudioStream = (int)ev.Param;

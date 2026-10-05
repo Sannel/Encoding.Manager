@@ -4,7 +4,7 @@ namespace Sannel.Encoding.Manager.DiscMenu.Model;
 public class DiscMenuMap
 {
 	/// <summary>Bump when the crawl logic or schema changes so cached maps are re-probed.</summary>
-	public const int CurrentProbeVersion = 1;
+	public const int CurrentProbeVersion = 2;
 
 	/// <summary>"DVD" or "BluRay".</summary>
 	public string DiscType { get; set; } = string.Empty;

@@ -23,6 +23,7 @@ public sealed class BlurayMenuCrawler
 	private Stopwatch _clock = new();
 	private string _path = string.Empty;
 	private bool _bdj;
+	private string? _reachFailure;
 	private int _actions;
 
 	public BlurayMenuCrawler(CrawlOptions options, Action<string>? log = null)
@@ -77,7 +78,8 @@ public sealed class BlurayMenuCrawler
 		var first = this.DiscoverMenu([], null);
 		if (first is null)
 		{
-			this._map.Warnings.Add("No menu appeared after first play or the top-menu key.");
+			this._map.Complete = false;
+			this._map.Warnings.Add("No menu appeared after first play or the top-menu key: " + (this._reachFailure ?? "unknown reason."));
 			return this.Finish();
 		}
 
@@ -121,21 +123,26 @@ public sealed class BlurayMenuCrawler
 		var session = BluraySession.Open(this._path, this._options.MenuLanguage);
 		if (!session.Play())
 		{
+			this._reachFailure = session.FailureReason;
 			session.Dispose();
 			return null;
 		}
 
-		session.Pump(() => session.MenuActive && session.Overlay.IsVisible, 0, TimeSpan.Zero, 20_000, this.Remaining(TimeSpan.FromSeconds(30)));
-		if (!(session.MenuActive && session.Overlay.IsVisible))
+		// BD-J (Java) needs time to start its JVM and Xlet before anything is drawn.
+		var wait = this.Remaining(TimeSpan.FromSeconds(this._bdj ? 60 : 30));
+		session.Pump(() => this.IsMenuShowing(session), 0, TimeSpan.Zero, 40_000, wait);
+		if (!this.IsMenuShowing(session) && !session.Failed)
 		{
 			// Trailers / an auto-playing feature: jump to the top menu.
 			session.TopMenu();
 			usedTopMenu = true;
-			session.Pump(() => session.MenuActive && session.Overlay.IsVisible, 0, TimeSpan.Zero, 20_000, this.Remaining(TimeSpan.FromSeconds(30)));
+			session.Pump(() => this.IsMenuShowing(session), 0, TimeSpan.Zero, 40_000, this.Remaining(TimeSpan.FromSeconds(30)));
 		}
 
-		if (!session.Overlay.IsVisible)
+		if (!this.IsMenuShowing(session))
 		{
+			this._reachFailure = session.FailureReason
+				?? $"No menu graphics appeared (playlist {session.Playlist?.ToString() ?? "none"}, menu event {(session.MenuActive ? "on" : "off")}, {session.IdleEvents} idle event(s), overlay {(session.Overlay.FlushCount > 0 ? $"drew {session.Overlay.FlushCount} frame(s)" : "never drew")}).";
 			session.Dispose();
 			return null;
 		}
@@ -148,6 +155,13 @@ public sealed class BlurayMenuCrawler
 
 		return session;
 	}
+
+	/// <summary>
+	/// HDMV menus raise BD_EVENT_MENU; BD-J menus never do, so for them a visible interactive-graphics overlay is
+	/// taken as "a menu is showing".
+	/// </summary>
+	private bool IsMenuShowing(BluraySession session) =>
+		session.Overlay.IsVisible && (session.MenuActive || this._bdj);
 
 	private void Press(BluraySession session, NavKey key)
 	{
@@ -338,7 +352,7 @@ public sealed class BlurayMenuCrawler
 		session.SeekNearEnd();
 		var endsBefore = session.EndOfTitleCount;
 		session.Pump(
-			() => session.MenuActive || session.Playlist != playlist || session.EndOfTitleCount > endsBefore,
+			() => this.IsMenuShowing(session) || session.Playlist != playlist || session.EndOfTitleCount > endsBefore,
 			0,
 			TimeSpan.Zero,
 			20_000,
@@ -347,7 +361,7 @@ public sealed class BlurayMenuCrawler
 		string then;
 		string? thenMenu = null;
 		int? thenTitle = null;
-		if (session.MenuActive)
+		if (this.IsMenuShowing(session))
 		{
 			session.Pump(null, 24, TimeSpan.Zero, 2_000, this.Remaining(TimeSpan.FromSeconds(5)));
 			then = "ReturnToMenu";

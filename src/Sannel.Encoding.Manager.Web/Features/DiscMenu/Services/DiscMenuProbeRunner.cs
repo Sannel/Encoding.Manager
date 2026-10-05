@@ -105,10 +105,26 @@ public class DiscMenuProbeRunner : IDiscMenuProbeRunner
 			environment["LIBBLURAY_CP"] = jar;
 		}
 
-		// Windows resolves a DLL's dependencies through PATH, not the folder the DLL was loaded from.
-		if (OperatingSystem.IsWindows() && this.NativeLibraryFolder() is { } nativePath)
+		// Windows resolves a DLL's dependencies through PATH, not the folder the DLL was loaded from. That applies to
+		// the bundled native libraries and to jvm.dll, which needs the JRE's bin folder for its own DLLs.
+		if (OperatingSystem.IsWindows())
 		{
-			environment["PATH"] = nativePath + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+			var prepend = new List<string>();
+			if (this.NativeLibraryFolder() is { } nativePath)
+			{
+				prepend.Add(nativePath);
+			}
+
+			if (!string.IsNullOrWhiteSpace(this._options.JavaHome))
+			{
+				prepend.Add(Path.Combine(this._options.JavaHome, "bin", "server"));
+				prepend.Add(Path.Combine(this._options.JavaHome, "bin"));
+			}
+
+			if (prepend.Count > 0)
+			{
+				environment["PATH"] = string.Join(Path.PathSeparator, prepend) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+			}
 		}
 
 		// An apphost-less probe started through the dotnet muxer needs to find the same runtime.

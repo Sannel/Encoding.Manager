@@ -205,10 +205,19 @@ public sealed class DiscMenuService : IDiscMenuService, IDisposable
 	{
 		var root = Path.IsPathRooted(this._options.OutputPath)
 			? this._options.OutputPath
-			: Path.Combine(this._options.ContentRootPath, this._options.OutputPath);
+			: Path.Combine(DataRoot(this._options.ContentRootPath), this._options.OutputPath);
 		var name = Convert.ToHexStringLower(SHA1.HashData(System.Text.Encoding.UTF8.GetBytes(physical)));
 		return Path.Combine(root, name);
 	}
+
+	/// <summary>
+	/// Base folder for relative output paths. On Windows the app is usually installed under Program Files, which a
+	/// service account cannot write to, so data goes under %ProgramData%\SannelEncodingManager instead.
+	/// </summary>
+	internal static string DataRoot(string contentRootPath) =>
+		OperatingSystem.IsWindows()
+			? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "SannelEncodingManager")
+			: contentRootPath;
 
 	/// <summary>"dvd" for a VIDEO_TS rip, "bluray" for a BDMV rip, else null.</summary>
 	internal static string? DetectDiscType(string physical)

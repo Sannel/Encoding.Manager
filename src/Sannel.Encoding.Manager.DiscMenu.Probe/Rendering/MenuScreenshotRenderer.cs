@@ -82,9 +82,9 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 
 		try
 		{
-			if (!this.WaitForFirstMenu(player, discType))
+			if (this.WaitForFirstMenu(player, discType) is { } failure)
 			{
-				menu.Screenshot.Error = "The first menu did not appear within the time limit.";
+				menu.Screenshot.Error = failure;
 				return;
 			}
 
@@ -129,31 +129,42 @@ internal sealed class MenuScreenshotRenderer : IDisposable
 	}
 
 	/// <summary>
-	/// Waits for the disc to settle on its first menu. For DVDs libvlc reports title 0 while in a menu domain;
-	/// for Blu-ray the first frames after first play are used.
+	/// Waits for the disc to settle on its first menu. For DVDs libvlc usually reports title 0 while in a menu domain;
+	/// when it never does but video is playing, the menu is assumed to be up once the time limit passes (first-play
+	/// warnings are much shorter). Returns null when ready, else a diagnostic message.
 	/// </summary>
-	private bool WaitForFirstMenu(MediaPlayer player, string discType)
+	private string? WaitForFirstMenu(MediaPlayer player, string discType)
 	{
 		var clock = Stopwatch.StartNew();
+		var titlesSeen = new SortedSet<int>();
 		while (clock.Elapsed < _firstMenuTimeout)
 		{
 			var hasFrames = Interlocked.Read(ref this._frames) > 0;
-			var atMenu = discType != "dvd" || player.Title == 0;
+			var title = player.Title;
+			titlesSeen.Add(title);
+			var atMenu = discType != "dvd" || title == 0;
 			if (hasFrames && atMenu)
 			{
 				Thread.Sleep(this._settle);
-				return true;
+				return null;
 			}
 
 			if (player.State is VLCState.Error or VLCState.Ended or VLCState.Stopped && clock.Elapsed > TimeSpan.FromSeconds(5))
 			{
-				return false;
+				return $"libvlc stopped before a menu appeared (state {player.State}, {Interlocked.Read(ref this._frames)} frame(s), titles seen: {string.Join(", ", titlesSeen)}).";
 			}
 
 			Thread.Sleep(100);
 		}
 
-		return false;
+		var frames = Interlocked.Read(ref this._frames);
+		if (frames > 0)
+		{
+			this._log($"no menu title reported after {_firstMenuTimeout.TotalSeconds:0}s (titles seen: {string.Join(", ", titlesSeen)}); using the current picture");
+			return null;
+		}
+
+		return $"libvlc rendered no video within {_firstMenuTimeout.TotalSeconds:0}s (state {player.State}, titles seen: {string.Join(", ", titlesSeen)}). Check that disc-menu-probe\\libvlc\\win-x64\\plugins exists.";
 	}
 
 	/// <summary>
