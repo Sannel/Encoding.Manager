@@ -118,6 +118,9 @@
 							</MudSelectItem>
 						}
 					</MudSelect>
+					<InterlacePresetCell Result="@GetInterlace(seg.SegmentNumber)" Presets="_presets"
+						Value="@GetRowPreset(seg.SegmentNumber)"
+						ValueChanged="@(v => OnRowPresetChanged(seg.SegmentNumber, v))" />
 				</MudStack>
 			</MudPaper>
 		}
@@ -125,7 +128,7 @@
 			@if (_presets.Count > 0)
 			{
 				<MudSelect T="string?" @bind-Value="_selectedPresetLabel"
-					Label="Preset" Variant="Variant.Outlined" Margin="Margin.Dense"
+					Label="Job preset" HelperText="For tracks without their own preset" Variant="Variant.Outlined" Margin="Margin.Dense"
 					Placeholder="None" AnchorOrigin="Origin.BottomCenter" Style="min-width: 200px;"
 					Clearable="true">
 					@foreach (var preset in _presets)

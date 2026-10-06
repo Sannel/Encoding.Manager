@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Sannel.Encoding.Manager.HandBrake;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Services;
+using Sannel.Encoding.Manager.Web.Features.Interlace.Services;
 using Sannel.Encoding.Manager.Web.Features.Scan.Dto;
 
 namespace Sannel.Encoding.Manager.Web.Features.Scan.Services;
@@ -87,6 +88,11 @@ public class BackgroundScanCoordinator : IBackgroundScanCoordinator
 				var handBrake = this._services.GetRequiredService<IHandBrakeService>();
 				var result = await handBrake.ScanAsync(physicalPath, forceRescan, token);
 				entry.CompletedAt = DateTimeOffset.UtcNow;
+				if (result.IsSuccess)
+				{
+					await this.StartInterlaceProbesAsync(physicalPath, result, token);
+				}
+
 				return result;
 			}
 			catch (Exception ex)
@@ -97,6 +103,24 @@ public class BackgroundScanCoordinator : IBackgroundScanCoordinator
 			}
 		}, CancellationToken.None);
 		return entry;
+	}
+
+	/// <summary>
+	/// Queues the background interlace probes for the scanned titles (Blu-ray titles at least 30 s long; DVDs need none)
+	/// so verdicts are ready, or on their way, when the scan result is first shown.
+	/// </summary>
+	private async Task StartInterlaceProbesAsync(string physicalPath, HandBrakeScanResult result, CancellationToken token)
+	{
+		try
+		{
+			var interlace = this._services.GetRequiredService<IInterlaceService>();
+			var titles = result.Titles.Where(t => t.Duration >= TimeSpan.FromSeconds(30)).ToList();
+			await interlace.GetDiscTitlesAsync(physicalPath, titles, token);
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
+		{
+			this._logger.LogWarning(ex, "Could not start interlace probes for {Path}", physicalPath);
+		}
 	}
 
 	private void EvictExpired()

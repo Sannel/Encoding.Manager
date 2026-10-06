@@ -46,6 +46,64 @@ namespace Sannel.Encoding.Manager.Migrations.Sqlite.Migrations
                     b.ToTable("DiscMenuCache");
                 });
 
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Interlace.Entities.InterlaceProbeCache", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FfmpegVersion")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool?>("HandBrakeDetected")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double>("InterlacedPercent")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("Playlist")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ProbeVersion")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ProbedAt")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SampledFrames")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SourceLastWriteUtc")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourcePath")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("SourceSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double>("TelecinePercent")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("Verdict")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SourcePath", "Playlist")
+                        .IsUnique();
+
+                    b.ToTable("InterlaceProbeCache");
+                });
+
             modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinDestinationRoot", b =>
                 {
                     b.Property<Guid>("Id")

@@ -24,4 +24,10 @@ public class McpQueueTrack
 
 	/// <summary>Movie resolution ("480p", "720p", "1080p", "4k"). Omit for TV.</summary>
 	public string? Resolution { get; set; }
+
+	/// <summary>
+	/// Preset for this track only (overrides the job-level presetLabel) — e.g. the title's recommendedPreset when one job
+	/// mixes progressive and interlaced sources.
+	/// </summary>
+	public string? PresetLabel { get; set; }
 }

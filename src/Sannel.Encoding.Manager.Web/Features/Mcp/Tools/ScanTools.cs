@@ -3,6 +3,8 @@ using Microsoft.Extensions.Options;
 using ModelContextProtocol;
 using ModelContextProtocol.Server;
 using Sannel.Encoding.Manager.HandBrake;
+using Sannel.Encoding.Manager.Web.Features.Interlace.Dto;
+using Sannel.Encoding.Manager.Web.Features.Interlace.Services;
 using Sannel.Encoding.Manager.Web.Features.Mcp.Dto;
 using Sannel.Encoding.Manager.Web.Features.Mcp.Options;
 using Sannel.Encoding.Manager.Web.Features.Mcp.Services;
@@ -22,13 +24,16 @@ public class ScanTools
 	private readonly IForcedRescanLimiter _rescanLimiter;
 	private readonly McpCaller _caller;
 	private readonly McpOptions _options;
+	private readonly IInterlaceService _interlace;
 
 	public ScanTools(
 		IBackgroundScanCoordinator scanCoordinator,
 		IForcedRescanLimiter rescanLimiter,
 		McpCaller caller,
-		IOptions<McpOptions> options)
+		IOptions<McpOptions> options,
+		IInterlaceService interlace)
 	{
+		this._interlace = interlace;
 		this._scanCoordinator = scanCoordinator;
 		this._rescanLimiter = rescanLimiter;
 		this._caller = caller;
@@ -36,7 +41,14 @@ public class ScanTools
 	}
 
 	[McpServerTool(Name = "scan_disc", ReadOnly = true)]
-	[Description("Scans a DVD or Blu-ray disc folder with HandBrake and returns its titles. Results are cached for 24 hours, so repeat scans are instant. An uncached scan can take minutes: if status is \"Scanning\", wait pollAfterSeconds and call get_scan_status. Only use forceRescan when the user asks for it — it is rate-limited.")]
+	[Description("""
+		Scans a DVD or Blu-ray disc folder with HandBrake and returns its titles. Results are cached for 24 hours, so repeat
+		scans are instant. An uncached scan can take minutes: if status is "Scanning", wait pollAfterSeconds and call
+		get_scan_status. Only use forceRescan when the user asks for it — it is rate-limited.
+		Each title has an interlace verdict and a recommendedPreset: DVD titles are always interlaced; Blu-ray titles are
+		checked one by one (extras are often interlaced while the feature is not). While any title's interlace is "pending",
+		wait pollAfterSeconds and call get_scan_status again. Use each title's recommendedPreset as that track's presetLabel.
+		""")]
 	public async Task<McpScanResult> ScanDiscAsync(
 		[Description("Root label from list_roots.")] string root,
 		[Description("Root-relative path of the disc folder (a directory whose discType is DVD or BluRay).")] string path,
@@ -56,19 +68,20 @@ public class ScanTools
 			forceRescan,
 			TimeSpan.FromSeconds(Math.Max(0, this._options.ScanWaitSeconds)),
 			ct));
-		return ToResult(status, minimumDurationSeconds);
+		return await this.ToResultAsync(status, minimumDurationSeconds, ct);
 	}
 
 	[McpServerTool(Name = "get_scan_status", ReadOnly = true, Idempotent = true)]
-	[Description("Returns the status of a disc scan started with scan_disc. Same result shape as scan_disc.")]
-	public McpScanResult GetScanStatus(
+	[Description("Returns the status of a disc scan started with scan_disc (and the titles' interlace verdicts — poll while any is \"pending\"). Same result shape as scan_disc.")]
+	public async Task<McpScanResult> GetScanStatusAsync(
 		[Description("Root label from list_roots.")] string root,
 		[Description("Root-relative path of the disc folder.")] string path,
-		[Description("Hide titles shorter than this many seconds.")] int minimumDurationSeconds = 30)
+		[Description("Hide titles shorter than this many seconds.")] int minimumDurationSeconds = 30,
+		CancellationToken ct = default)
 	{
 		var status = McpToolHelpers.Guard(() => this._scanCoordinator.GetStatus(root, McpToolHelpers.NormalizePath(path)))
 			?? throw new McpException("No scan has been started for this disc. Call scan_disc first.");
-		return ToResult(status, minimumDurationSeconds);
+		return await this.ToResultAsync(status, minimumDurationSeconds, ct);
 	}
 
 	[McpServerTool(Name = "get_title_chapters", ReadOnly = true, Idempotent = true)]
@@ -124,7 +137,7 @@ public class ScanTools
 			?? throw new McpException($"Title {titleNumber} does not exist on this disc. Valid titles: {string.Join(", ", status.Result.Titles.Select(t => t.TitleNumber))}.");
 	}
 
-	internal static McpScanResult ToResult(ScanJobStatus status, int minimumDurationSeconds)
+	private async Task<McpScanResult> ToResultAsync(ScanJobStatus status, int minimumDurationSeconds, CancellationToken ct)
 	{
 		switch (status.State)
 		{
@@ -136,22 +149,26 @@ public class ScanTools
 
 		var minimum = TimeSpan.FromSeconds(Math.Max(0, minimumDurationSeconds));
 		var all = status.Result?.Titles ?? [];
-		var titles = all
-			.Where(t => t.Duration >= minimum)
-			.OrderBy(t => t.TitleNumber)
-			.Select(ToSummary)
-			.ToList();
+		var shown = all.Where(t => t.Duration >= minimum).OrderBy(t => t.TitleNumber).ToList();
+		var verdicts = await this._interlace.GetDiscTitlesAsync(status.PhysicalPath, shown, ct);
+		var titles = shown.Select(t => ToSummary(t, verdicts.GetValueOrDefault(t.TitleNumber))).ToList();
 		return new McpScanResult
 		{
 			Status = "Completed",
 			StartedAt = status.StartedAt,
+			PollAfterSeconds = titles.Any(t => t.Interlace == "pending") ? InterlaceMapping.PendingPollSeconds : null,
 			Titles = titles,
 			HiddenShortTitles = all.Count - titles.Count,
 		};
 	}
 
-	internal static McpTitleSummary ToSummary(TitleInfo title) => new()
+	internal static McpTitleSummary ToSummary(TitleInfo title, InterlaceResult? interlace) => new()
 	{
+		Interlace = interlace is null ? "unknown" : InterlaceMapping.ToMcp(interlace.Verdict),
+		InterlaceSource = interlace?.Source,
+		InterlacedPercent = interlace?.InterlacedPercent,
+		TelecinePercent = interlace?.TelecinePercent,
+		RecommendedPreset = interlace?.RecommendedPreset,
 		TitleNumber = title.TitleNumber,
 		Playlist = title.Playlist,
 		Duration = McpToolHelpers.FormatDuration(title.Duration),

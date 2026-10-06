@@ -140,5 +140,36 @@ public sealed class McpQueueRequestBuilderTests : IDisposable
 		Assert.Contains(errors, e => e.Contains("not allowed in file names"));
 	}
 
+	[Fact]
+	public async Task PerTrackPreset_IsKeptAndValidated()
+	{
+		this._presets.GetPresetsAsync(Arg.Any<CancellationToken>())
+			.Returns([new EncodingPreset { Label = "1080p", PresetName = "a" }, new EncodingPreset { Label = "Decomb", PresetName = "b" }]);
+		var request = new McpQueueEncodeRequest
+		{
+			Root = "T",
+			Path = "Disc",
+			Selection = "disc",
+			Mode = "Titles",
+			PresetLabel = "1080p",
+			Tracks =
+			[
+				new McpQueueTrack { TitleNumber = 1, OutputName = "Feature" },
+				new McpQueueTrack { TitleNumber = 1, OutputName = "Extra", PresetLabel = "Decomb" },
+			],
+		};
+
+		var (submission, errors) = await this._builder.BuildAsync(request, null, null, CancellationToken.None);
+
+		Assert.Empty(errors);
+		Assert.Null(submission!.Tracks[0].PresetLabel);
+		Assert.Equal("Decomb", submission.Tracks[1].PresetLabel);
+		Assert.Equal("1080p", submission.PresetLabel);
+
+		request.Tracks[1].PresetLabel = "missing";
+		(_, errors) = await this._builder.BuildAsync(request, null, null, CancellationToken.None);
+		Assert.Contains(errors, e => e.StartsWith("tracks[1]: presetLabel", StringComparison.Ordinal));
+	}
+
 	public void Dispose() => Directory.Delete(this._root, recursive: true);
 }

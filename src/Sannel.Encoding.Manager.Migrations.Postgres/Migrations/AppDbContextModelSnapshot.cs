@@ -51,6 +51,64 @@ namespace Sannel.Encoding.Manager.Migrations.Postgres.Migrations
                     b.ToTable("DiscMenuCache");
                 });
 
+            modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Interlace.Entities.InterlaceProbeCache", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FfmpegVersion")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<bool?>("HandBrakeDetected")
+                        .HasColumnType("boolean");
+
+                    b.Property<double>("InterlacedPercent")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("Playlist")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProbeVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProbedAt")
+                        .IsRequired()
+                        .HasColumnType("character varying(48)");
+
+                    b.Property<int>("SampledFrames")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SourceLastWriteUtc")
+                        .IsRequired()
+                        .HasColumnType("character varying(48)");
+
+                    b.Property<string>("SourcePath")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<long>("SourceSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<double>("TelecinePercent")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Verdict")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SourcePath", "Playlist")
+                        .IsUnique();
+
+                    b.ToTable("InterlaceProbeCache");
+                });
+
             modelBuilder.Entity("Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities.JellyfinDestinationRoot", b =>
                 {
                     b.Property<Guid>("Id")

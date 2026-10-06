@@ -8,7 +8,10 @@ public class McpScanResult
 
 	public DateTimeOffset? StartedAt { get; init; }
 
-	/// <summary>When <see cref="Status"/> is "Scanning": wait this long, then call <c>get_scan_status</c>.</summary>
+	/// <summary>
+	/// When <see cref="Status"/> is "Scanning", or a title's interlace verdict is still "pending": wait this long, then call
+	/// <c>get_scan_status</c>.
+	/// </summary>
 	public int? PollAfterSeconds { get; init; }
 
 	public string? Error { get; init; }

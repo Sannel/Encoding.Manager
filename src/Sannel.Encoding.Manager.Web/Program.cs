@@ -19,6 +19,8 @@ using Sannel.Encoding.Manager.Web.Features.Data.Options;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Services;
 using Sannel.Encoding.Manager.Web.Features.DiscMenu.Options;
 using Sannel.Encoding.Manager.Web.Features.DiscMenu.Services;
+using Sannel.Encoding.Manager.Web.Features.Interlace.Options;
+using Sannel.Encoding.Manager.Web.Features.Interlace.Services;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Options;
 using Sannel.Encoding.Manager.Web.Features.Mcp;
 using Sannel.Encoding.Manager.Web.Features.Mcp.Authentication;
@@ -216,6 +218,14 @@ builder.Services.Configure<DiscMenuOptions>(builder.Configuration.GetSection("Di
 builder.Services.PostConfigure<DiscMenuOptions>(o => o.ContentRootPath = builder.Environment.ContentRootPath);
 builder.Services.AddSingleton<IDiscMenuProbeRunner, DiscMenuProbeRunner>();
 builder.Services.AddSingleton<IDiscMenuService, DiscMenuService>();
+
+// Interlace detection (DVD = interlaced; Blu-ray titles and media files probed with ffmpeg idet)
+builder.Services.Configure<InterlaceOptions>(builder.Configuration.GetSection("Interlace"));
+builder.Services.Configure<PresetDefaultsOptions>(builder.Configuration.GetSection("Presets"));
+builder.Services.AddSingleton<InterlaceClassifier>();
+builder.Services.AddSingleton<IFfmpegLocator, FfmpegLocator>();
+builder.Services.AddSingleton<IInterlaceProbeService, InterlaceProbeService>();
+builder.Services.AddSingleton<IInterlaceService, InterlaceService>();
 
 // Runner job service
 builder.Services.AddScoped<IRunnerJobService, RunnerJobService>();

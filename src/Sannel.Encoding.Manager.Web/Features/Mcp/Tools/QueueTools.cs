@@ -38,6 +38,7 @@ public class QueueTools
 		selection "folder": path = media folder; each track's sourceRelativePath comes from list_folder_media_files.
 		selection "file": path = the media file; exactly one track.
 		TV: set tvdbSeriesId and each track's seasonNumber/episodeNumber, outputName = episode name. Movies: set movieYear and each track's resolution, outputName = movie title.
+		Presets: the job-level presetLabel applies to every track without its own; set tracks[].presetLabel to that title's / file's recommendedPreset (from scan_disc or list_folder_media_files) when sources differ, e.g. a progressive feature with interlaced extras in one job. The server never picks a preset you did not name.
 		Tracks with a blank outputName are skipped. All validation problems are reported at once and nothing is queued until the request is valid.
 		""")]
 	public async Task<McpQueueEncodeResult> QueueEncodeJobAsync(

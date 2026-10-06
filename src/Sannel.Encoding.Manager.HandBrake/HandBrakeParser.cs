@@ -154,6 +154,8 @@ public static partial class HandBrakeParser
 				AngleCount = title.TryGetProperty("AngleCount", out var ac) && ac.ValueKind == JsonValueKind.Number
 					? Math.Max(1, ac.GetInt32())
 					: 1,
+				InterlaceDetected = title.TryGetProperty("InterlaceDetected", out var interlace)
+					&& interlace.ValueKind == JsonValueKind.True,
 				VideoStreams = ParseVideoStreams(title),
 				AudioTracks = ParseAudioTracks(title),
 				Subtitles = ParseSubtitles(title),

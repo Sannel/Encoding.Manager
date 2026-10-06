@@ -271,12 +271,22 @@ public partial class McpQueueRequestBuilder
 
 	private async Task ValidateCommonAsync(McpQueueEncodeRequest request, List<string> errors, CancellationToken ct)
 	{
-		if (!string.IsNullOrWhiteSpace(request.PresetLabel))
+		var trackPresets = request.Tracks.Select(t => t.PresetLabel).Where(p => !string.IsNullOrWhiteSpace(p)).ToList();
+		if (!string.IsNullOrWhiteSpace(request.PresetLabel) || trackPresets.Count > 0)
 		{
-			var presets = await this._presetService.GetPresetsAsync(ct);
-			if (!presets.Any(p => string.Equals(p.Label, request.PresetLabel.Trim(), StringComparison.Ordinal)))
+			var presets = (await this._presetService.GetPresetsAsync(ct)).Select(p => p.Label).ToHashSet(StringComparer.Ordinal);
+			if (!string.IsNullOrWhiteSpace(request.PresetLabel) && !presets.Contains(request.PresetLabel.Trim()))
 			{
 				errors.Add($"presetLabel \"{request.PresetLabel}\" does not exist (see list_presets).");
+			}
+
+			for (var i = 0; i < request.Tracks.Count; i++)
+			{
+				var label = request.Tracks[i].PresetLabel;
+				if (!string.IsNullOrWhiteSpace(label) && !presets.Contains(label.Trim()))
+				{
+					errors.Add($"tracks[{i}]: presetLabel \"{label}\" does not exist (see list_presets).");
+				}
 			}
 		}
 
@@ -318,6 +328,7 @@ public partial class McpQueueRequestBuilder
 		EpisodeNumber = track.EpisodeNumber,
 		MovieYear = string.IsNullOrWhiteSpace(movieYear) ? null : movieYear.Trim(),
 		Resolution = string.IsNullOrWhiteSpace(track.Resolution) ? null : track.Resolution.Trim(),
+		PresetLabel = string.IsNullOrWhiteSpace(track.PresetLabel) ? null : track.PresetLabel.Trim(),
 	};
 
 	private static string NormalizePath(string? path) =>

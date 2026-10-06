@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sannel.Encoding.Manager.Web.Features.DiscMenu.Entities;
+using Sannel.Encoding.Manager.Web.Features.Interlace.Entities;
 using Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities;
 using Sannel.Encoding.Manager.Web.Features.Logging.Entities;
 using Sannel.Encoding.Manager.Web.Features.Mcp.Entities;
@@ -44,6 +45,7 @@ public class AppDbContext : DbContext
 	public DbSet<LogEntry> LogEntries => this.Set<LogEntry>();
 	public DbSet<UserApiKey> UserApiKeys => this.Set<UserApiKey>();
 	public DbSet<DiscMenuCache> DiscMenuCache => this.Set<DiscMenuCache>();
+	public DbSet<InterlaceProbeCache> InterlaceProbeCache => this.Set<InterlaceProbeCache>();
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
@@ -141,6 +143,15 @@ public class AppDbContext : DbContext
 		modelBuilder.Entity<DiscMenuCache>(entity =>
 		{
 			entity.HasKey(e => e.InputPath);
+		});
+
+		modelBuilder.Entity<InterlaceProbeCache>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasIndex(e => new { e.SourcePath, e.Playlist }).IsUnique();
+			entity.Property(e => e.SourcePath).HasMaxLength(1024);
+			entity.Property(e => e.Verdict).HasMaxLength(16);
+			entity.Property(e => e.FfmpegVersion).HasMaxLength(128);
 		});
 	}
 }

@@ -16,4 +16,9 @@ public class TitleInfo
 	public int Height { get; init; }
 	/// <summary>Number of angles on this title. 1 means a single angle (standard). Values > 1 indicate a multi-angle title.</summary>
 	public int AngleCount { get; init; } = 1;
+	/// <summary>
+	/// HandBrake's comb detection on the scan's preview frames ("InterlaceDetected" in the scan JSON). Only ~10 previews
+	/// are sampled and telecine is not told apart, so treat it as a hint rather than a verdict.
+	/// </summary>
+	public bool InterlaceDetected { get; init; }
 }

@@ -251,6 +251,31 @@ public class HandBrakeParserTests
 		Assert.Equal(3, titles[0].AngleCount);
 	}
 
+	[Theory]
+	[InlineData("\"InterlaceDetected\": true,", true)]
+	[InlineData("\"InterlaceDetected\": false,", false)]
+	[InlineData("", false)]
+	public void ParseScan_InterlaceDetected_ParsedOrDefaultsToFalse(string field, bool expected)
+	{
+		var json = $$"""
+		{
+			"TitleList": [
+				{
+					"Index": 1,
+					{{field}}
+					"Duration": { "Hours": 0, "Minutes": 5, "Seconds": 0 },
+					"Geometry": { "Width": 720, "Height": 480 }
+				}
+			]
+		}
+		""";
+
+		var titles = HandBrakeParser.ParseScan(json);
+
+		Assert.Single(titles);
+		Assert.Equal(expected, titles[0].InterlaceDetected);
+	}
+
 	[Fact]
 	public void ParseScan_JsonWithoutAngleCount_DefaultsToOne()
 	{

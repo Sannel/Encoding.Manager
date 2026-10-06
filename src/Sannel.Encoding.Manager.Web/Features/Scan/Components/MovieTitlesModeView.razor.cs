@@ -27,6 +27,8 @@ public partial class MovieTitlesModeView : NamingComponentBase
 			.OrderBy(t => t.TitleNumber)
 			.ToList();
 
+	private HandBrakeScanResult? _trackedScan;
+
 	protected override async Task OnParametersSetAsync()
 	{
 		await base.OnParametersSetAsync();
@@ -38,16 +40,24 @@ public partial class MovieTitlesModeView : NamingComponentBase
 				this.ApplyDetectedResolution(title.TitleNumber, title.Width, title.Height);
 			}
 		}
+
+		if (!ReferenceEquals(this._trackedScan, this.ScanResult))
+		{
+			this._trackedScan = this.ScanResult;
+			this.TrackInterlace(ct => this.LoadTitleVerdictsAsync(this.ScanResult, this.FilteredTitles, ct));
+		}
 	}
 
 	private void OnMinimumMinutesChanged(int value)
 	{
 		this._minimumMinutes = value;
+		this.TrackInterlace(ct => this.LoadTitleVerdictsAsync(this.ScanResult, this.FilteredTitles, ct));
 	}
 
 	private void OnMinimumSecondsChanged(int value)
 	{
 		this._minimumSeconds = value;
+		this.TrackInterlace(ct => this.LoadTitleVerdictsAsync(this.ScanResult, this.FilteredTitles, ct));
 	}
 
 	private bool _isAddingToQueue;
@@ -70,6 +80,7 @@ public partial class MovieTitlesModeView : NamingComponentBase
 						MovieYear = string.IsNullOrWhiteSpace(this._movieYear) ? null : this._movieYear.Trim(),
 						Resolution = nr.Resolution,
 						AngleCount = title.AngleCount,
+						PresetLabel = this.GetRowPreset(title.TitleNumber),
 					};
 				})
 				.ToList();

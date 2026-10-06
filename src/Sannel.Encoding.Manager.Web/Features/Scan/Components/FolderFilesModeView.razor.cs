@@ -29,6 +29,19 @@ public partial class FolderFilesModeView : NamingComponentBase
 		return this.GetNamingRow(item.Key);
 	}
 
+	private IReadOnlyList<FileEntryResponse>? _trackedFiles;
+
+	protected override void OnParametersSet()
+	{
+		base.OnParametersSet();
+		if (!ReferenceEquals(this._trackedFiles, this.Files))
+		{
+			this._trackedFiles = this.Files;
+			var files = this.TrackItems.Select(i => (i.Key, i.File.RelativePath)).ToList();
+			this.TrackInterlace(ct => this.LoadFileVerdictsAsync(files, this.DiscRootLabel, this.DiscRelativePath, ct));
+		}
+	}
+
 	public void ClearAllTrackNames()
 	{
 		foreach (var item in this.TrackItems)
@@ -61,6 +74,7 @@ public partial class FolderFilesModeView : NamingComponentBase
 							: row.Name.Trim(),
 						SeasonNumber = row.Season,
 						EpisodeNumber = row.Episode?.EpisodeNumber,
+						PresetLabel = this.GetRowPreset(item.Key),
 					};
 				})
 				.ToList();

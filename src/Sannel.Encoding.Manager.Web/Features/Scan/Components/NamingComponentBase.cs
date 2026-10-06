@@ -1,6 +1,10 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
+using Sannel.Encoding.Manager.HandBrake;
+using Sannel.Encoding.Manager.Web.Features.Filesystem.Services;
+using Sannel.Encoding.Manager.Web.Features.Interlace.Dto;
+using Sannel.Encoding.Manager.Web.Features.Interlace.Services;
 using Sannel.Encoding.Manager.Web.Features.Omdb.Dto;
 using Sannel.Encoding.Manager.Web.Features.Omdb.Services;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
@@ -19,7 +23,7 @@ namespace Sannel.Encoding.Manager.Web.Features.Scan.Components;
 /// Base component that provides TVDB episode loading, per-row naming state, and cascade logic
 /// for mode views that embed naming columns directly in their tables.
 /// </summary>
-public abstract class NamingComponentBase : ComponentBase
+public abstract class NamingComponentBase : ComponentBase, IDisposable
 {
 	[Inject]
 	private ITvdbService TvdbService { get; set; } = default!;
@@ -42,13 +46,30 @@ public abstract class NamingComponentBase : ComponentBase
 	[Inject]
 	private IDialogService DialogService { get; set; } = default!;
 
+	[Inject]
+	private IInterlaceService InterlaceService { get; set; } = default!;
+
+	[Inject]
+	private IFilesystemService FilesystemService { get; set; } = default!;
+
 	protected sealed class NamingRowData
 	{
 		public string Name { get; set; } = string.Empty;
 		public int? Season { get; set; }
 		public TvdbEpisode? Episode { get; set; }
 		public string? Resolution { get; set; }
+
+		/// <summary>Preset the user picked for this row; only used once <see cref="PresetChosen"/> is set.</summary>
+		public string? PresetLabel { get; set; }
+
+		/// <summary>True once the user changed this row's preset; until then it follows the row's interlace verdict.</summary>
+		public bool PresetChosen { get; set; }
 	}
+
+	/// <summary>Interlace verdict per row key (title number, segment number or file index).</summary>
+	protected readonly Dictionary<int, InterlaceResult> _interlace = [];
+
+	private CancellationTokenSource? _interlacePolling;
 
 	protected string _showId = string.Empty;
 	protected bool _isTvdbLoading;
@@ -73,7 +94,7 @@ public abstract class NamingComponentBase : ComponentBase
 	/// <summary>Available video resolutions for dropdown selection.</summary>
 	protected IReadOnlyList<string> _availableResolutions = ResolutionDetector.GetAvailableResolutions();
 
-	/// <summary>The preset label selected on the scan page (applied to all tracks when queuing).</summary>
+	/// <summary>The job preset selected on the scan page (used by tracks without their own preset).</summary>
 	protected string? _selectedPresetLabel;
 
 	/// <summary>Previously looked-up TVDB series from the local cache, for quick re-selection.</summary>
@@ -335,6 +356,104 @@ public abstract class NamingComponentBase : ComponentBase
 			row.Episode = null;
 			row.Resolution = null;
 		}
+	}
+
+	/// <summary>The row's interlace verdict, or null when not known (yet).</summary>
+	protected virtual InterlaceResult? GetInterlace(int key) => this._interlace.GetValueOrDefault(key);
+
+	/// <summary>
+	/// The row's preset: the user's choice once made, otherwise the preset its interlace verdict recommends. Null means
+	/// "use the job preset" (pending / unknown verdicts).
+	/// </summary>
+	protected string? GetRowPreset(int key)
+	{
+		var row = this.GetNamingRow(key);
+		return row.PresetChosen ? row.PresetLabel : this.GetInterlace(key)?.RecommendedPreset;
+	}
+
+	protected void OnRowPresetChanged(int key, string? preset)
+	{
+		var row = this.GetNamingRow(key);
+		row.PresetLabel = preset;
+		row.PresetChosen = true;
+	}
+
+	/// <summary>
+	/// Loads verdicts with <paramref name="load"/> and keeps reloading every few seconds while any is pending (probes run
+	/// in the background). Calling it again replaces the previous loop.
+	/// </summary>
+	protected void TrackInterlace(Func<CancellationToken, Task<IReadOnlyDictionary<int, InterlaceResult>>> load)
+	{
+		this._interlacePolling?.Cancel();
+		this._interlacePolling?.Dispose();
+		var polling = new CancellationTokenSource(TimeSpan.FromMinutes(30));
+		this._interlacePolling = polling;
+		_ = Task.Run(async () =>
+		{
+			try
+			{
+				while (!polling.IsCancellationRequested)
+				{
+					var verdicts = await load(polling.Token);
+					await this.InvokeAsync(() =>
+					{
+						this._interlace.Clear();
+						foreach (var (key, verdict) in verdicts)
+						{
+							this._interlace[key] = verdict;
+						}
+
+						this.StateHasChanged();
+					});
+
+					if (!verdicts.Values.Any(v => v.Verdict == InterlaceVerdict.Pending))
+					{
+						return;
+					}
+
+					await Task.Delay(TimeSpan.FromSeconds(5), polling.Token);
+				}
+			}
+			catch (OperationCanceledException)
+			{
+				// Replaced, timed out or the component went away.
+			}
+			catch (ObjectDisposedException)
+			{
+				// The circuit closed while polling.
+			}
+		});
+	}
+
+	/// <summary>Verdicts for scanned disc titles, keyed by title number.</summary>
+	protected Task<IReadOnlyDictionary<int, InterlaceResult>> LoadTitleVerdictsAsync(HandBrakeScanResult scan, IReadOnlyList<TitleInfo> titles, CancellationToken ct) =>
+		this.InterlaceService.GetDiscTitlesAsync(scan.InputPath, titles, ct);
+
+	/// <summary>Verdicts for media files (relative to the selected folder), keyed by the row key.</summary>
+	protected async Task<IReadOnlyDictionary<int, InterlaceResult>> LoadFileVerdictsAsync(
+		IReadOnlyList<(int Key, string RelativePath)> files, string? rootLabel, string? folder, CancellationToken ct)
+	{
+		var folderPath = rootLabel is null ? folder ?? string.Empty : this.FilesystemService.ResolvePhysicalPath(rootLabel, folder ?? string.Empty);
+		var physical = files.Select(f => Path.GetFullPath(Path.Combine(folderPath, f.RelativePath))).ToList();
+		var verdicts = await this.InterlaceService.GetFilesAsync(physical, ct);
+		var byKey = new Dictionary<int, InterlaceResult>();
+		for (var i = 0; i < files.Count; i++)
+		{
+			if (verdicts.TryGetValue(physical[i], out var verdict))
+			{
+				byKey[files[i].Key] = verdict;
+			}
+		}
+
+		return byKey;
+	}
+
+	public void Dispose()
+	{
+		this._interlacePolling?.Cancel();
+		this._interlacePolling?.Dispose();
+		this._interlacePolling = null;
+		GC.SuppressFinalize(this);
 	}
 
 	protected void OnResolutionChanged(int key, string? resolution)

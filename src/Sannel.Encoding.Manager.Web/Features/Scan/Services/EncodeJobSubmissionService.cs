@@ -28,9 +28,10 @@ public class EncodeJobSubmissionService : IEncodeJobSubmissionService
 			return EncodeJobSubmissionResult.Rejected("No tracks to queue — all track names are empty.", skipped);
 		}
 
+		// A track's own preset (per-track choice, e.g. Decomb for an interlaced extra) wins; the rest use the job preset.
 		foreach (var track in toAdd)
 		{
-			track.PresetLabel = submission.PresetLabel;
+			track.PresetLabel = string.IsNullOrWhiteSpace(track.PresetLabel) ? submission.PresetLabel : track.PresetLabel;
 		}
 
 		var settings = await this._settingsService.GetSettingsAsync(ct);

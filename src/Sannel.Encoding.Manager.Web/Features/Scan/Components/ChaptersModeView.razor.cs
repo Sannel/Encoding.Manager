@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
 using Sannel.Encoding.Manager.HandBrake;
+using Sannel.Encoding.Manager.Web.Features.Interlace.Dto;
 
 namespace Sannel.Encoding.Manager.Web.Features.Scan.Components;
 
@@ -63,7 +64,15 @@ public partial class ChaptersModeView : NamingComponentBase
 	{
 		this._selectedTitle = title;
 		this._namingRows.Clear();
+		if (title is not null)
+		{
+			this.TrackInterlace(ct => this.LoadTitleVerdictsAsync(this.ScanResult, [title], ct));
+		}
 	}
+
+	/// <summary>Every segment comes from the selected title, so all rows share that title's verdict.</summary>
+	protected override InterlaceResult? GetInterlace(int key) =>
+		this._selectedTitle is null ? null : this._interlace.GetValueOrDefault(this._selectedTitle.TitleNumber);
 
 	private void OnChaptersPerSegmentChanged(int value)
 	{
@@ -104,6 +113,7 @@ public partial class ChaptersModeView : NamingComponentBase
 						SeasonNumber = nr.Season,
 						EpisodeNumber = nr.Episode?.EpisodeNumber,
 						AngleCount = this._selectedTitle!.AngleCount,
+						PresetLabel = this.GetRowPreset(seg.SegmentNumber),
 					};
 				})
 				.ToList();

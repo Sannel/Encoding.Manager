@@ -17,7 +17,7 @@ public class EncodeJobSubmission
 	/// <summary>"Titles", "Chapters" or "Files".</summary>
 	public required string Mode { get; init; }
 
-	/// <summary>Preset label stamped on every track. Null means no preset.</summary>
+	/// <summary>Preset label for every track that does not set its own <c>PresetLabel</c>. Null means no preset.</summary>
 	public string? PresetLabel { get; init; }
 
 	public int? TvdbId { get; init; }

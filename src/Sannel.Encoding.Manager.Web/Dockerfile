@@ -26,8 +26,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 # Disc menu inspection (MCP inspect_disc_menus): libdvdnav for DVD menus, libbluray for Blu-ray menus,
 # libvlc for menu screenshots. For BD-J (Java) menus also install libbluray-bdj and a JRE
 # (e.g. openjdk-17-jre-headless) and set DiscMenu__JavaHome.
+# Interlace detection: ffmpeg (Debian's build includes the libbluray "bluray:" protocol) runs the idet filter.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libdvdnav4 libbluray2 libvlc5 vlc-plugin-base \
+    && apt-get install -y --no-install-recommends libdvdnav4 libbluray2 libvlc5 vlc-plugin-base ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

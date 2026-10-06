@@ -27,14 +27,28 @@ public partial class TitlesModeView : NamingComponentBase
 			.OrderBy(t => t.TitleNumber)
 			.ToList();
 
+	private HandBrakeScanResult? _trackedScan;
+
+	protected override void OnParametersSet()
+	{
+		base.OnParametersSet();
+		if (!ReferenceEquals(this._trackedScan, this.ScanResult))
+		{
+			this._trackedScan = this.ScanResult;
+			this.TrackInterlace(ct => this.LoadTitleVerdictsAsync(this.ScanResult, this.FilteredTitles, ct));
+		}
+	}
+
 	private void OnMinimumMinutesChanged(int value)
 	{
 		this._minimumMinutes = value;
+		this.TrackInterlace(ct => this.LoadTitleVerdictsAsync(this.ScanResult, this.FilteredTitles, ct));
 	}
 
 	private void OnMinimumSecondsChanged(int value)
 	{
 		this._minimumSeconds = value;
+		this.TrackInterlace(ct => this.LoadTitleVerdictsAsync(this.ScanResult, this.FilteredTitles, ct));
 	}
 
 	private void OnCascadeClicked() =>
@@ -58,6 +72,7 @@ public partial class TitlesModeView : NamingComponentBase
 						SeasonNumber = nr.Season,
 						EpisodeNumber = nr.Episode?.EpisodeNumber,
 						AngleCount = title.AngleCount,
+						PresetLabel = this.GetRowPreset(title.TitleNumber),
 					};
 				})
 				.ToList();

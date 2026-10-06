@@ -1,0 +1,31 @@
+@using Sannel.Encoding.Manager.Web.Features.Interlace.Dto
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+	@if (Result is null || Result.Verdict == InterlaceVerdict.Pending)
+	{
+		<MudTooltip Text="Checking for interlacing…">
+			<MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">
+				<MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-1" Style="height:14px;width:14px;" />
+				Checking…
+			</MudChip>
+		</MudTooltip>
+	}
+	else
+	{
+		<MudTooltip Text="@Tooltip">
+			<MudChip T="string" Size="Size.Small" Color="@ChipColor" Variant="@ChipVariant">@Label</MudChip>
+		</MudTooltip>
+	}
+	@if (Presets.Count > 0)
+	{
+		<MudSelect T="string?" Value="Value" ValueChanged="ValueChanged"
+			Label="Preset" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true"
+			Placeholder="Job preset" AnchorOrigin="Origin.BottomCenter" Style="min-width: 190px;"
+			Clearable="true">
+			@foreach (var preset in Presets)
+			{
+				<MudSelectItem T="string?" Value="@preset.Label">@preset.Label</MudSelectItem>
+			}
+		</MudSelect>
+	}
+</MudStack>
