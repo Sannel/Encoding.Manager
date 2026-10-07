@@ -83,11 +83,11 @@ else
 
 		@if (IsTvFormat)
 		{
-			<FolderFilesModeView @ref="_folderFilesModeView" Files="_folderFiles" DiscRootLabel="@Root" DiscRelativePath="@FolderFilesDiscRelativePath" />
+			<FolderFilesModeView @ref="_folderFilesModeView" Files="_folderFiles" DiscRootLabel="@Root" DiscRelativePath="@FolderFilesDiscRelativePath" OnAddedToQueue="OnAddedToQueue" />
 		}
 		else if (IsMovieFormat)
 		{
-			<MovieFilesModeView @ref="_movieFilesModeView" Files="_folderFiles" DiscRootLabel="@Root" DiscRelativePath="@FolderFilesDiscRelativePath" />
+			<MovieFilesModeView @ref="_movieFilesModeView" Files="_folderFiles" DiscRootLabel="@Root" DiscRelativePath="@FolderFilesDiscRelativePath" OnAddedToQueue="OnAddedToQueue" />
 		}
 	}
 	else if (_scanResult is { IsSuccess: true })
@@ -110,15 +110,15 @@ else
 
 		@if (_selectedMode == ScanMode.Titles)
 		{
-			<TitlesModeView ScanResult="_scanResult" DiscRootLabel="@Root" DiscRelativePath="@Path" />
+			<TitlesModeView ScanResult="_scanResult" DiscRootLabel="@Root" DiscRelativePath="@Path" OnAddedToQueue="OnAddedToQueue" />
 		}
 		else if (_selectedMode == ScanMode.Movie)
 		{
-			<MovieTitlesModeView ScanResult="_scanResult" DiscRootLabel="@Root" DiscRelativePath="@Path" />
+			<MovieTitlesModeView ScanResult="_scanResult" DiscRootLabel="@Root" DiscRelativePath="@Path" OnAddedToQueue="OnAddedToQueue" />
 		}
 		else
 		{
-			<ChaptersModeView ScanResult="_scanResult" DiscRootLabel="@Root" DiscRelativePath="@Path" />
+			<ChaptersModeView ScanResult="_scanResult" DiscRootLabel="@Root" DiscRelativePath="@Path" OnAddedToQueue="OnAddedToQueue" />
 		}
 	}
 	else if (_scanResult is { IsSuccess: false })

@@ -4,6 +4,8 @@
 <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap" Spacing="2">
 	<MudTextField @bind-Value="_movieTitle" Label="Movie Title" Variant="Variant.Outlined"
 		Placeholder="e.g. The Matrix" Style="max-width: 220px;" />
+	<MudIconButton Icon="@Icons.Material.Filled.Search" Color="Color.Primary"
+		Title="Search for movie by name" OnClick="OpenOmdbSearchDialogAsync" Size="Size.Medium" />
 	@if (!string.IsNullOrEmpty(_movieName))
 	{
 		<MudStack Spacing="0">
@@ -80,6 +82,9 @@ else
 						<MudSelectItem T="string?" Value="@resolution">@resolution</MudSelectItem>
 					}
 				</MudSelect>
+				<InterlacePresetCell Result="@GetInterlace(item.Key)" Presets="_presets"
+					Value="@GetRowPreset(item.Key)"
+					ValueChanged="@(v => OnRowPresetChanged(item.Key, v))" />
 			</MudStack>
 		</MudPaper>
 	}
@@ -88,7 +93,7 @@ else
 		@if (_presets.Count > 0)
 		{
 			<MudSelect T="string?" @bind-Value="_selectedPresetLabel"
-				Label="Preset" Variant="Variant.Outlined" Margin="Margin.Dense"
+				Label="Job preset" HelperText="For tracks without their own preset" Variant="Variant.Outlined" Margin="Margin.Dense"
 				Placeholder="None" AnchorOrigin="Origin.BottomCenter" Style="min-width: 200px;"
 				Clearable="true">
 				@foreach (var preset in _presets)

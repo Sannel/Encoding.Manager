@@ -8,10 +8,12 @@ namespace Sannel.Encoding.Manager.Web.Features.Runner.Hubs;
 public class RunnerStatusHub : Hub
 {
 	private readonly IRunnerJobService _runnerJobService;
+	private readonly ILogger<RunnerStatusHub> _logger;
 
-	public RunnerStatusHub(IRunnerJobService runnerJobService)
+	public RunnerStatusHub(IRunnerJobService runnerJobService, ILogger<RunnerStatusHub> logger)
 	{
 		_runnerJobService = runnerJobService;
+		_logger = logger;
 	}
 
 	public async Task UpdateJobStatus(Guid jobId, string status, int? progressPercent = null, int? currentTrackProgressPercent = null, string? error = null, string? encodingCommand = null)
@@ -19,7 +21,9 @@ public class RunnerStatusHub : Hub
 		var updated = await _runnerJobService.UpdateJobStatusAsync(jobId, status, progressPercent, currentTrackProgressPercent, error, encodingCommand, Context.ConnectionAborted);
 		if (!updated)
 		{
-			throw new HubException($"Queue item '{jobId}' was not found.");
+			// The item was deleted while a runner was working on it. The runner's next cancel-requested poll tells it
+			// to stop; until then its progress reports have nothing to update and are ignored.
+			_logger.LogDebug("Ignored status '{Status}' for deleted queue item {JobId}.", status, jobId);
 		}
 	}
 }

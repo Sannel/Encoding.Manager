@@ -1,5 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Sannel.Encoding.Manager.Web.Features.DiscMenu.Entities;
+using Sannel.Encoding.Manager.Web.Features.Interlace.Entities;
+using Sannel.Encoding.Manager.Web.Features.Jellyfin.Entities;
+using Sannel.Encoding.Manager.Web.Features.Logging.Entities;
+using Sannel.Encoding.Manager.Web.Features.Mcp.Entities;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
 using Sannel.Encoding.Manager.Web.Features.Scan.Entities;
 using Sannel.Encoding.Manager.Web.Features.Settings.Entities;
@@ -33,6 +38,14 @@ public class AppDbContext : DbContext
 	public DbSet<TvdbSeriesCache> TvdbSeriesCache => this.Set<TvdbSeriesCache>();
 	public DbSet<TvdbEpisodeCache> TvdbEpisodeCache => this.Set<TvdbEpisodeCache>();
 	public DbSet<RunnerEntity> Runners => this.Set<RunnerEntity>();
+	public DbSet<JellyfinServer> JellyfinServers => this.Set<JellyfinServer>();
+	public DbSet<JellyfinSyncProfile> JellyfinSyncProfiles => this.Set<JellyfinSyncProfile>();
+	public DbSet<JellyfinDestinationRoot> JellyfinDestinationRoots => this.Set<JellyfinDestinationRoot>();
+	public DbSet<JellyfinMetadataServerPair> JellyfinMetadataServerPairs => this.Set<JellyfinMetadataServerPair>();
+	public DbSet<LogEntry> LogEntries => this.Set<LogEntry>();
+	public DbSet<UserApiKey> UserApiKeys => this.Set<UserApiKey>();
+	public DbSet<DiscMenuCache> DiscMenuCache => this.Set<DiscMenuCache>();
+	public DbSet<InterlaceProbeCache> InterlaceProbeCache => this.Set<InterlaceProbeCache>();
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
@@ -67,6 +80,78 @@ public class AppDbContext : DbContext
 		{
 			entity.HasKey(e => e.Id);
 			entity.HasIndex(e => e.Name).IsUnique();
+		});
+
+		modelBuilder.Entity<JellyfinServer>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+		});
+
+		modelBuilder.Entity<JellyfinSyncProfile>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasOne(e => e.ServerA)
+				.WithMany()
+				.HasForeignKey(e => e.ServerAId)
+				.OnDelete(DeleteBehavior.Restrict);
+			entity.HasOne(e => e.ServerB)
+				.WithMany()
+				.HasForeignKey(e => e.ServerBId)
+				.OnDelete(DeleteBehavior.Restrict);
+		});
+
+		modelBuilder.Entity<JellyfinDestinationRoot>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasOne(e => e.Server)
+				.WithMany()
+				.HasForeignKey(e => e.ServerId)
+				.OnDelete(DeleteBehavior.Cascade);
+		});
+
+		modelBuilder.Entity<JellyfinMetadataServerPair>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasOne(e => e.SourceServer)
+				.WithMany()
+				.HasForeignKey(e => e.SourceServerId)
+				.OnDelete(DeleteBehavior.Restrict);
+			entity.HasOne(e => e.DestinationServer)
+				.WithMany()
+				.HasForeignKey(e => e.DestinationServerId)
+				.OnDelete(DeleteBehavior.Restrict);
+		});
+
+		modelBuilder.Entity<LogEntry>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasIndex(e => e.Timestamp);
+			entity.HasIndex(e => e.Level);
+			entity.HasIndex(e => e.Source);
+		});
+
+		modelBuilder.Entity<UserApiKey>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasIndex(e => e.UserObjectId).IsUnique();
+			entity.HasIndex(e => e.KeyHash).IsUnique();
+			entity.Property(e => e.UserObjectId).HasMaxLength(128);
+			entity.Property(e => e.KeyHash).HasMaxLength(64);
+			entity.Property(e => e.KeyPrefix).HasMaxLength(16);
+		});
+
+		modelBuilder.Entity<DiscMenuCache>(entity =>
+		{
+			entity.HasKey(e => e.InputPath);
+		});
+
+		modelBuilder.Entity<InterlaceProbeCache>(entity =>
+		{
+			entity.HasKey(e => e.Id);
+			entity.HasIndex(e => new { e.SourcePath, e.Playlist }).IsUnique();
+			entity.Property(e => e.SourcePath).HasMaxLength(1024);
+			entity.Property(e => e.Verdict).HasMaxLength(16);
+			entity.Property(e => e.FfmpegVersion).HasMaxLength(128);
 		});
 	}
 }

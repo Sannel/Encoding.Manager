@@ -20,6 +20,24 @@
 			}
 		</MudStack>
 
+		<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="mb-4">
+			<MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-1" />
+			@if (string.IsNullOrEmpty(Item.CreatedVia) && string.IsNullOrEmpty(Item.CreatedBy))
+			{
+				<MudText Typo="Typo.body2" Style="opacity:.65;">Created by Unknown</MudText>
+			}
+			else
+			{
+				<MudText Typo="Typo.body2">
+					Created by <strong>@(Item.CreatedBy ?? "Unknown")</strong> via <strong>@(Item.CreatedVia ?? "Unknown")</strong>
+				</MudText>
+				@if (Item.CreatedVia == "MCP")
+				{
+					<MudChip T="string" Icon="@Icons.Material.Filled.SmartToy" Color="Color.Info" Size="Size.Small">MCP</MudChip>
+				}
+			}
+		</MudStack>
+
 		@if (_tracks.Count == 0)
 		{
 			<MudAlert Severity="Severity.Info" Dense="true">No tracks found for this item.</MudAlert>
@@ -58,6 +76,10 @@
 					}
 					<MudTh>Output Name</MudTh>
 					<MudTh>S / E</MudTh>
+					@if (ShowAnglesColumn)
+					{
+						<MudTh>Angles</MudTh>
+					}
 					<MudTh Style="min-width:180px;">Preset</MudTh>
 				</HeaderContent>
 				<RowTemplate>
@@ -88,6 +110,21 @@
 							<MudText Typo="Typo.caption" Style="opacity:.5">—</MudText>
 						}
 					</MudTd>
+					@if (ShowAnglesColumn)
+					{
+						<MudTd DataLabel="Angles">
+							@if (context.AngleCount > 1)
+							{
+								<MudChip T="string" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.Videocam">
+									@context.AngleCount
+								</MudChip>
+							}
+							else
+							{
+								<MudText Typo="Typo.caption" Style="opacity:.5">—</MudText>
+							}
+						</MudTd>
+					}
 					<MudTd DataLabel="Preset">
 						<MudSelect T="string?" Value="@context.PresetLabel"
 							ValueChanged="@((v) => context.PresetLabel = v)"

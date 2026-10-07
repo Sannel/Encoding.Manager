@@ -17,6 +17,8 @@
 	}
 	<MudTextField @bind-Value="_showId" Label="Show ID" Variant="Variant.Outlined"
 		Placeholder="e.g. 73739" Style="max-width: 220px;" />
+	<MudIconButton Icon="@Icons.Material.Filled.Search" Color="Color.Primary"
+		Title="Search for TV show by name" OnClick="OpenTvdbSearchDialogAsync" Size="Size.Medium" />
 	@if (!string.IsNullOrEmpty(_seriesName))
 	{
 		<MudText Typo="Typo.subtitle1"><strong>@_seriesName</strong></MudText>
@@ -99,6 +101,9 @@ else
 						</MudSelectItem>
 					}
 				</MudSelect>
+				<InterlacePresetCell Result="@GetInterlace(item.Key)" Presets="_presets"
+					Value="@GetRowPreset(item.Key)"
+					ValueChanged="@(v => OnRowPresetChanged(item.Key, v))" />
 			</MudStack>
 		</MudPaper>
 	}
@@ -107,7 +112,7 @@ else
 		@if (_presets.Count > 0)
 		{
 			<MudSelect T="string?" @bind-Value="_selectedPresetLabel"
-				Label="Preset" Variant="Variant.Outlined" Margin="Margin.Dense"
+				Label="Job preset" HelperText="For tracks without their own preset" Variant="Variant.Outlined" Margin="Margin.Dense"
 				Placeholder="None" AnchorOrigin="Origin.BottomCenter" Style="min-width: 200px;"
 				Clearable="true">
 				@foreach (var preset in _presets)

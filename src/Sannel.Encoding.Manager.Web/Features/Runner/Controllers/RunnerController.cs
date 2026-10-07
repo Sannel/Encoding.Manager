@@ -90,7 +90,6 @@ public class RunnerController : ControllerBase
 	/// <summary>Update job status and/or progress.</summary>
 	[HttpPut("items/{id:guid}/status")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
 	public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateStatusRequest request, CancellationToken ct)
 	{
@@ -104,12 +103,9 @@ public class RunnerController : ControllerBase
 			});
 		}
 
-		var updated = await _runnerJobService.UpdateJobStatusAsync(id, request.Status, request.ProgressPercent, request.CurrentTrackProgressPercent, request.Error, request.EncodingCommand, ct);
-		if (!updated)
-		{
-			return NotFound();
-		}
-
+		// A missing item was deleted while the runner worked on it; the runner's cancel-requested poll stops it, so
+		// its remaining status reports are accepted and ignored rather than failing the runner.
+		await _runnerJobService.UpdateJobStatusAsync(id, request.Status, request.ProgressPercent, request.CurrentTrackProgressPercent, request.Error, request.EncodingCommand, ct);
 		return Ok();
 	}
 }

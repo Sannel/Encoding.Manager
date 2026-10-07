@@ -122,6 +122,7 @@ public class TvdbService : ITvdbService
 		}
 
 		var result = episodes
+			.DistinctBy(e => (e.SeasonNumber, e.EpisodeNumber))
 			.OrderBy(e => e.SeasonNumber)
 			.ThenBy(e => e.EpisodeNumber)
 			.ToList();
@@ -248,6 +249,67 @@ public class TvdbService : ITvdbService
 			.Select(s => new TvdbCachedSeries { SeriesId = s.SeriesId, Name = s.Name! })
 			.ToListAsync(ct)
 			.ConfigureAwait(false);
+	}
+
+	/// <inheritdoc />
+	public async Task<IReadOnlyList<TvdbSeriesSearchResult>> SearchSeriesAsync(string name, CancellationToken ct = default)
+	{
+		if (string.IsNullOrWhiteSpace(name))
+		{
+			return [];
+		}
+
+		await this.EnsureAuthenticatedAsync(ct).ConfigureAwait(false);
+
+		var encodedName = Uri.EscapeDataString(name.Trim());
+		var response = await this._httpClient
+			.GetAsync($"search?query={encodedName}&type=series", ct)
+			.ConfigureAwait(false);
+
+		response.EnsureSuccessStatusCode();
+
+		using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+		using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct).ConfigureAwait(false);
+
+		var results = new List<TvdbSeriesSearchResult>();
+		if (!doc.RootElement.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Array)
+		{
+			return results;
+		}
+
+		foreach (var item in data.EnumerateArray())
+		{
+			var tvdbIdStr = item.TryGetProperty("tvdb_id", out var tvdbId) && tvdbId.ValueKind == JsonValueKind.String
+				? tvdbId.GetString()
+				: null;
+
+			if (!int.TryParse(tvdbIdStr, out var seriesId) || seriesId <= 0)
+			{
+				continue;
+			}
+
+			var seriesName = item.TryGetProperty("name", out var n) && n.ValueKind == JsonValueKind.String
+				? n.GetString() ?? string.Empty
+				: string.Empty;
+
+			var year = item.TryGetProperty("year", out var y) && y.ValueKind == JsonValueKind.String
+				? y.GetString()
+				: null;
+
+			var overview = item.TryGetProperty("overview", out var ov) && ov.ValueKind == JsonValueKind.String
+				? ov.GetString()
+				: null;
+
+			results.Add(new TvdbSeriesSearchResult
+			{
+				SeriesId = seriesId,
+				Name = seriesName,
+				Year = year,
+				Overview = overview,
+			});
+		}
+
+		return results;
 	}
 
 	/// <summary>

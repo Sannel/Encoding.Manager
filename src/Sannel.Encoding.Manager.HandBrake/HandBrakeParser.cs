@@ -142,12 +142,20 @@ public static partial class HandBrakeParser
 			var titleInfo = new TitleInfo
 			{
 				TitleNumber = title.TryGetProperty("Index", out var idx) ? idx.GetInt32() : 0,
+				Playlist = title.TryGetProperty("Playlist", out var pl)
+					&& pl.ValueKind == JsonValueKind.Number
+					&& pl.GetInt32() >= 0 ? pl.GetInt32() : null,
 				Duration = ParseDuration(title),
 				FrameRate = ParseFrameRate(title),
 				Width = title.TryGetProperty("Geometry", out var geo)
 					&& geo.TryGetProperty("Width", out var w) ? w.GetInt32() : 0,
 				Height = title.TryGetProperty("Geometry", out var geo2)
 					&& geo2.TryGetProperty("Height", out var h) ? h.GetInt32() : 0,
+				AngleCount = title.TryGetProperty("AngleCount", out var ac) && ac.ValueKind == JsonValueKind.Number
+					? Math.Max(1, ac.GetInt32())
+					: 1,
+				InterlaceDetected = title.TryGetProperty("InterlaceDetected", out var interlace)
+					&& interlace.ValueKind == JsonValueKind.True,
 				VideoStreams = ParseVideoStreams(title),
 				AudioTracks = ParseAudioTracks(title),
 				Subtitles = ParseSubtitles(title),

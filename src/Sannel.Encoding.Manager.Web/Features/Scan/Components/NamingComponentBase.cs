@@ -1,12 +1,19 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
+using Sannel.Encoding.Manager.HandBrake;
+using Sannel.Encoding.Manager.Web.Features.Filesystem.Services;
+using Sannel.Encoding.Manager.Web.Features.Interlace.Dto;
+using Sannel.Encoding.Manager.Web.Features.Interlace.Services;
+using Sannel.Encoding.Manager.Web.Features.Omdb.Dto;
 using Sannel.Encoding.Manager.Web.Features.Omdb.Services;
 using Sannel.Encoding.Manager.Web.Features.Queue.Dto;
 using Sannel.Encoding.Manager.Web.Features.Queue.Entities;
 using Sannel.Encoding.Manager.Web.Features.Queue.Services;
+using Sannel.Encoding.Manager.Web.Features.Scan.Dto;
+using Sannel.Encoding.Manager.Web.Features.Scan.Services;
 using Sannel.Encoding.Manager.Web.Features.Scan.Utilities;
-using Sannel.Encoding.Manager.Web.Features.Settings.Services;
+using Sannel.Encoding.Manager.Web.Features.Shared.Services;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Dto;
 using Sannel.Encoding.Manager.Web.Features.Tvdb.Services;
 
@@ -16,7 +23,7 @@ namespace Sannel.Encoding.Manager.Web.Features.Scan.Components;
 /// Base component that provides TVDB episode loading, per-row naming state, and cascade logic
 /// for mode views that embed naming columns directly in their tables.
 /// </summary>
-public abstract class NamingComponentBase : ComponentBase
+public abstract class NamingComponentBase : ComponentBase, IDisposable
 {
 	[Inject]
 	private ITvdbService TvdbService { get; set; } = default!;
@@ -28,13 +35,22 @@ public abstract class NamingComponentBase : ComponentBase
 	private ISnackbar Snackbar { get; set; } = default!;
 
 	[Inject]
-	private IEncodeQueueService EncodeQueueService { get; set; } = default!;
+	private IEncodeJobSubmissionService SubmissionService { get; set; } = default!;
 
 	[Inject]
 	private IPresetService PresetService { get; set; } = default!;
 
+	[CascadingParameter]
+	private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
 	[Inject]
-	private ISettingsService SettingsService { get; set; } = default!;
+	private IDialogService DialogService { get; set; } = default!;
+
+	[Inject]
+	private IInterlaceService InterlaceService { get; set; } = default!;
+
+	[Inject]
+	private IFilesystemService FilesystemService { get; set; } = default!;
 
 	protected sealed class NamingRowData
 	{
@@ -42,7 +58,18 @@ public abstract class NamingComponentBase : ComponentBase
 		public int? Season { get; set; }
 		public TvdbEpisode? Episode { get; set; }
 		public string? Resolution { get; set; }
+
+		/// <summary>Preset the user picked for this row; only used once <see cref="PresetChosen"/> is set.</summary>
+		public string? PresetLabel { get; set; }
+
+		/// <summary>True once the user changed this row's preset; until then it follows the row's interlace verdict.</summary>
+		public bool PresetChosen { get; set; }
 	}
+
+	/// <summary>Interlace verdict per row key (title number, segment number or file index).</summary>
+	protected readonly Dictionary<int, InterlaceResult> _interlace = [];
+
+	private CancellationTokenSource? _interlacePolling;
 
 	protected string _showId = string.Empty;
 	protected bool _isTvdbLoading;
@@ -67,7 +94,7 @@ public abstract class NamingComponentBase : ComponentBase
 	/// <summary>Available video resolutions for dropdown selection.</summary>
 	protected IReadOnlyList<string> _availableResolutions = ResolutionDetector.GetAvailableResolutions();
 
-	/// <summary>The preset label selected on the scan page (applied to all tracks when queuing).</summary>
+	/// <summary>The job preset selected on the scan page (used by tracks without their own preset).</summary>
 	protected string? _selectedPresetLabel;
 
 	/// <summary>Previously looked-up TVDB series from the local cache, for quick re-selection.</summary>
@@ -83,7 +110,7 @@ public abstract class NamingComponentBase : ComponentBase
 	}
 
 	protected bool CanCascade =>
-		this._namingRows.Values.Any(r => r.Season is not null && r.Episode is not null);
+		this._namingRows.Values.Any(r => r.Episode is not null);
 
 	protected NamingRowData GetNamingRow(int key)
 	{
@@ -96,41 +123,41 @@ public abstract class NamingComponentBase : ComponentBase
 		return row;
 	}
 
+	/// <summary>Invoked after an item is successfully added to the queue.</summary>
+	[Parameter]
+	public EventCallback OnAddedToQueue { get; set; }
+
 	/// <summary>
 	/// Filters tracks with an empty OutputName, builds one disk-level queue item,
 	/// stamps AudioDefault from settings, persists, and shows a snackbar summary.
 	/// </summary>
 	protected async Task AddDiskToQueueAsync(string discPath, string? discRootLabel, string mode, IReadOnlyList<EncodeTrackConfig> tracks)
 	{
-		var toAdd = tracks.Where(t => !string.IsNullOrWhiteSpace(t.OutputName)).ToList();
-		if (toAdd.Count == 0)
+		var tvdbId = int.TryParse(this._showId.Trim(), out var parsedId) ? parsedId : (int?)null;
+		var user = this.AuthenticationStateTask is null ? null : (await this.AuthenticationStateTask).User;
+		var result = await this.SubmissionService.SubmitAsync(new EncodeJobSubmission
 		{
-			this.Snackbar.Add("No tracks to queue — all track names are empty.", Severity.Warning);
+			DiscPath = discPath,
+			RootLabel = discRootLabel,
+			Mode = mode,
+			PresetLabel = this._selectedPresetLabel,
+			TvdbShowName = this._seriesName,
+			TvdbId = tvdbId,
+			Tracks = tracks,
+			CreatedBy = UserIdentity.GetDisplayName(user),
+			CreatedByObjectId = UserIdentity.GetObjectId(user),
+			CreatedVia = "UI",
+		});
+
+		if (!result.Accepted)
+		{
+			this.Snackbar.Add(result.RejectionReason ?? "Nothing was queued.", Severity.Warning);
 			return;
 		}
 
-		// Stamp the globally selected preset on every track
-		foreach (var track in toAdd)
-		{
-			track.PresetLabel = this._selectedPresetLabel;
-		}
-
-		var settings = await this.SettingsService.GetSettingsAsync();
-		var tvdbId = int.TryParse(this._showId.Trim(), out var parsedId) ? parsedId : (int?)null;
-		var item = new EncodeQueueItem
-		{
-			DiscPath = discPath,
-			DiscRootLabel = discRootLabel,
-			Mode = mode,
-			TvdbShowName = this._seriesName,
-			TvdbId = tvdbId,
-			TracksJson = JsonSerializer.Serialize(toAdd),
-			AudioDefault = settings.AudioDefault,
-		};
-
-		await this.EncodeQueueService.AddItemAsync(item);
 		var subject = string.Equals(mode, "Files", StringComparison.OrdinalIgnoreCase) ? "Folder" : "Disc";
-		this.Snackbar.Add($"{subject} added to queue with {toAdd.Count} track(s).", Severity.Success);
+		this.Snackbar.Add($"{subject} added to queue with {result.TrackCount} track(s).", Severity.Success);
+		await this.OnAddedToQueue.InvokeAsync();
 	}
 
 	protected IReadOnlyList<TvdbEpisode> EpisodesForSeason(int? season)
@@ -156,6 +183,87 @@ public abstract class NamingComponentBase : ComponentBase
 
 		this._showId = series.SeriesId.ToString();
 		await this.OnLoadFromTvdbClicked();
+	}
+
+	protected virtual string? GetDefaultSearchTerm() => null;
+
+	protected async Task OpenTvdbSearchDialogAsync()
+	{
+		var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+		var defaultTerm = this.GetDefaultSearchTerm();
+		var parameters = new DialogParameters<TvdbSearchDialog>
+		{
+			{ x => x.InitialSearchTerm, defaultTerm ?? string.Empty },
+		};
+		var dialog = await this.DialogService.ShowAsync<TvdbSearchDialog>("Search for TV Show", parameters, options);
+		var result = await dialog.Result;
+		if (result is { Canceled: false, Data: TvdbSeriesSearchResult selected })
+		{
+			this._showId = selected.SeriesId.ToString();
+			this._selectedCachedShow = null;
+			await this.OnLoadFromTvdbClicked();
+			// Refresh the cached-series dropdown so the newly loaded show appears
+			this._cachedSeries = await this.TvdbService.GetCachedSeriesAsync();
+		}
+	}
+
+	protected async Task OpenOmdbSearchDialogAsync()
+	{
+		var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+		var defaultTerm = this.GetDefaultSearchTerm();
+		var parameters = new DialogParameters<OmdbSearchDialog>
+		{
+			{ x => x.InitialSearchTerm, defaultTerm ?? string.Empty },
+		};
+		var dialog = await this.DialogService.ShowAsync<OmdbSearchDialog>("Search for Movie", parameters, options);
+		var result = await dialog.Result;
+		if (result is { Canceled: false, Data: OmdbSearchResult selected })
+		{
+			await this.OnLoadFromOmdbByIdAsync(selected.ImdbId);
+		}
+	}
+
+	protected async Task OnLoadFromOmdbByIdAsync(string imdbId)
+	{
+		if (!this.OmdbService.IsConfigured)
+		{
+			this._omdbErrorMessage = "OMDb is not configured. Set the OMDb API key in application settings.";
+			return;
+		}
+
+		this._isOmdbLoading = true;
+		this._omdbErrorMessage = null;
+
+		try
+		{
+			var movie = await this.OmdbService.GetMovieAsync(imdbId);
+			if (movie is null)
+			{
+				this._omdbErrorMessage = "Movie not found.";
+				this._movieName = null;
+				this._movieYear = null;
+				this._movieGenres = null;
+				return;
+			}
+
+			this._movieTitle = movie.Title;
+			this._movieName = movie.Title;
+			this._movieYear = movie.Year;
+			this._movieGenres = movie.Genres;
+
+			this.Snackbar.Add($"Loaded '{movie.Title}' ({movie.Year}) from OMDb.", Severity.Success);
+		}
+		catch (Exception ex)
+		{
+			this._omdbErrorMessage = $"Failed to load from OMDb: {ex.Message}";
+			this._movieName = null;
+			this._movieYear = null;
+			this._movieGenres = null;
+		}
+		finally
+		{
+			this._isOmdbLoading = false;
+		}
 	}
 
 	protected async Task OnLoadFromTvdbClicked()
@@ -250,6 +358,104 @@ public abstract class NamingComponentBase : ComponentBase
 		}
 	}
 
+	/// <summary>The row's interlace verdict, or null when not known (yet).</summary>
+	protected virtual InterlaceResult? GetInterlace(int key) => this._interlace.GetValueOrDefault(key);
+
+	/// <summary>
+	/// The row's preset: the user's choice once made, otherwise the preset its interlace verdict recommends. Null means
+	/// "use the job preset" (pending / unknown verdicts).
+	/// </summary>
+	protected string? GetRowPreset(int key)
+	{
+		var row = this.GetNamingRow(key);
+		return row.PresetChosen ? row.PresetLabel : this.GetInterlace(key)?.RecommendedPreset;
+	}
+
+	protected void OnRowPresetChanged(int key, string? preset)
+	{
+		var row = this.GetNamingRow(key);
+		row.PresetLabel = preset;
+		row.PresetChosen = true;
+	}
+
+	/// <summary>
+	/// Loads verdicts with <paramref name="load"/> and keeps reloading every few seconds while any is pending (probes run
+	/// in the background). Calling it again replaces the previous loop.
+	/// </summary>
+	protected void TrackInterlace(Func<CancellationToken, Task<IReadOnlyDictionary<int, InterlaceResult>>> load)
+	{
+		this._interlacePolling?.Cancel();
+		this._interlacePolling?.Dispose();
+		var polling = new CancellationTokenSource(TimeSpan.FromMinutes(30));
+		this._interlacePolling = polling;
+		_ = Task.Run(async () =>
+		{
+			try
+			{
+				while (!polling.IsCancellationRequested)
+				{
+					var verdicts = await load(polling.Token);
+					await this.InvokeAsync(() =>
+					{
+						this._interlace.Clear();
+						foreach (var (key, verdict) in verdicts)
+						{
+							this._interlace[key] = verdict;
+						}
+
+						this.StateHasChanged();
+					});
+
+					if (!verdicts.Values.Any(v => v.Verdict == InterlaceVerdict.Pending))
+					{
+						return;
+					}
+
+					await Task.Delay(TimeSpan.FromSeconds(5), polling.Token);
+				}
+			}
+			catch (OperationCanceledException)
+			{
+				// Replaced, timed out or the component went away.
+			}
+			catch (ObjectDisposedException)
+			{
+				// The circuit closed while polling.
+			}
+		});
+	}
+
+	/// <summary>Verdicts for scanned disc titles, keyed by title number.</summary>
+	protected Task<IReadOnlyDictionary<int, InterlaceResult>> LoadTitleVerdictsAsync(HandBrakeScanResult scan, IReadOnlyList<TitleInfo> titles, CancellationToken ct) =>
+		this.InterlaceService.GetDiscTitlesAsync(scan.InputPath, titles, ct);
+
+	/// <summary>Verdicts for media files (relative to the selected folder), keyed by the row key.</summary>
+	protected async Task<IReadOnlyDictionary<int, InterlaceResult>> LoadFileVerdictsAsync(
+		IReadOnlyList<(int Key, string RelativePath)> files, string? rootLabel, string? folder, CancellationToken ct)
+	{
+		var folderPath = rootLabel is null ? folder ?? string.Empty : this.FilesystemService.ResolvePhysicalPath(rootLabel, folder ?? string.Empty);
+		var physical = files.Select(f => Path.GetFullPath(Path.Combine(folderPath, f.RelativePath))).ToList();
+		var verdicts = await this.InterlaceService.GetFilesAsync(physical, ct);
+		var byKey = new Dictionary<int, InterlaceResult>();
+		for (var i = 0; i < files.Count; i++)
+		{
+			if (verdicts.TryGetValue(physical[i], out var verdict))
+			{
+				byKey[files[i].Key] = verdict;
+			}
+		}
+
+		return byKey;
+	}
+
+	public void Dispose()
+	{
+		this._interlacePolling?.Cancel();
+		this._interlacePolling?.Dispose();
+		this._interlacePolling = null;
+		GC.SuppressFinalize(this);
+	}
+
 	protected void OnResolutionChanged(int key, string? resolution)
 	{
 		var row = this.GetNamingRow(key);
@@ -267,6 +473,12 @@ public abstract class NamingComponentBase : ComponentBase
 
 	protected async Task OnLoadFromOmdbClicked()
 	{
+		if (!this.OmdbService.IsConfigured)
+		{
+			this._omdbErrorMessage = "OMDb is not configured. Set the OMDb API key in application settings.";
+			return;
+		}
+
 		if (string.IsNullOrWhiteSpace(this._movieTitle))
 		{
 			this._omdbErrorMessage = "Enter a movie title to search.";
@@ -349,23 +561,23 @@ public abstract class NamingComponentBase : ComponentBase
 
 	protected void CascadeRows(IReadOnlyList<int> orderedKeys)
 	{
-		var firstIndex = -1;
-		for (var i = 0; i < orderedKeys.Count; i++)
+		var lastFilledIndex = -1;
+		for (var i = orderedKeys.Count - 1; i >= 0; i--)
 		{
 			var r = this.GetNamingRow(orderedKeys[i]);
-			if (r.Season is not null && r.Episode is not null)
+			if (r.Episode is not null)
 			{
-				firstIndex = i;
+				lastFilledIndex = i;
 				break;
 			}
 		}
 
-		if (firstIndex < 0)
+		if (lastFilledIndex < 0)
 		{
 			return;
 		}
 
-		var firstRow = this.GetNamingRow(orderedKeys[firstIndex]);
+		var firstRow = this.GetNamingRow(orderedKeys[lastFilledIndex]);
 		var sorted = this._allEpisodes
 			.OrderBy(e => e.SeasonNumber)
 			.ThenBy(e => e.EpisodeNumber)
@@ -381,13 +593,20 @@ public abstract class NamingComponentBase : ComponentBase
 		}
 
 		var nextEpIdx = startIndex + 1;
-		for (var i = firstIndex + 1; i < orderedKeys.Count && nextEpIdx < sorted.Count; i++, nextEpIdx++)
+		for (var i = lastFilledIndex + 1; i < orderedKeys.Count && nextEpIdx < sorted.Count; i++, nextEpIdx++)
 		{
 			var ep = sorted[nextEpIdx];
 			var row = this.GetNamingRow(orderedKeys[i]);
-			row.Season = ep.SeasonNumber;
-			row.Episode = ep;
-			row.Name = ep.Name;
+			if (row.Episode is not null || !string.IsNullOrWhiteSpace(row.Name))
+			{
+				nextEpIdx--;
+			}
+			else
+			{
+				row.Season = ep.SeasonNumber;
+				row.Episode = ep;
+				row.Name = ep.Name;
+			}
 		}
 	}
 }

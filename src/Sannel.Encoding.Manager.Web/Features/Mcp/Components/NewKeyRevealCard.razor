@@ -1,0 +1,10 @@
+<MudCard Class="mb-4 pa-4" Elevation="3" Style="border: 2px solid var(--mud-palette-success);">
+	<MudText Typo="Typo.h6" Class="mb-2">Your new API key</MudText>
+	<MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3">
+		Copy this key now. It won't be shown again.
+	</MudAlert>
+	<MudTextField T="string" Value="@Key" ReadOnly="true" Variant="Variant.Outlined"
+		Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.ContentCopy"
+		OnAdornmentClick="CopyAsync" AdornmentAriaLabel="Copy API key"
+		Style="font-family:monospace;" />
+</MudCard>

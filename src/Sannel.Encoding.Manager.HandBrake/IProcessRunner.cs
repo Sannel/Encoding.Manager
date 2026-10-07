@@ -14,6 +14,17 @@ public interface IProcessRunner
 		CancellationToken ct = default);
 
 	/// <summary>
+	/// Runs a process to completion with extra environment variables, capturing all stdout and stderr.
+	/// When <paramref name="ct"/> is cancelled the whole process tree is killed before the exception propagates.
+	/// </summary>
+	/// <param name="environment">Variables to set (non-null value) or remove (null value) for the child process.</param>
+	Task<ProcessResult> RunAsync(
+		string fileName,
+		IEnumerable<string> arguments,
+		IReadOnlyDictionary<string, string?> environment,
+		CancellationToken ct = default);
+
+	/// <summary>
 	/// Runs a process and streams stdout lines as they arrive.
 	/// Stderr is captured fully and returned in the result.
 	/// </summary>

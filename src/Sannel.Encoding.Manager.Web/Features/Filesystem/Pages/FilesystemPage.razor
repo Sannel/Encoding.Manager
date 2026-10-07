@@ -36,6 +36,14 @@ else
 					Disabled="@(string.IsNullOrEmpty(_selectedRootLabel))">
 					Select Current Folder
 				</MudButton>
+				<MudTooltip Text="Copy this folder's location and instructions for an AI assistant">
+					<MudButton Variant="Variant.Outlined" Color="Color.Info" Class="ml-2"
+						StartIcon="@Icons.Material.Filled.SmartToy"
+						OnClick="CopyCurrentFolderForAi"
+						Disabled="@(string.IsNullOrEmpty(_selectedRootLabel))">
+						Copy for AI
+					</MudButton>
+				</MudTooltip>
 			</MudItem>
 		</MudGrid>
 
@@ -108,6 +116,11 @@ else
 									Select Disc
 								</MudButton>
 							}
+							<MudButton Variant="Variant.Text" Color="Color.Info" Size="Size.Small"
+								StartIcon="@Icons.Material.Filled.SmartToy"
+								OnClick="@(() => CopyDirectoryForAi(dir))">
+								Copy for AI
+							</MudButton>
 						</MudTd>
 					}
 					else if (context is FileEntryResponse file)
@@ -121,6 +134,11 @@ else
 							<MudButton Variant="Variant.Text" Color="Color.Success" Size="Size.Small"
 								OnClick="@(() => SelectFile(file))">
 								Select File
+							</MudButton>
+							<MudButton Variant="Variant.Text" Color="Color.Info" Size="Size.Small"
+								StartIcon="@Icons.Material.Filled.SmartToy"
+								OnClick="@(() => CopyFileForAi(file))">
+								Copy for AI
 							</MudButton>
 						</MudTd>
 					}

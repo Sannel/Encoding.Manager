@@ -98,6 +98,9 @@ public partial class QueueDetailDialog : ComponentBase
 	private bool ShowTitleColumn =>
 		!string.Equals(this.Item.Mode, "Files", StringComparison.OrdinalIgnoreCase);
 
+	private bool ShowAnglesColumn =>
+		this._tracks.Any(t => t.AngleCount > 1);
+
 	private void ApplyGlobalPreset(string? label)
 	{
 		this._globalPresetLabel = label;

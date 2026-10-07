@@ -22,4 +22,9 @@ public interface IOmdbService
 	/// Uses the first search result from OMDb.
 	/// </summary>
 	Task<OmdbMovie?> SearchMovieAsync(string title, CancellationToken ct = default);
+
+	/// <summary>
+	/// Searches OMDb for movies matching the given title and returns a list of results.
+	/// </summary>
+	Task<IReadOnlyList<OmdbSearchResult>> SearchMoviesListAsync(string title, CancellationToken ct = default);
 }

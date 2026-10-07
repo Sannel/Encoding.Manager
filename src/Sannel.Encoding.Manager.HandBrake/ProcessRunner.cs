@@ -29,6 +29,57 @@ public class ProcessRunner : IProcessRunner
 		};
 	}
 
+	public async Task<ProcessResult> RunAsync(
+		string fileName,
+		IEnumerable<string> arguments,
+		IReadOnlyDictionary<string, string?> environment,
+		CancellationToken ct = default)
+	{
+		using var process = CreateProcess(fileName, arguments);
+		foreach (var (key, value) in environment)
+		{
+			if (value is null)
+			{
+				process.StartInfo.Environment.Remove(key);
+			}
+			else
+			{
+				process.StartInfo.Environment[key] = value;
+			}
+		}
+
+		process.Start();
+
+		// Read with CancellationToken.None so the pipes drain even after a kill.
+		var stdoutTask = process.StandardOutput.ReadToEndAsync(CancellationToken.None);
+		var stderrTask = process.StandardError.ReadToEndAsync(CancellationToken.None);
+
+		try
+		{
+			await process.WaitForExitAsync(ct).ConfigureAwait(false);
+		}
+		catch (OperationCanceledException)
+		{
+			try
+			{
+				process.Kill(entireProcessTree: true);
+			}
+			catch (InvalidOperationException)
+			{
+				// Already exited.
+			}
+
+			throw;
+		}
+
+		return new ProcessResult
+		{
+			ExitCode = process.ExitCode,
+			StandardOutput = await stdoutTask.ConfigureAwait(false),
+			StandardError = await stderrTask.ConfigureAwait(false)
+		};
+	}
+
 	public async Task<ProcessResult> RunWithLineCallbackAsync(
 		string fileName,
 		IEnumerable<string> arguments,

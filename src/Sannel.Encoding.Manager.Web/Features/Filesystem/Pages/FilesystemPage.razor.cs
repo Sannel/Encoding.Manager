@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Dto;
 using Sannel.Encoding.Manager.Web.Features.Filesystem.Services;
@@ -18,6 +19,9 @@ public partial class FilesystemPage : ComponentBase
 
 	[Inject]
 	private NavigationManager NavigationManager { get; set; } = default!;
+
+	[Inject]
+	private IJSRuntime JS { get; set; } = default!;
 
 	private List<ConfiguredDirectoryResponse> _configuredRoots = [];
 	private string? _selectedRootLabel;
@@ -131,6 +135,36 @@ public partial class FilesystemPage : ComponentBase
 
 		this.NavigateToScan(relativePath, null, "folder");
 	}
+
+	private Task CopyCurrentFolderForAi() =>
+		this.CopyForAiAsync(AiHandoffText.ForFolder(this._selectedRootLabel!, this._currentRelativePath), "Folder");
+
+	private Task CopyDirectoryForAi(DirectoryEntryResponse folder)
+	{
+		var path = this.ChildPath(folder.Name);
+		return folder.DiscType == DiscType.None
+			? this.CopyForAiAsync(AiHandoffText.ForFolder(this._selectedRootLabel!, path), "Folder")
+			: this.CopyForAiAsync(AiHandoffText.ForDisc(this._selectedRootLabel!, path, folder.DiscType), "Disc");
+	}
+
+	private Task CopyFileForAi(FileEntryResponse file) =>
+		this.CopyForAiAsync(AiHandoffText.ForFile(this._selectedRootLabel!, this.ChildPath(file.Name), file.SizeBytes), "File");
+
+	private async Task CopyForAiAsync(string text, string subject)
+	{
+		try
+		{
+			await this.JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+			this.Snackbar.Add($"{subject} details copied. Paste them into your AI assistant.", Severity.Success);
+		}
+		catch (JSException ex)
+		{
+			this.Snackbar.Add($"Could not copy to the clipboard: {ex.Message}", Severity.Error);
+		}
+	}
+
+	private string ChildPath(string name) =>
+		string.IsNullOrEmpty(this._currentRelativePath) ? name : $"{this._currentRelativePath}/{name}";
 
 	private void ClearSelection()
 	{

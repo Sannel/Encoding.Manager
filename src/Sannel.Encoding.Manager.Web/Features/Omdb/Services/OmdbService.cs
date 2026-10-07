@@ -104,6 +104,55 @@ public class OmdbService : IOmdbService
 		}
 	}
 
+	/// <inheritdoc />
+	public async Task<IReadOnlyList<OmdbSearchResult>> SearchMoviesListAsync(string title, CancellationToken ct = default)
+	{
+		if (!this.IsConfigured || string.IsNullOrWhiteSpace(title))
+		{
+			return [];
+		}
+
+		var baseUrl = this._options.BaseUrl ?? "https://www.omdbapi.com/";
+		var queryString = $"?apikey={HttpUtility.UrlEncode(this._options.ApiKey)}&s={HttpUtility.UrlEncode(title.Trim())}&type=movie";
+
+		try
+		{
+			var response = await this._httpClient.GetAsync($"{baseUrl}{queryString}", ct).ConfigureAwait(false);
+			response.EnsureSuccessStatusCode();
+
+			using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+			using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct).ConfigureAwait(false);
+
+			var root = doc.RootElement;
+			if (!root.TryGetProperty("Response", out var resp) || resp.GetString() != "True")
+			{
+				return [];
+			}
+
+			var results = new List<OmdbSearchResult>();
+			if (root.TryGetProperty("Search", out var searchArray) && searchArray.ValueKind == JsonValueKind.Array)
+			{
+				foreach (var item in searchArray.EnumerateArray())
+				{
+					var imdbId = item.TryGetProperty("imdbID", out var id) && id.ValueKind == JsonValueKind.String ? id.GetString() ?? string.Empty : string.Empty;
+					var itemTitle = item.TryGetProperty("Title", out var t) && t.ValueKind == JsonValueKind.String ? t.GetString() ?? string.Empty : string.Empty;
+					var year = item.TryGetProperty("Year", out var y) && y.ValueKind == JsonValueKind.String ? y.GetString() ?? string.Empty : string.Empty;
+
+					if (!string.IsNullOrEmpty(imdbId) && !string.IsNullOrEmpty(itemTitle))
+					{
+						results.Add(new OmdbSearchResult { ImdbId = imdbId, Title = itemTitle, Year = year });
+					}
+				}
+			}
+
+			return results;
+		}
+		catch
+		{
+			return [];
+		}
+	}
+
 	private OmdbMovie? ParseMovieResponse(JsonElement root)
 	{
 		if (!root.TryGetProperty("Response", out var responseElem) || responseElem.GetString() != "True")

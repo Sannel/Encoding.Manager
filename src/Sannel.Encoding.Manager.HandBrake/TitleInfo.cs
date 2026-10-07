@@ -4,6 +4,8 @@ namespace Sannel.Encoding.Manager.HandBrake;
 public class TitleInfo
 {
 	public int TitleNumber { get; init; }
+	/// <summary>Blu-ray playlist number (the NNNNN in NNNNN.mpls). Null for DVDs and files.</summary>
+	public int? Playlist { get; init; }
 	public TimeSpan Duration { get; init; }
 	public IReadOnlyList<VideoStreamInfo> VideoStreams { get; init; } = [];
 	public IReadOnlyList<AudioTrackInfo> AudioTracks { get; init; } = [];
@@ -12,4 +14,11 @@ public class TitleInfo
 	public double FrameRate { get; init; }
 	public int Width { get; init; }
 	public int Height { get; init; }
+	/// <summary>Number of angles on this title. 1 means a single angle (standard). Values > 1 indicate a multi-angle title.</summary>
+	public int AngleCount { get; init; } = 1;
+	/// <summary>
+	/// HandBrake's comb detection on the scan's preview frames ("InterlaceDetected" in the scan JSON). Only ~10 previews
+	/// are sampled and telecine is not told apart, so treat it as a hint rather than a verdict.
+	/// </summary>
+	public bool InterlaceDetected { get; init; }
 }

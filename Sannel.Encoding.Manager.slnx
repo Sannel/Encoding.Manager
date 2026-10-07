@@ -1,13 +1,17 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Sannel.Encoding.Manager.Data/Sannel.Encoding.Manager.Data.csproj" />
+    <Project Path="src/Sannel.Encoding.Manager.DiscMenu.Probe/Sannel.Encoding.Manager.DiscMenu.Probe.csproj" />
+    <Project Path="src/Sannel.Encoding.Manager.DiscMenu/Sannel.Encoding.Manager.DiscMenu.csproj" />
     <Project Path="src/Sannel.Encoding.Manager.HandBrake/Sannel.Encoding.Manager.HandBrake.csproj" />
+    <Project Path="src/Sannel.Encoding.Manager.Jellyfin/Sannel.Encoding.Manager.Jellyfin.csproj" />
     <Project Path="src/Sannel.Encoding.Manager.Migrations.Postgres/Sannel.Encoding.Manager.Migrations.Postgres.csproj" />
     <Project Path="src/Sannel.Encoding.Manager.Migrations.Sqlite/Sannel.Encoding.Manager.Migrations.Sqlite.csproj" />
     <Project Path="src/Sannel.Encoding.Manager.Web/Sannel.Encoding.Manager.Web.csproj" />
     <Project Path="src/Sannel.Encoding.Runner/Sannel.Encoding.Runner.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Sannel.Encoding.Manager.DiscMenu.Tests/Sannel.Encoding.Manager.DiscMenu.Tests.csproj" />
     <Project Path="tests/Sannel.Encoding.Manager.HandBrake.Tests/Sannel.Encoding.Manager.HandBrake.Tests.csproj" />
     <Project Path="tests/Sannel.Encoding.Runner.Tests/Sannel.Encoding.Runner.Tests.csproj" />
   </Folder>
