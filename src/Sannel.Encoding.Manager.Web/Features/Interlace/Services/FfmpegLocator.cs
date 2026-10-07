@@ -52,14 +52,14 @@ public sealed class FfmpegLocator : IFfmpegLocator
 			var protocols = await this._runner.RunAsync(fileName, ["-hide_banner", "-protocols"], timeout.Token);
 			var versionLine = version.StandardOutput.Split('\n', 2)[0].Trim();
 			var bluray = protocols.StandardOutput.Split('\n').Any(l => l.Trim() == "bluray");
-			var info = new FfmpegInfo(true, bluray, fileName, versionLine, bluray ? null : "ffmpeg has no 'bluray' protocol (built without libbluray); Blu-ray titles use HandBrake's flag only.");
+			var info = new FfmpegInfo(true, bluray, fileName, versionLine, bluray ? null : "ffmpeg has no 'bluray' protocol (built without libbluray); Blu-ray titles are probed through their clip files only.");
 			if (bluray)
 			{
 				this._logger.LogInformation("Interlace detection uses {Ffmpeg} ({Version})", fileName, versionLine);
 			}
 			else
 			{
-				this._logger.LogWarning("Interlace detection: {Ffmpeg} ({Version}) has no 'bluray' protocol; Blu-ray titles fall back to HandBrake's interlace flag", fileName, versionLine);
+				this._logger.LogInformation("Interlace detection uses {Ffmpeg} ({Version}); it has no 'bluray' protocol, so Blu-ray titles are probed through their clip files only", fileName, versionLine);
 			}
 
 			return info;

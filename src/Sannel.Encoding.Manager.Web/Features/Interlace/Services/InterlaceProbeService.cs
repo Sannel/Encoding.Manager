@@ -30,9 +30,28 @@ public sealed class InterlaceProbeService : IInterlaceProbeService
 	}
 
 	/// <inheritdoc />
+	/// <remarks>
+	/// Probes the playlist's largest clip (BDMV/STREAM/NNNNN.m2ts) directly: reliable, fast, and needs no libbluray.
+	/// ffmpeg's <c>bluray:</c> protocol is only a fallback — on some discs it decodes nothing (broken H.264 references
+	/// after seeking) and on Windows it can stall until the timeout.
+	/// </remarks>
 	public async Task<InterlaceMeasurement?> ProbeBlurayTitleAsync(string discPath, int playlist, TimeSpan duration, CancellationToken ct = default)
 	{
 		var ffmpeg = await this._locator.GetAsync(ct);
+		if (!ffmpeg.IsAvailable)
+		{
+			return null;
+		}
+
+		if (MplsReader.LargestClip(discPath, playlist) is { } clip)
+		{
+			var fromClip = await this.ProbeMediaAsync(ffmpeg.FileName, clip, $"{discPath} playlist {playlist} ({Path.GetFileName(clip)})", ct);
+			if (fromClip is { Verdict: not InterlaceVerdict.Unknown })
+			{
+				return fromClip;
+			}
+		}
+
 		if (!ffmpeg.SupportsBluray)
 		{
 			return null;
@@ -46,20 +65,21 @@ public sealed class InterlaceProbeService : IInterlaceProbeService
 	public async Task<InterlaceMeasurement?> ProbeFileAsync(string filePath, CancellationToken ct = default)
 	{
 		var ffmpeg = await this._locator.GetAsync(ct);
-		if (!ffmpeg.IsAvailable)
-		{
-			return null;
-		}
+		return ffmpeg.IsAvailable ? await this.ProbeMediaAsync(ffmpeg.FileName, filePath, filePath, ct) : null;
+	}
 
+	/// <summary>Samples a media file at fractions of its own duration (read from ffmpeg's input header).</summary>
+	private async Task<InterlaceMeasurement?> ProbeMediaAsync(string ffmpeg, string filePath, string label, CancellationToken ct)
+	{
 		// ffmpeg prints the input's duration while failing for lack of an output: no ffprobe needed.
-		var header = await this.RunAsync(ffmpeg.FileName, ["-hide_banner", "-nostdin", "-i", filePath], ct);
+		var header = await this.RunAsync(ffmpeg, ["-hide_banner", "-nostdin", "-i", filePath], ct);
 		if (header is null || IdetParser.ParseDuration(header) is not { } duration)
 		{
 			this._logger.LogWarning("Interlace probe: could not read the duration of {File}", filePath);
 			return null;
 		}
 
-		return await this.SampleAsync(ffmpeg.FileName, filePath, [], duration, filePath, ct);
+		return await this.SampleAsync(ffmpeg, filePath, [], duration, label, ct);
 	}
 
 	private async Task<InterlaceMeasurement?> SampleAsync(string ffmpeg, string input, string[] inputOptions, TimeSpan duration, string label, CancellationToken ct)

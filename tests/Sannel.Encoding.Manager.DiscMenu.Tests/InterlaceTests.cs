@@ -94,6 +94,26 @@ public class InterlaceTests
 	}
 
 	[Fact]
+	public void MplsReader_ReadsPlayItemClipNamesInOrder()
+	{
+		// Header: "MPLS0200", PlayList start address = 20; padding to 20; PlayList: length, reserved,
+		// 2 play items, 0 sub paths; each item: length 9 + "NNNNN" + "M2TS".
+		var bytes = new List<byte>();
+		bytes.AddRange("MPLS0200"u8.ToArray());
+		bytes.AddRange([0, 0, 0, 20]);
+		bytes.AddRange(new byte[8]);
+		bytes.AddRange([0, 0, 0, 30, 0, 0, 0, 2, 0, 0]);
+		foreach (var clip in new[] { "00012", "00007" })
+		{
+			bytes.AddRange([0, 9]);
+			bytes.AddRange(System.Text.Encoding.ASCII.GetBytes(clip + "M2TS"));
+		}
+
+		Assert.Equal(["00012", "00007"], MplsReader.ReadClipNames([.. bytes]));
+		Assert.Empty(MplsReader.ReadClipNames("NOTMPLS!"u8.ToArray()));
+	}
+
+	[Fact]
 	public void SamplePoints_UseDurationFractionsAndStartShortSourcesAtZero()
 	{
 		var points = InterlaceProbeService.SamplePoints([0.10, 0.45, 0.80], TimeSpan.FromSeconds(1000)).ToList();

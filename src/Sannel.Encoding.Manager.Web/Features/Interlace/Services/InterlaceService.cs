@@ -14,7 +14,7 @@ namespace Sannel.Encoding.Manager.Web.Features.Interlace.Services;
 public sealed class InterlaceService : IInterlaceService, IDisposable
 {
 	/// <summary>Bump when the probe or thresholds change so cached rows are re-probed.</summary>
-	public const int CurrentProbeVersion = 1;
+	public const int CurrentProbeVersion = 2;
 
 	/// <summary>A failed probe is not retried for this long (the fallback verdict is reported meanwhile).</summary>
 	private static readonly TimeSpan _failureRetention = TimeSpan.FromMinutes(30);
@@ -64,7 +64,8 @@ public sealed class InterlaceService : IInterlaceService, IDisposable
 		}
 
 		var ffmpeg = await this._locator.GetAsync(ct);
-		var probe = this._options.Enabled && ffmpeg.SupportsBluray;
+		// The probe reads the playlist's clip file directly; libbluray is only its fallback.
+		var probe = this._options.Enabled && ffmpeg.IsAvailable;
 		var cached = probe ? await this.LoadAsync(discPhysicalPath, null, ct) : [];
 		foreach (var title in titles)
 		{
